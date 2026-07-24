@@ -1,12 +1,19 @@
-import "./styles/main.css";
+import { registerSW } from 'virtual:pwa-register'
+import { G01 } from './content/g01'
+import { GameEngine } from './game/engine'
+import { LocalSaveRepository } from './game/save'
+import './styles.css'
+import { GameView } from './ui/GameView'
 
-const app = document.querySelector<HTMLDivElement>("#app");
-if (!app) throw new Error("Missing #app root");
+registerSW({ immediate: true })
 
-app.innerHTML = `
-  <main class="project-entry">
-    <p class="eyebrow">G01 · 正式HOPA开发入口</p>
-    <h1>星骸拾荒者：十二星门</h1>
-    <p>Codex请执行 tasks/TASK-001_G01正式HOPA重构.md。</p>
-  </main>
-`;
+const app = document.querySelector<HTMLDivElement>('#app')
+
+if (!app) {
+  throw new Error('Missing #app mount point')
+}
+
+const engine = new GameEngine(G01, new LocalSaveRepository(G01.id))
+const view = new GameView(app, engine)
+
+view.mount()
