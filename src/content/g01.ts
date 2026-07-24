@@ -1,0 +1,150 @@
+import type { ChapterDefinition } from '../game/types'
+
+export const G01: ChapterDefinition = {
+  id: 'G01',
+  title: '拾光号坠落之前',
+  sceneTitle: '拾光号 · 领航舱',
+  protagonist: '星宇',
+  initialState: 'S0',
+  states: {
+    S0: {
+      id: 'S0',
+      title: '失速警报',
+      objective: '接管拾光号的应急权限',
+      narrative: '撞击还有九十秒。星宇必须在领航舱彻底断电前恢复航线。',
+      safeCheckpoint: true,
+    },
+    S1: {
+      id: 'S1',
+      title: '散落的航行工具',
+      objective: '在场景中找出绝缘扳手、记忆棱晶与星位罗盘',
+      narrative: '爆震把应急工具甩得到处都是。它们没有标记，只能靠观察辨认。',
+    },
+    S2: {
+      id: 'S2',
+      title: '打开检修舱',
+      objective: '从背包拖出绝缘扳手，用在右下方的检修舱盖上',
+      narrative: '三件工具齐了。检修舱盖被冲击挤压，徒手无法打开。',
+      safeCheckpoint: true,
+    },
+    S3: {
+      id: 'S3',
+      title: '重排应急电路',
+      objective: '放大检修舱并完成能量路由谜题',
+      narrative: '舱盖弹开后，四路电源互相干扰。错误三次会触发保护性断路。',
+    },
+    S4: {
+      id: 'S4',
+      title: '唤醒航行记忆',
+      objective: '把记忆棱晶拖到中央控制台的环形读取槽',
+      narrative: '主电路恢复，但拾光号忘记了上一条安全航线。',
+      safeCheckpoint: true,
+    },
+    S5: {
+      id: 'S5',
+      title: '锁定坠落坐标',
+      objective: '把星位罗盘拖到右侧领航盘，完成坐标校准',
+      narrative: '航行记忆已经回归，还差最后一个真实星位基准。',
+    },
+    S6: {
+      id: 'S6',
+      title: '坠落航线已锁定',
+      objective: 'G01 第一场景完成',
+      narrative: '拾光号避开了碎片带，却仍被未知引力拖向第一道星门。',
+      safeCheckpoint: true,
+    },
+  },
+  items: [
+    {
+      id: 'insulated-wrench',
+      name: '绝缘扳手',
+      description: '陶瓷握柄仍然完好，适合处理带电舱门。',
+      inventoryCrop: { x: 24, y: 47, size: 7 },
+    },
+    {
+      id: 'memory-prism',
+      name: '记忆棱晶',
+      description: '储存着拾光号最后一段完整航行记忆。',
+      inventoryCrop: { x: 24, y: 82, size: 5 },
+    },
+    {
+      id: 'star-compass',
+      name: '星位罗盘',
+      description: '不依赖主电源的机械星位校准器。',
+      inventoryCrop: { x: 93, y: 45, size: 7 },
+    },
+  ],
+  hotspots: [
+    {
+      id: 'wrench-spot',
+      kind: 'hidden-item',
+      ariaLabel: '检查左侧工作台上的金属工具',
+      area: { x: 19, y: 39, width: 12, height: 15 },
+      activeStates: ['S1'],
+      itemId: 'insulated-wrench',
+    },
+    {
+      id: 'prism-spot',
+      kind: 'hidden-item',
+      ariaLabel: '检查左下方星图附近的蓝色物体',
+      area: { x: 20, y: 77, width: 9, height: 12 },
+      activeStates: ['S1'],
+      itemId: 'memory-prism',
+    },
+    {
+      id: 'compass-spot',
+      kind: 'hidden-item',
+      ariaLabel: '检查右侧柜门旁的银色装置',
+      area: { x: 88, y: 35, width: 11, height: 19 },
+      activeStates: ['S1'],
+      itemId: 'star-compass',
+    },
+    {
+      id: 'maintenance-hatch',
+      kind: 'use-target',
+      ariaLabel: '被挤压的检修舱盖',
+      area: { x: 64, y: 64, width: 20, height: 23 },
+      activeStates: ['S2'],
+      requiredItemId: 'insulated-wrench',
+    },
+    {
+      id: 'maintenance-zoom',
+      kind: 'zoom',
+      ariaLabel: '放大查看已经打开的检修舱',
+      area: { x: 64, y: 64, width: 20, height: 23 },
+      activeStates: ['S3'],
+      zoomId: 'power-routing',
+    },
+    {
+      id: 'memory-slot',
+      kind: 'use-target',
+      ariaLabel: '中央控制台的环形记忆读取槽',
+      area: { x: 45, y: 36, width: 13, height: 17 },
+      activeStates: ['S4'],
+      requiredItemId: 'memory-prism',
+    },
+    {
+      id: 'navigation-socket',
+      kind: 'use-target',
+      ariaLabel: '右侧控制台的领航校准盘',
+      area: { x: 57, y: 31, width: 13, height: 19 },
+      activeStates: ['S5'],
+      requiredItemId: 'star-compass',
+    },
+  ],
+  transitions: [
+    { from: 'S0', event: 'start', to: 'S1' },
+    { from: 'S1', event: 'found:all', to: 'S2' },
+    {
+      from: 'S2',
+      event: 'use:insulated-wrench:maintenance-hatch',
+      to: 'S3',
+    },
+    { from: 'S3', event: 'puzzle:power-routing', to: 'S4' },
+    { from: 'S4', event: 'use:memory-prism:memory-slot', to: 'S5' },
+    { from: 'S5', event: 'use:star-compass:navigation-socket', to: 'S6' },
+  ],
+}
+
+export const G01_SCENE_ART = '/assets/g01-cockpit.png'
+

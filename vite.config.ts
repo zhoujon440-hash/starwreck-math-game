@@ -14,12 +14,33 @@ export default defineConfig({
         background_color: '#070b13',
         display: 'fullscreen',
         orientation: 'landscape',
+        lang: 'zh-CN',
         start_url: '/',
         scope: '/',
-        categories: ['games', 'education', 'entertainment']
+        categories: ['games', 'education', 'entertainment'],
+        icons: [
+          {
+            src: '/assets/app-icon-192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/assets/app-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/assets/app-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          }
+        ]
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,webp,woff2}'],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/api\//]
       },
       devOptions: {
@@ -28,4 +49,3 @@ export default defineConfig({
     })
   ]
 })
-
