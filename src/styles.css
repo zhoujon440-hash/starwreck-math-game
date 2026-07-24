@@ -1,0 +1,70 @@
+:root {
+  color: #f0eadc;
+  background: #070b13;
+  font-family:
+    Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.boot-shell {
+  display: grid;
+  min-height: 100dvh;
+  place-content: center;
+  padding: 2rem;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 34%, rgb(34 89 108 / 32%), transparent 32rem),
+    linear-gradient(150deg, #07101b, #05070d 68%);
+}
+
+.boot-mark {
+  margin-bottom: 1.25rem;
+  color: #9edbd8;
+  font-size: clamp(2rem, 8vw, 5rem);
+  filter: drop-shadow(0 0 1.4rem rgb(69 207 220 / 42%));
+}
+
+.boot-kicker {
+  margin: 0;
+  color: #c89655;
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.boot-shell h1 {
+  margin: 0.75rem 0;
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-size: clamp(2rem, 6vw, 4.8rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.boot-status {
+  color: #8095a4;
+}
+
