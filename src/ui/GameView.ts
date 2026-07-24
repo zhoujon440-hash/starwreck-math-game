@@ -25,6 +25,12 @@ const escapeHtml = (value: string): string =>
 const hotspotStyle = (hotspot: HotspotDefinition): string =>
   `left:${hotspot.area.x}%;top:${hotspot.area.y}%;width:${hotspot.area.width}%;height:${hotspot.area.height}%`
 
+const areaStyle = (
+  area: { x: number; y: number; width: number; height: number },
+  rotation = 0,
+): string =>
+  `left:${area.x}%;top:${area.y}%;width:${area.width}%;height:${area.height}%;--object-rotation:${rotation}deg`
+
 const itemById = (items: ItemDefinition[], itemId: string): ItemDefinition | undefined =>
   items.find((item) => item.id === itemId)
 
@@ -45,6 +51,7 @@ export class GameView {
   #selectedItemId: string | null = null
   #cabinetOpen = false
   #introDismissed = false
+  #completionPanelDismissed = false
   #hintedHotspotId: string | null = null
   #hintAvailableAt = 0
   #toast = ''
@@ -68,6 +75,7 @@ export class GameView {
       this.#session = session
       if (session.sceneState !== 'S2') this.#cabinetOpen = false
       if (session.sceneState !== 'S0') this.#introDismissed = true
+      if (session.sceneState !== 'S5') this.#completionPanelDismissed = false
       this.#render()
     })
   }
@@ -129,12 +137,20 @@ export class GameView {
         </header>
 
         <section class="scene-frame" aria-label="${escapeHtml(this.engine.chapter.sceneTitle)}">
-          <div class="scene-art" role="img" aria-label="断电后的拾光号领航舱，窗外漂浮着飞船残骸"></div>
-          <div class="state-layer distribution-box-layer" aria-hidden="true"></div>
-          <div class="state-layer cabinet-layer" aria-hidden="true"></div>
-          <div class="state-layer lighting-layer" aria-hidden="true"></div>
-          <div class="scene-treatment" aria-hidden="true"></div>
-          <div class="foreground-layer" aria-hidden="true"></div>
+          <div class="scene-canvas" data-scene-canvas>
+            <div class="scene-art" role="img" aria-label="断电后的拾光号领航舱，窗外漂浮着飞船残骸"></div>
+            <div class="state-layer distribution-box-layer" aria-hidden="true"></div>
+            <div class="state-layer cabinet-layer" aria-hidden="true"></div>
+            <div class="state-layer lighting-layer" aria-hidden="true"></div>
+            <div class="scene-treatment" aria-hidden="true"></div>
+            <div class="foreground-layer" aria-hidden="true"></div>
+            ${this.#collectibleLayersTemplate('scene')}
+
+            <div class="hotspot-layer pickable-layer">
+              ${sceneHotspots.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}
+              ${this.#sceneUtilityTargetsTemplate()}
+            </div>
+          </div>
 
           <aside class="objective-card">
             <span>当前目标 · ${escapeHtml(this.engine.chapter.sceneTitle)}</span>
@@ -156,10 +172,6 @@ export class GameView {
               : ''
           }
 
-          <div class="hotspot-layer pickable-layer">
-            ${sceneHotspots.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}
-          </div>
-
           ${
             this.#session.sceneState === 'S0' && !this.#introDismissed
               ? `
@@ -175,7 +187,7 @@ export class GameView {
           }
 
           ${
-            this.#session.sceneState === 'S5'
+            this.#session.sceneState === 'S5' && !this.#completionPanelDismissed
               ? `
                 <section class="story-panel complete-panel" aria-labelledby="light-title">
                   <span class="eyebrow">安全节点 S5</span>
@@ -186,6 +198,7 @@ export class GameView {
                     data-action="inspect"
                     data-hotspot-id="HS-G01-0006"
                   >进入下一场景入口</button>
+                  <button class="text-action" data-action="dismiss-complete">收起面板查看完整场景</button>
                 </section>
               `
               : ''
@@ -296,6 +309,70 @@ export class GameView {
     `
   }
 
+  #collectibleLayersTemplate(scope: 'scene' | 'zoom'): string {
+    return this.engine.chapter.items
+      .filter(
+        (item) =>
+          item.collectibleLayer?.scope === scope &&
+          !this.#session.foundItemIds.includes(item.id),
+      )
+      .map((item) => {
+        const layer = item.collectibleLayer
+        if (!layer) return ''
+        return `
+          <img
+            class="collectible-object collectible-${scope}"
+            data-collectible-item="${item.id}"
+            src="${layer.source}"
+            style="${areaStyle(layer.area, layer.rotation)}"
+            alt=""
+            aria-hidden="true"
+            draggable="false"
+          >
+        `
+      })
+      .join('')
+  }
+
+  #sceneUtilityTargetsTemplate(): string {
+    const state = this.#session.sceneState
+    const cabinetHotspot = this.engine.chapter.hotspots.find(
+      (hotspot) => hotspot.id === 'HS-G01-0003',
+    )
+    const distributionBox = this.engine.chapter.hotspots.find(
+      (hotspot) => hotspot.id === 'HS-G01-0002',
+    )
+    const canReinspectCabinet = ['S3', 'S4'].includes(state)
+
+    return `
+      ${
+        canReinspectCabinet && cabinetHotspot
+          ? `
+            <button
+              class="scene-hotspot scene-inspection-hotspot"
+              style="${hotspotStyle(cabinetHotspot)}"
+              data-action="open-cabinet"
+              data-hotspot-id="HS-G01-0003"
+              aria-label="重新检查维修柜"
+            ><span class="sr-only">重新检查维修柜</span></button>
+          `
+          : ''
+      }
+      ${
+        state === 'S3' && distributionBox
+          ? `
+            <div
+              class="scene-hotspot inactive-drop-target"
+              style="${hotspotStyle(distributionBox)}"
+              data-drop-target="HS-G01-0002"
+              aria-hidden="true"
+            ></div>
+          `
+          : ''
+      }
+    `
+  }
+
   #inventoryTemplate(item: ItemDefinition): string {
     const crop = item.inventoryCrop
     const cropStyle = crop
@@ -352,6 +429,7 @@ export class GameView {
 
         <div class="cabinet-content">
           <div class="cabinet-art" role="img" aria-label="打开的飞船维修柜，物品散落在三层置物架中">
+            ${this.#collectibleLayersTemplate('zoom')}
             ${zoomHotspots.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}
             <button
               class="scene-hotspot cabinet-distractor burnt-fuse"
@@ -424,6 +502,10 @@ export class GameView {
         this.#cabinetOpen = false
         this.#render()
         break
+      case 'dismiss-complete':
+        this.#completionPanelDismissed = true
+        this.#render()
+        break
       case 'cabinet-distractor':
         this.#showToast('这是干扰物，不需要收进背包。')
         break
@@ -439,6 +521,7 @@ export class GameView {
         this.#selectedItemId = null
         this.#cabinetOpen = false
         this.#introDismissed = false
+        this.#completionPanelDismissed = false
         this.engine.reset()
         this.#showToast('已返回 SCN-G01-00 起始安全节点。')
         break

@@ -22,6 +22,13 @@ export type InventoryCrop = {
   source?: string
 }
 
+export type CollectibleLayerDefinition = {
+  source: string
+  scope: 'scene' | 'zoom'
+  area: Rectangle
+  rotation?: number
+}
+
 export type ItemDefinition = {
   id: string
   name: string
@@ -29,6 +36,7 @@ export type ItemDefinition = {
   inventoryIcon?: string
   inventoryCrop?: InventoryCrop
   collectToInventory?: boolean
+  collectibleLayer?: CollectibleLayerDefinition
 }
 
 export type HotspotKind = 'hidden-item' | 'use-target' | 'zoom' | 'inspect'

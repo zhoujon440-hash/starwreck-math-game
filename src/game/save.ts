@@ -39,8 +39,8 @@ const parseSession = (value: string | null): GameSession | null => {
       hintCount: parsed.hintCount ?? 0,
       hintLevels: parsed.hintLevels ?? {},
       flags: {
-        world_star_core_count: 0,
         ...(parsed.flags ?? {}),
+        world_star_core_count: 0,
       },
       transitionLog: parsed.transitionLog ?? [],
       updatedAt: parsed.updatedAt,

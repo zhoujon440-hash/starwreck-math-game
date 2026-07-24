@@ -2,7 +2,79 @@
 
 本轮资产使用 Codex 内置图像生成工具生成，未使用 API / CLI fallback。原始输出已复制到项目内，不依赖用户目录中的生成缓存。
 
-## G01 领航舱场景
+## PR #2 P0 整改后的当前资产
+
+### G01 领航舱干净底图 v2
+
+运行时文件：`public/assets/g01-cockpit.png`
+
+当前底图不再烘焙应急手灯，并移除了与本场景无关的蓝色方块和三角星盘。配电盒、应急照明槽、保护开关和右侧维修柜已按冻结任务重新校准。
+
+最终提示词：
+
+```text
+Use case: precise-object-edit
+Asset type: 16:9 hand-painted HOPA game environment, clean base layer for SCN-G01-00
+Input images: Image 1 is the edit target and composition anchor.
+Primary request: Calibrate the cockpit artwork to the frozen G01 task. Remove the loose handheld flashlight from the left workbench, the blue cube on the lower-left table, and the triangular star-compass object on the right console; naturally reconstruct the exposed metal surfaces underneath. Add three clearly readable but unlabeled fixed maintenance fixtures integrated into the central console: a rectangular fused distribution box in the left-central console area, a narrow emergency-lighting fuse slot near the middle, and a small adjacent mechanical protection toggle to its right. Keep the large open maintenance cabinet on the right clearly visible as the scene's zoom target.
+Style/medium: preserve the exact cinematic hand-painted industrial sci-fi realism, brushwork, camera angle, palette, damage, window view, debris, cockpit geometry, and 16:9 framing of Image 1.
+Lighting/mood: dark emergency-red pre-power state with restrained amber practical lights; mature teen science-fiction tone.
+Constraints: change only the specified loose objects and maintenance fixtures; preserve all other scene geometry and composition; the base layer must contain no collectible emergency hand lamp; no labels, no readable text, no UI, no hotspot circles, no marker dots, no characters, no watermark.
+Avoid: buttons list, debug markers, cute or childish styling, weapons, combat elements, extra collectibles.
+```
+
+### G01 维修柜干净底图 v2
+
+运行时文件：`public/assets/g01-maintenance-cabinet.png`
+
+当前底图保留烧毁保险丝和散落螺丝作为干扰物，四个目标物全部由运行时透明图层提供。
+
+最终提示词：
+
+```text
+Use case: precise-object-edit
+Asset type: 16:9 hand-painted HOPA close-up, clean maintenance-cabinet base layer
+Input images: Image 1 is the edit target and composition anchor.
+Primary request: Remove exactly the five loose target/legacy objects from the open cabinet: the intact pale ceramic fuse with cyan band on the upper shelf, the large old wrench on the lower shelf, the pair of insulated work gloves on the lower-left shelf, the stack of blank wire-number tags on the lower-right shelf, and the handheld flashlight protruding at the bottom-left edge. Naturally reconstruct the exposed scratched metal shelves and empty compartments underneath. Keep the burnt blackened fuse on the upper-right shelf and the cluster of loose screws on the lower shelf as visible distractors. Keep the cabinet doors, wiring, canisters, baskets, rolled materials, small drawers, lighting, camera angle, geometry, and framing unchanged.
+Style/medium: preserve the exact cinematic hand-painted industrial sci-fi realism, materials, red emergency lighting, brushwork, and 16:9 composition of Image 1.
+Constraints: clean base layer contains none of the four collectible HOS objects and no flashlight; do not add replacement objects; no text, no labels, no UI, no hotspot circles, no marker dots, no characters, no watermark.
+Avoid: changing the burnt fuse or screws; new tools; new gloves; new tags; cute styling; weapons.
+```
+
+### 五件可拾取物透明图层
+
+键控源图：`art/source/g01-collectibles-chroma.png`
+
+运行时文件：
+
+- `public/assets/items/ITM-G01-001-layer.png`
+- `public/assets/items/ITM-G01-002-layer.png`
+- `public/assets/items/ITM-G01-003-layer.png`
+- `public/assets/items/ITM-G01-004-layer.png`
+- `public/assets/items/ITM-G01-005-layer.png`
+
+内置图像生成先输出纯色键控图，再使用 imagegen 技能提供的 `remove_chroma_key.py` 做软遮罩、去溢色并切分为独立 PNG 图层。
+
+最终提示词：
+
+```text
+Use case: background-extraction
+Asset type: HOPA game collectible sprite source sheet for local chroma-key removal
+Input images: Image 1 and Image 2 are style/material references only; do not preserve their backgrounds or composition.
+Primary request: Create exactly five separate opaque collectible objects arranged in a clean 3-column by 2-row contact sheet, each fully contained in its own equal tile with generous padding and no overlap: (1) compact cylindrical emergency hand lamp with dark gunmetal body, a small amber power button, and a pale cyan illuminated lens ring; (2) intact short white ceramic fuse with brass end caps and one pale cyan band; (3) one large worn steel open-ended maintenance wrench; (4) one pair of thick black-and-ochre insulated work gloves; (5) a small tied stack of blank weathered metal wire-number tags with holes, absolutely no writing. Leave the sixth tile empty.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for local background removal. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation.
+Style/medium: cinematic hand-painted industrial sci-fi realism matching the reference images, crisp readable silhouettes, mature teen product tone.
+Composition/framing: orthographic-ish three-quarter product views, every object isolated, centered in its tile, generous separation; wrench horizontal; fuse horizontal; no object touches another or the canvas edge.
+Lighting/mood: restrained neutral rim lighting painted only on the objects; no cast shadow or contact shadow.
+Constraints: exactly five objects and one empty tile; crisp edges; do not use #00ff00 anywhere in the objects; no text, no labels, no symbols, no UI, no border grid, no watermark.
+Avoid: extra tools, burnt fuse, screws, cute styling, floor plane, background variations, green reflections, soft smoke, transparent glass.
+```
+
+## 初版历史记录（已被 v2 取代）
+
+以下提示词保留用于追溯首轮 PR 的资产来源，不再代表当前运行时美术基线。
+
+### G01 领航舱场景 v1
 
 项目文件：`public/assets/g01-cockpit.png`
 
@@ -22,7 +94,7 @@ Materials/textures: worn painted metal, scratched glass, woven straps, ceramic i
 Constraints: environment only; no visible person or character; no text, numbers, letters, logos, trademarks, watermark, interface, buttons, hotspot circles, targeting reticles, item labels, arrows, outlines, or tutorial markers. Do not present objects as a neat list. The three findable objects must feel naturally hidden in the detailed scene while remaining visually distinguishable at close inspection.
 ```
 
-## PWA 星门图标
+### PWA 星门图标
 
 母版：`art/source/g01-app-icon-master.png`
 
@@ -46,7 +118,7 @@ Color palette: graphite, silver, oxidized brass, deep navy, restrained cyan.
 Constraints: no text, letters, numbers, words, logos, trademarks, watermark, UI frame, buttons, or characters. Do not imitate an existing franchise.
 ```
 
-## G01 维修柜找物特写
+### G01 维修柜找物特写 v1
 
 项目文件：`public/assets/g01-maintenance-cabinet.png`
 

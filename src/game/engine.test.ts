@@ -125,6 +125,32 @@ describe('GameEngine', () => {
     expect(restored.snapshot.inventoryItemIds).toContain('ITM-G01-002')
     expect([...values.values()].some((value) => value.includes('"schemaVersion":1'))).toBe(true)
   })
+
+  it('forces a non-zero star-core count from an older G01 save back to zero', () => {
+    const values = new Map<string, string>()
+    const storage: StorageLike = {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+      removeItem: (key) => values.delete(key),
+    }
+    const saveKey = 'starwreck:save:G01:v1'
+    values.set(
+      saveKey,
+      JSON.stringify({
+        version: 1,
+        chapterId: 'G01',
+        sceneState: 'S3',
+        foundItemIds: ['ITM-G01-001', 'ITM-G01-002'],
+        inventoryItemIds: ['ITM-G01-001', 'ITM-G01-002'],
+        flags: { world_star_core_count: 12, legacy_marker: 'kept' },
+        updatedAt: '2026-07-24T00:00:00.000Z',
+      }),
+    )
+
+    const restored = new LocalSaveRepository('G01', storage).load()
+    expect(restored?.flags.world_star_core_count).toBe(0)
+    expect(restored?.flags.legacy_marker).toBe('kept')
+  })
 })
 
 describe('CircuitRoutingGame', () => {

@@ -179,6 +179,22 @@ button:focus-visible {
   overflow: hidden;
   isolation: isolate;
   background: #050911;
+  container-type: size;
+}
+
+.scene-canvas {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: min(100cqw, calc(100cqh * 1672 / 941));
+  aspect-ratio: 1672 / 941;
+  overflow: hidden;
+  background: #03070d;
+  box-shadow:
+    -20px 0 40px rgb(0 0 0 / 46%),
+    20px 0 40px rgb(0 0 0 / 46%);
+  transform: translate(-50%, -50%);
 }
 
 .scene-art,
@@ -194,8 +210,7 @@ button:focus-visible {
   z-index: 0;
   background-image: url("/assets/g01-cockpit.png");
   background-position: center;
-  background-size: cover;
-  transform: scale(1.002);
+  background-size: 100% 100%;
 }
 
 .scene-treatment {
@@ -298,6 +313,24 @@ button:focus-visible {
   background: linear-gradient(180deg, transparent 70%, rgb(1 4 7 / 50%));
 }
 
+.collectible-object {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 7px 7px rgb(0 0 0 / 48%));
+  transform: rotate(var(--object-rotation, 0deg));
+  transform-origin: center;
+}
+
+.state-S0 .collectible-scene {
+  filter:
+    brightness(0.56)
+    saturate(0.72)
+    drop-shadow(0 7px 7px rgb(0 0 0 / 60%));
+}
+
 .state-S0 .scene-art {
   filter: brightness(0.42) saturate(0.66) sepia(0.12);
 }
@@ -360,6 +393,10 @@ button:focus-visible {
 
 .scene-hotspot.is-hinted {
   animation: field-scan 1.2s ease-in-out 3;
+}
+
+.inactive-drop-target {
+  cursor: not-allowed;
 }
 
 @keyframes field-scan {
@@ -687,15 +724,23 @@ button:focus-visible {
   display: block;
   width: 54px;
   height: 54px;
-  object-fit: cover;
   border: 1px solid rgb(185 216 216 / 14%);
   border-radius: 2px;
+  background: radial-gradient(circle, rgb(63 101 109 / 14%), rgb(3 8 13 / 72%));
+  box-shadow: inset 0 0 18px rgb(0 0 0 / 32%);
+}
+
+img.inventory-art {
+  padding: 3px;
+  object-fit: contain;
+}
+
+i.inventory-art {
   background-image:
     linear-gradient(rgb(4 9 14 / 9%), rgb(4 9 14 / 30%)),
     var(--crop-source, url("/assets/g01-cockpit.png"));
   background-position: var(--crop-x) var(--crop-y);
   background-size: var(--crop-scale, cover);
-  box-shadow: inset 0 0 18px rgb(0 0 0 / 32%);
 }
 
 .inventory-item strong,
@@ -760,7 +805,7 @@ button:focus-visible {
   z-index: 61;
   top: 50%;
   left: 50%;
-  width: min(920px, calc(100vw - 40px));
+  width: min(1180px, calc(100vw - 56px));
   max-height: calc(100dvh - 40px);
   overflow: auto;
   border: 1px solid rgb(164 205 205 / 24%);
@@ -815,27 +860,34 @@ button:focus-visible {
 
 .cabinet-content {
   display: grid;
-  min-height: min(620px, calc(100dvh - 145px));
   grid-template-columns: minmax(0, 1fr) 220px;
+  align-items: stretch;
 }
 
 .cabinet-art {
   position: relative;
-  min-height: 470px;
+  width: 100%;
+  aspect-ratio: 1672 / 941;
+  align-self: center;
+  overflow: hidden;
   border-right: 1px solid var(--line);
   background-image:
     linear-gradient(180deg, rgb(3 7 10 / 4%), rgb(3 7 10 / 18%)),
     url("/assets/g01-maintenance-cabinet.png");
   background-position: center;
-  background-size: cover;
+  background-size: 100% 100%;
 }
 
 .cabinet-art .scene-hotspot {
   z-index: 2;
 }
 
-.cabinet-art .cabinet-distractor {
+.cabinet-art .collectible-object {
   z-index: 1;
+}
+
+.cabinet-art .cabinet-distractor {
+  z-index: 2;
 }
 
 .burnt-fuse {
@@ -846,10 +898,10 @@ button:focus-visible {
 }
 
 .loose-screws {
-  top: 67%;
-  left: 48%;
-  width: 16%;
-  height: 18%;
+  top: 68%;
+  left: 46%;
+  width: 13%;
+  height: 14%;
 }
 
 .hos-list {
