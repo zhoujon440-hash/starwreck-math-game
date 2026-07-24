@@ -1,6 +1,7 @@
 import { InventoryDragCoordinator } from '../game/drag'
 import type { GameEngine } from '../game/engine'
 import { sceneStateOrder } from '../game/engine'
+import { DEBUG_UI } from '../config'
 import type {
   ActionResult,
   GameSession,
@@ -33,6 +34,8 @@ const areaStyle = (
 
 const itemById = (items: ItemDefinition[], itemId: string): ItemDefinition | undefined =>
   items.find((item) => item.id === itemId)
+
+const PLAYER_SCENE_TITLE = '拾光号熄灯'
 
 const dialogueForState = (state: GameSession['sceneState']) => {
   if (state === 'S0') return { speaker: '星宇', avatar: '星', line: '七码？回答。' }
@@ -103,20 +106,25 @@ export class GameView {
     )
     const hintCoolingDown = Date.now() < this.#hintAvailableAt
     const dialogue = dialogueForState(this.#session.sceneState)
+    const cabinetVisualState = ['S0', 'S1'].includes(this.#session.sceneState) ? 'closed' : 'open'
 
     this.root.innerHTML = `
-      <main class="game-shell state-${this.#session.sceneState}">
+      <main
+        class="game-shell state-${this.#session.sceneState}"
+        data-debug-ui="${DEBUG_UI}"
+        data-cabinet-visual-state="${cabinetVisualState}"
+      >
         <header class="topbar">
           <div class="brand-lockup">
             <span class="brand-mark" aria-hidden="true">✦</span>
             <div>
               <p>星骸拾荒者：十二星门</p>
-              <span>G01 · ${escapeHtml(this.engine.chapter.title)}</span>
+              <span>序章 · ${escapeHtml(this.engine.chapter.title)}</span>
             </div>
           </div>
 
           <div class="state-readout" aria-label="场景进度">
-            <span class="state-code">${this.#session.sceneState}</span>
+            ${DEBUG_UI ? `<span class="state-code">${this.#session.sceneState}</span>` : ''}
             <div>
               <strong>${escapeHtml(state.title)}</strong>
               <div class="state-track" aria-hidden="true">
@@ -132,7 +140,7 @@ export class GameView {
 
           <div class="save-status" title="进度会自动保存在此设备">
             <i aria-hidden="true"></i>
-            <span>本地自动存档 · schema v${this.#session.schemaVersion}</span>
+            <span>${DEBUG_UI ? `已自动保存 · schema v${this.#session.schemaVersion}` : '已自动保存'}</span>
           </div>
         </header>
 
@@ -140,7 +148,6 @@ export class GameView {
           <div class="scene-canvas" data-scene-canvas>
             <div class="scene-art" role="img" aria-label="断电后的拾光号领航舱，窗外漂浮着飞船残骸"></div>
             <div class="state-layer distribution-box-layer" aria-hidden="true"></div>
-            <div class="state-layer cabinet-layer" aria-hidden="true"></div>
             <div class="state-layer lighting-layer" aria-hidden="true"></div>
             <div class="scene-treatment" aria-hidden="true"></div>
             <div class="foreground-layer" aria-hidden="true"></div>
@@ -153,7 +160,7 @@ export class GameView {
           </div>
 
           <aside class="objective-card">
-            <span>当前目标 · ${escapeHtml(this.engine.chapter.sceneTitle)}</span>
+            <span>当前目标 · ${DEBUG_UI ? escapeHtml(this.engine.chapter.sceneTitle) : PLAYER_SCENE_TITLE}</span>
             <strong>${escapeHtml(state.objective)}</strong>
             <p>${escapeHtml(state.narrative)}</p>
           </aside>
@@ -176,7 +183,7 @@ export class GameView {
             this.#session.sceneState === 'S0' && !this.#introDismissed
               ? `
                 <section class="story-panel intro-panel" aria-labelledby="intro-title">
-                  <span class="eyebrow">G01 · SCN-G01-00</span>
+                  <span class="eyebrow">${DEBUG_UI ? 'G01 · SCN-G01-00' : '序章 · 坠落之前'}</span>
                   <h1 id="intro-title">拾光号熄灯</h1>
                   <blockquote>“七码？回答。”</blockquote>
                   <p>导航核心离线。维修舱进入应急照明模式。星宇必须先在黑暗中找到光源。</p>
@@ -190,14 +197,14 @@ export class GameView {
             this.#session.sceneState === 'S5' && !this.#completionPanelDismissed
               ? `
                 <section class="story-panel complete-panel" aria-labelledby="light-title">
-                  <span class="eyebrow">安全节点 S5</span>
+                  <span class="eyebrow">${DEBUG_UI ? '安全节点 S5' : '舱灯重启'}</span>
                   <h2 id="light-title">应急照明恢复</h2>
                   <p>维修舱灯带逐段亮起。通向船尾的舱门重新可见，但七码仍然没有回应。</p>
                   <button
                     class="secondary-action"
                     data-action="inspect"
                     data-hotspot-id="HS-G01-0006"
-                  >进入下一场景入口</button>
+                  >沿船尾通道前进</button>
                   <button class="text-action" data-action="dismiss-complete">收起面板查看完整场景</button>
                 </section>
               `
@@ -208,15 +215,15 @@ export class GameView {
             this.#session.sceneState === 'S6'
               ? `
                 <section class="story-panel complete-panel" aria-labelledby="complete-title">
-                  <span class="eyebrow">第一轮交付边界</span>
-                  <h2 id="complete-title">拾光号熄灯 · 完成</h2>
-                  <p>SCN-G01-00 已可完整通关。后续场景等待项目负责人审查后再进入开发。</p>
+                  <span class="eyebrow">${DEBUG_UI ? 'S6 · SCN-G01-00' : '船尾信号回波'}</span>
+                  <h2 id="complete-title">继续寻找七码</h2>
+                  <p>舱灯已恢复。星宇沿船尾通道前进，黑暗深处传来一段微弱而熟悉的信号。</p>
                   <div class="completion-stats">
                     <span><b>${this.#session.foundItemIds.length}</b> 找到物品</span>
                     <span><b>${this.#session.hintCount}</b> 使用提示</span>
-                    <span><b>0</b> G01 星核</span>
+                    <span><b>1</b> 恢复舱段</span>
                   </div>
-                  <button class="secondary-action" data-action="restart">再次体验</button>
+                  <button class="secondary-action" data-action="restart">重新检查领航舱</button>
                 </section>
               `
               : ''
@@ -420,7 +427,7 @@ export class GameView {
       <section class="zoom-modal cabinet-modal" role="dialog" aria-modal="true" aria-labelledby="cabinet-title">
         <header>
           <div>
-            <span class="eyebrow">局部放大 · HS-G01-0003</span>
+            <span class="eyebrow">${DEBUG_UI ? '局部放大 · HS-G01-0003' : '局部放大'}</span>
             <h2 id="cabinet-title">维修柜找物</h2>
           </div>
           <div class="zoom-progress">${foundCount} / ${cabinetItems.length}</div>
@@ -430,6 +437,9 @@ export class GameView {
         <div class="cabinet-content">
           <div class="cabinet-art" role="img" aria-label="打开的飞船维修柜，物品散落在三层置物架中">
             ${this.#collectibleLayersTemplate('zoom')}
+            <div class="cabinet-clutter-foreground clutter-upper-canister" aria-hidden="true"></div>
+            <div class="cabinet-clutter-foreground clutter-cables" aria-hidden="true"></div>
+            <div class="cabinet-clutter-foreground clutter-parts-tray" aria-hidden="true"></div>
             ${zoomHotspots.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}
             <button
               class="scene-hotspot cabinet-distractor burnt-fuse"
@@ -444,7 +454,7 @@ export class GameView {
           </div>
 
           <aside class="hos-list">
-            <span>HOS-G01-001</span>
+            <span>${DEBUG_UI ? 'HOS-G01-001' : '维修柜清单'}</span>
             <h3>在画面中找出</h3>
             <ul>
               ${cabinetItems
@@ -523,7 +533,7 @@ export class GameView {
         this.#introDismissed = false
         this.#completionPanelDismissed = false
         this.engine.reset()
-        this.#showToast('已返回 SCN-G01-00 起始安全节点。')
+        this.#showToast('已返回领航舱熄灯时刻。')
         break
       default:
         break

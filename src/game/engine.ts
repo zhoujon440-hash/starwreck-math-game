@@ -198,7 +198,7 @@ export class GameEngine {
     this.#session.updatedAt = now()
     this.saves.save(this.#session)
     this.#notify()
-    return { ok: true, message: `已回退到安全节点 ${checkpoint.sceneState}。` }
+    return { ok: true, message: '已回退到最近的安全位置。' }
   }
 
   reset(): void {

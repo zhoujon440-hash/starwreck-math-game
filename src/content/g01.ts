@@ -42,15 +42,15 @@ export const G01: ChapterDefinition = {
     S5: {
       id: 'S5',
       title: '应急照明恢复',
-      objective: '确认领航舱状态并进入下一场景入口',
+      objective: '沿船尾通道继续寻找失联的七码',
       narrative: '系统：维修舱应急照明已恢复。七码的信号仍然中断。',
       safeCheckpoint: true,
     },
     S6: {
       id: 'S6',
-      title: '场景交接就绪',
-      objective: 'SCN-G01-00 已完成，等待项目负责人验收',
-      narrative: '星宇沿着刚恢复的舱灯，开始寻找失联的七码。',
+      title: '追寻失联信号',
+      objective: '跟随恢复的舱灯，继续寻找七码',
+      narrative: '星宇沿着刚恢复的舱灯走向船尾，黑暗里传来一段微弱的回波。',
       safeCheckpoint: true,
     },
   },
@@ -59,12 +59,12 @@ export const G01: ChapterDefinition = {
       id: 'ITM-G01-001',
       name: '应急手灯',
       description: '独立供电的维修手灯，可照清熔断配电盒。',
-      inventoryIcon: '/assets/items/ITM-G01-001-layer.png',
+      inventoryIcon: '/assets/items/ITM-G01-001-layer-v2.png',
       collectibleLayer: {
-        source: '/assets/items/ITM-G01-001-layer.png',
+        source: '/assets/items/ITM-G01-001-layer-v2.png',
         scope: 'scene',
-        area: { x: 8, y: 46, width: 15, height: 17 },
-        rotation: -7,
+        area: { x: 10.2, y: 49.2, width: 9.8, height: 9.8 },
+        rotation: -14,
       },
     },
     {
@@ -75,7 +75,8 @@ export const G01: ChapterDefinition = {
       collectibleLayer: {
         source: '/assets/items/ITM-G01-002-layer.png',
         scope: 'zoom',
-        area: { x: 37, y: 20, width: 20, height: 14 },
+        area: { x: 37, y: 18.5, width: 10, height: 6.5 },
+        rotation: 13,
       },
     },
     {
@@ -86,8 +87,8 @@ export const G01: ChapterDefinition = {
       collectibleLayer: {
         source: '/assets/items/ITM-G01-003-layer.png',
         scope: 'zoom',
-        area: { x: 31, y: 49, width: 25, height: 17 },
-        rotation: -4,
+        area: { x: 48, y: 57, width: 15, height: 10 },
+        rotation: 19,
       },
     },
     {
@@ -98,8 +99,8 @@ export const G01: ChapterDefinition = {
       collectibleLayer: {
         source: '/assets/items/ITM-G01-004-layer.png',
         scope: 'zoom',
-        area: { x: 15, y: 53, width: 18, height: 27 },
-        rotation: 5,
+        area: { x: 18, y: 52, width: 12, height: 17 },
+        rotation: -17,
       },
     },
     {
@@ -110,8 +111,8 @@ export const G01: ChapterDefinition = {
       collectibleLayer: {
         source: '/assets/items/ITM-G01-005-layer.png',
         scope: 'zoom',
-        area: { x: 63, y: 54, width: 16, height: 25 },
-        rotation: 4,
+        area: { x: 68, y: 39, width: 8.5, height: 14 },
+        rotation: 27,
       },
     },
   ],
@@ -120,7 +121,7 @@ export const G01: ChapterDefinition = {
       id: 'HS-G01-0001',
       kind: 'hidden-item',
       ariaLabel: '检查左侧工作台上的应急手灯',
-      area: { x: 8, y: 46, width: 15, height: 17 },
+      area: { x: 10.2, y: 49.2, width: 9.8, height: 9.8 },
       activeStates: ['S0'],
       itemId: 'ITM-G01-001',
       scope: 'scene',
@@ -148,7 +149,7 @@ export const G01: ChapterDefinition = {
       id: 'HOS-G01-001-01',
       kind: 'hidden-item',
       ariaLabel: '维修柜中的完整临时保险丝',
-      area: { x: 37, y: 20, width: 20, height: 14 },
+      area: { x: 37, y: 18.5, width: 10, height: 6.5 },
       activeStates: ['S2'],
       itemId: 'ITM-G01-002',
       scope: 'zoom',
@@ -157,7 +158,7 @@ export const G01: ChapterDefinition = {
       id: 'HOS-G01-001-02',
       kind: 'hidden-item',
       ariaLabel: '维修柜中的旧扳手',
-      area: { x: 31, y: 49, width: 25, height: 17 },
+      area: { x: 48, y: 57, width: 15, height: 10 },
       activeStates: ['S2'],
       itemId: 'ITM-G01-003',
       scope: 'zoom',
@@ -166,7 +167,7 @@ export const G01: ChapterDefinition = {
       id: 'HOS-G01-001-03',
       kind: 'hidden-item',
       ariaLabel: '维修柜中的绝缘手套',
-      area: { x: 15, y: 53, width: 18, height: 27 },
+      area: { x: 18, y: 52, width: 12, height: 17 },
       activeStates: ['S2'],
       itemId: 'ITM-G01-004',
       scope: 'zoom',
@@ -175,7 +176,7 @@ export const G01: ChapterDefinition = {
       id: 'HOS-G01-001-04',
       kind: 'hidden-item',
       ariaLabel: '维修柜中的线号标签',
-      area: { x: 63, y: 54, width: 16, height: 25 },
+      area: { x: 68, y: 39, width: 8.5, height: 14 },
       activeStates: ['S2'],
       itemId: 'ITM-G01-005',
       scope: 'zoom',
@@ -217,4 +218,5 @@ export const G01: ChapterDefinition = {
 }
 
 export const G01_SCENE_ART = '/assets/g01-cockpit.png'
-export const G01_CABINET_ART = '/assets/g01-maintenance-cabinet.png'
+export const G01_CLOSED_SCENE_ART = '/assets/g01-cockpit-cabinet-closed-v2.png'
+export const G01_CABINET_ART = '/assets/g01-maintenance-cabinet-v2.png'

@@ -259,36 +259,6 @@ button:focus-visible {
   }
 }
 
-.cabinet-layer {
-  top: 17%;
-  right: 4%;
-  bottom: auto;
-  left: auto;
-  width: 22%;
-  height: 52%;
-  opacity: 0.92;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgb(10 14 17 / 96%) 0 18px,
-      rgb(26 29 29 / 96%) 19px 20px
-    ),
-    linear-gradient(150deg, #242825, #080c10 72%);
-  box-shadow:
-    inset 20px 0 34px rgb(0 0 0 / 65%),
-    0 12px 36px rgb(0 0 0 / 36%);
-  clip-path: polygon(9% 0, 100% 7%, 91% 100%, 0 92%);
-  transition: opacity 500ms ease;
-}
-
-.state-S2 .cabinet-layer,
-.state-S3 .cabinet-layer,
-.state-S4 .cabinet-layer,
-.state-S5 .cabinet-layer,
-.state-S6 .cabinet-layer {
-  opacity: 0;
-}
-
 .lighting-layer {
   z-index: 2;
   opacity: 0;
@@ -324,11 +294,29 @@ button:focus-visible {
   transform-origin: center;
 }
 
-.state-S0 .collectible-scene {
+.collectible-scene[data-collectible-item="ITM-G01-001"] {
+  opacity: 0.76;
   filter:
-    brightness(0.56)
-    saturate(0.72)
-    drop-shadow(0 7px 7px rgb(0 0 0 / 60%));
+    brightness(0.42)
+    saturate(0.52)
+    contrast(0.86)
+    sepia(0.08)
+    drop-shadow(0 3px 3px rgb(0 0 0 / 44%));
+}
+
+.state-S0 .collectible-scene {
+  opacity: 0.7;
+  filter:
+    brightness(0.31)
+    saturate(0.48)
+    contrast(0.78)
+    sepia(0.12)
+    drop-shadow(0 3px 3px rgb(0 0 0 / 54%));
+}
+
+.state-S0 .scene-art,
+.state-S1 .scene-art {
+  background-image: url("/assets/g01-cockpit-cabinet-closed-v2.png");
 }
 
 .state-S0 .scene-art {
@@ -873,21 +861,75 @@ i.inventory-art {
   border-right: 1px solid var(--line);
   background-image:
     linear-gradient(180deg, rgb(3 7 10 / 4%), rgb(3 7 10 / 18%)),
-    url("/assets/g01-maintenance-cabinet.png");
+    url("/assets/g01-maintenance-cabinet-v2.png");
   background-position: center;
   background-size: 100% 100%;
 }
 
 .cabinet-art .scene-hotspot {
-  z-index: 2;
+  z-index: 4;
 }
 
 .cabinet-art .collectible-object {
   z-index: 1;
 }
 
-.cabinet-art .cabinet-distractor {
+.cabinet-art [data-collectible-item="ITM-G01-002"] {
+  filter:
+    brightness(0.59)
+    saturate(0.56)
+    sepia(0.08)
+    drop-shadow(0 4px 4px rgb(0 0 0 / 58%));
+}
+
+.cabinet-art [data-collectible-item="ITM-G01-003"] {
+  filter:
+    brightness(0.57)
+    saturate(0.55)
+    sepia(0.14)
+    drop-shadow(0 4px 4px rgb(0 0 0 / 56%));
+}
+
+.cabinet-art [data-collectible-item="ITM-G01-004"] {
+  filter:
+    brightness(0.52)
+    saturate(0.58)
+    sepia(0.12)
+    drop-shadow(0 4px 4px rgb(0 0 0 / 56%));
+}
+
+.cabinet-art [data-collectible-item="ITM-G01-005"] {
+  filter:
+    brightness(0.6)
+    saturate(0.5)
+    sepia(0.18)
+    drop-shadow(0 3px 3px rgb(0 0 0 / 56%));
+}
+
+.cabinet-clutter-foreground {
+  position: absolute;
   z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("/assets/g01-maintenance-cabinet-v2.png");
+  background-position: center;
+  background-size: 100% 100%;
+}
+
+.clutter-upper-canister {
+  clip-path: polygon(41.5% 7%, 47.5% 7%, 48% 27%, 41.5% 27%);
+}
+
+.clutter-cables {
+  clip-path: polygon(17% 50%, 42% 50%, 44% 58%, 36% 65%, 21% 65%, 17% 59%);
+}
+
+.clutter-parts-tray {
+  clip-path: polygon(53% 57%, 65% 57%, 67% 71%, 62% 75%, 52% 72%, 50% 63%);
+}
+
+.cabinet-art .cabinet-distractor {
+  z-index: 4;
 }
 
 .burnt-fuse {
