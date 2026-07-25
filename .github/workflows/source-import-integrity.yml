@@ -1,0 +1,41 @@
+name: Source Import Integrity
+
+on:
+  pull_request:
+    paths:
+      - ".gitattributes"
+      - "archive/legacy/**"
+      - "data/source/**"
+      - "docs/baseline/**"
+      - "docs/story/G01-G13/**"
+      - "scripts/import_source_baseline.py"
+      - "scripts/validate-source-import.mjs"
+      - "source_packages/**"
+      - "package.json"
+  push:
+    paths:
+      - ".gitattributes"
+      - "archive/legacy/**"
+      - "data/source/**"
+      - "docs/baseline/**"
+      - "docs/story/G01-G13/**"
+      - "scripts/import_source_baseline.py"
+      - "scripts/validate-source-import.mjs"
+      - "source_packages/**"
+      - "package.json"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify imported source packages, extraction, and catalogs
+        env:
+          REQUIRE_LFS_OBJECTS: "1"
+        run: npm run validate:sources
+

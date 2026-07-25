@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "check": "npm run test && npm run build"
+    "validate:sources": "node scripts/validate-source-import.mjs",
+    "check": "npm run validate:sources && npm run test && npm run build"
   },
   "dependencies": {
     "vite-plugin-pwa": "^1.0.1"

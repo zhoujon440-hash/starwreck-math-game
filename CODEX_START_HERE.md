@@ -1,16 +1,18 @@
 # Codex Start Here
 
-## 当前开发目标
+## 当前阶段
 
-重做G01《拾光号：坠落之前》，制作真正可互动、使用正式美术参考的HOPA垂直切片。
+先完成P0-A正式源包导入与版本事实源建立。开始任何玩法、角色、场景或剧情开发前，
+必须先读取`docs/plan/CODEX_MASTER_PLAN_V2.0.md`、Issue #4、当前阶段Issue和
+`docs/baseline/08_CONFIRMED_BASELINE_V2.md`。
 
 ## 开始方式
 
 1. 阅读 `AGENTS.md`。
-2. 阅读 `tasks/TASK-001_G01正式HOPA重构.md`。
-3. 创建开发分支 `codex/g01-hopa-v2`。
-4. 先完成工程初始化、数据模型、场景框架和第一个“拾光号熄灯”可玩场景。
-5. 每轮提交必须包含：代码、测试、截图、变更说明和下一步计划。
+2. 阅读`docs/plan/CODEX_MASTER_PLAN_V2.0.md`和当前Issue。
+3. 读取`docs/baseline/00_SOURCE_OF_TRUTH.md`—`08_CONFIRMED_BASELINE_V2.md`。
+4. 用`source_packages/manifests/`核对原包、SHA、替代关系和缺失项。
+5. 未通过当前阶段验收，不得开始后续Issue。
 
 ## 被否定的旧方案
 
@@ -22,13 +24,12 @@
 - 物品使用后没有场景变化；
 - 管理后台或PPT式页面。
 
-## 首轮交付
+## P0-A交付
 
-- Vite + TypeScript + PWA工程；
-- G01前四个场景生产级交互；
-- G01八个场景完整可通关；
-- 4个找物场景；
-- 星图拼合与垃圾雨航线两个小游戏；
-- 背包、道具使用、局部放大、提示、软失败和存档；
-- Playwright通关测试；
-- Pull Request与实现说明。
+- 正式原包或可验证LFS/Release位置；
+- DOCX全文Markdown与JSON/CSV结构化提取；
+- 版本、用途、替代关系、SHA和ZIP内原始路径；
+- G01—G13脚本/数据可用性索引；
+- 71人物与488资产初始目录；
+- legacy隔离与精确缺失清单；
+- 独立Pull Request。

@@ -26,3 +26,10 @@
 - 基线导入任务：`codex/project-baseline-import-v1`。
 - 角色剧情任务：在基线PR合并后创建`codex/g01-character-story-v1`。
 - 禁止在未合并基线前并行生成新角色美术或重写剧情。
+
+## 当前文件可用性
+
+版本优先级表示“冲突时应采用的版本”，不代表对应原包已经可读取。Issue #6实际
+导入状态见`08_CONFIRMED_BASELINE_V2.md`与
+`source_packages/manifests/missing-sources.json`。缺失的高优先级原包不得由
+低优先级资料自动填补。
