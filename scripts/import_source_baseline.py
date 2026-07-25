@@ -255,6 +255,12 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_canonical_text_file(path: Path) -> str:
+    """Hash text outputs after normalizing line endings to repository LF."""
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return sha256_bytes(data)
+
+
 def repository_path(path: Path) -> str:
     if REPO_ROOT is None:
         raise RuntimeError("repository root has not been initialized")
@@ -277,14 +283,16 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
             if key not in headers:
                 headers.append(key)
     with path.open("w", encoding="utf-8-sig", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=headers)
+        writer = csv.DictWriter(stream, fieldnames=headers, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
 
 def package_path(spec: PackageSpec, downloads: Path) -> Path:
     if spec.source_location == "scene_bundle":
-        return downloads / "星骸拾荒者_美术设计全集" / spec.filename
+        nested = downloads / "星骸拾荒者_美术设计全集" / spec.filename
+        if nested.is_file():
+            return nested
     return downloads / spec.filename
 
 
@@ -480,10 +488,21 @@ def record_extraction(
     source_data: bytes,
     extraction: str,
 ) -> None:
+    output_hash_mode = (
+        "raw_bytes"
+        if extraction == "verbatim_design_production_master"
+        else "canonical_lf"
+    )
+    output_sha256 = (
+        sha256_file(output)
+        if output_hash_mode == "raw_bytes"
+        else sha256_canonical_text_file(output)
+    )
     records.append(
         {
             "output_path": repository_path(output),
-            "output_sha256": sha256_file(output),
+            "output_sha256": output_sha256,
+            "output_hash_mode": output_hash_mode,
             "source_package": package_id,
             "source_entry": entry,
             "source_entry_sha256": sha256_bytes(source_data),

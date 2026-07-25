@@ -30,6 +30,15 @@ async function sha256(path) {
   return hash.digest("hex");
 }
 
+function sha256CanonicalText(path) {
+  const bytes = readFileSync(path);
+  const normalized = Buffer.from(
+    bytes.toString("latin1").replace(/\r\n?/g, "\n"),
+    "latin1",
+  );
+  return createHash("sha256").update(normalized).digest("hex");
+}
+
 function readPrefix(path, length = 128) {
   const handle = openSync(path, "r");
   try {
@@ -118,7 +127,15 @@ assert(extracted.count === extracted.files.length, "extracted file count mismatc
 for (const item of extracted.files) {
   const path = resolve(root, item.output_path);
   assert(existsSync(path), `missing extracted output: ${item.output_path}`);
-  assert((await sha256(path)) === item.output_sha256, `output SHA mismatch: ${item.output_path}`);
+  assert(
+    ["canonical_lf", "raw_bytes"].includes(item.output_hash_mode),
+    `unknown output hash mode: ${item.output_path}`,
+  );
+  const outputSha =
+    item.output_hash_mode === "canonical_lf"
+      ? sha256CanonicalText(path)
+      : await sha256(path);
+  assert(outputSha === item.output_sha256, `output SHA mismatch: ${item.output_path}`);
 }
 
 const storyIndex = readJson("docs/story/G01-G13/index.json");
