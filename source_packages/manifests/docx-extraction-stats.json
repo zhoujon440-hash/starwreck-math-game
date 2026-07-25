@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "source_entry": "G-PROD-01_公益数学版产品基线_V1.1_确认版.docx",
+      "source_sha256": "f0bf3f9fe63be4069238a9b7a6ee379106c780da9abf99a2c42eca958037cd21",
+      "source_wt_nodes": 188,
+      "source_text_characters": 2749,
+      "captured_text_characters": 2749,
+      "coverage_ratio": 1,
+      "markdown_characters": 3891,
+      "output_path": "docs/baseline/source_text/product-plan/G-PROD-01_V1.1.md"
+    },
+    {
+      "source_entry": "G-EDU-01_六年级至初中数学知识点与游戏机制映射_V1.0_确认版.docx",
+      "source_sha256": "b14eddb9753c3901832699b40804b8246001893d7cfa0abd11022989a80701fc",
+      "source_wt_nodes": 274,
+      "source_text_characters": 2731,
+      "captured_text_characters": 2731,
+      "coverage_ratio": 1,
+      "markdown_characters": 4173,
+      "output_path": "docs/baseline/source_text/product-plan/G-EDU-01_V1.0.md"
+    },
+    {
+      "source_entry": "G-GDD-G02_锈环星首发星球产品与教学设计总纲_V1.1_确认版.docx",
+      "source_sha256": "a83784306f6485646fe504860ccca3ebb41ac8f8936ebe13570d3ed131fc6687",
+      "source_wt_nodes": 286,
+      "source_text_characters": 3152,
+      "captured_text_characters": 3152,
+      "coverage_ratio": 1,
+      "markdown_characters": 4699,
+      "output_path": "docs/baseline/source_text/product-plan/G-GDD-G02_V1.1.md"
+    },
+    {
+      "source_entry": "G-PLAN-01_独立开发总体计划与工作架构_V1.1_确认版.docx",
+      "source_sha256": "34052c7f21bc708de31e1ea26a70e205fde8e0d285d74a471b312811d446fb90",
+      "source_wt_nodes": 302,
+      "source_text_characters": 3670,
+      "captured_text_characters": 3670,
+      "coverage_ratio": 1,
+      "markdown_characters": 5242,
+      "output_path": "docs/baseline/source_text/product-plan/G-PLAN-01_V1.1.md"
+    },
+    {
+      "source_entry": "G-DOC-GATE-01_G02全量资料与计划确认及封版门禁_V1.3_D0-4确认版.docx",
+      "source_sha256": "1defb65bf9395518ae965ca1b56d793b2c4c1749540d78e9c4d9df1452069041",
+      "source_wt_nodes": 129,
+      "source_text_characters": 1503,
+      "captured_text_characters": 1503,
+      "coverage_ratio": 1,
+      "markdown_characters": 2399,
+      "output_path": "docs/baseline/source_text/product-plan/G-DOC-GATE-01_V1.3.md"
+    },
+    {
+      "source_entry": "G-ARCH-M01_四层成熟度推进与冻结矩阵_V4.3.docx",
+      "source_sha256": "3a7e65f5e660ed571bb84a67464c1ff90005368b750a9d176db83879e4e48395",
+      "source_wt_nodes": 126,
+      "source_text_characters": 1370,
+      "captured_text_characters": 1370,
+      "coverage_ratio": 1,
+      "markdown_characters": 2250,
+      "output_path": "docs/baseline/source_text/product-plan/G-ARCH-M01_V4.3.md"
+    },
+    {
+      "source_entry": "G-DOC-CONF-01_G02开发前资料总确认记录_V1.0.docx",
+      "source_sha256": "45a0afb4e492e4238ba3d0244d558271047efecc5d606018c930daf9f1277180",
+      "source_wt_nodes": 51,
+      "source_text_characters": 683,
+      "captured_text_characters": 683,
+      "coverage_ratio": 1,
+      "markdown_characters": 1148,
+      "output_path": "docs/baseline/source_text/product-plan/G-DOC-CONF-01_V1.0.md"
+    },
+    {
+      "source_entry": "G-S1-PLAN-01_G02制作脚本推进计划与确认门_V2.0_S1完成版.docx",
+      "source_sha256": "3f906bc361537775e4dbf8063b4ac08669f2510ba3af720e27b0c5d0d3ca506b",
+      "source_wt_nodes": 41,
+      "source_text_characters": 549,
+      "captured_text_characters": 549,
+      "coverage_ratio": 1,
+      "markdown_characters": 1053,
+      "output_path": "docs/baseline/source_text/g02-freeze/G-S1-PLAN-01_V2.0.md"
+    },
+    {
+      "source_entry": "G-S1-CLOSE-01_G02五册制作脚本总封版与有效基线索引_V1.0.docx",
+      "source_sha256": "729b490d377bb65a92a237038d2d86df7d9c3e578b7a38d983d2d4735ba9d874",
+      "source_wt_nodes": 120,
+      "source_text_characters": 1590,
+      "captured_text_characters": 1590,
+      "coverage_ratio": 1,
+      "markdown_characters": 2434,
+      "output_path": "docs/baseline/source_text/g02-freeze/G-S1-CLOSE-01_V1.0.md"
+    },
+    {
+      "source_entry": "G-SCR-01_G02锈环星第一册_开场星宇登场与进入锈环星_V1.0_冻结版.docx",
+      "source_sha256": "4a3ad6c176a118c12810ef2eda1b6ffe5a8240df7794e65eeebbe2f807a9dba9",
+      "source_wt_nodes": 435,
+      "source_text_characters": 5511,
+      "captured_text_characters": 5511,
+      "coverage_ratio": 1,
+      "markdown_characters": 7800,
+      "output_path": "docs/baseline/source_text/g02-freeze/G-SCR-01_V1.0.md"
+    },
+    {
+      "source_entry": "G-SCR-02_G02锈环星第二册_旧屏幕谷居民救援与阿铆工坊_V1.0_冻结版.docx",
+      "source_sha256": "263ec5971ab6f49e50e72cf60610a3c221de90a78511e8badb1e4d90f6fdfbc0",
+      "source_wt_nodes": 633,
+      "source_text_characters": 8081,
+      "captured_text_characters": 8081,
+      "coverage_ratio": 1,
+      "markdown_characters": 11326,
+      "output_path": "docs/baseline/source_text/g02-freeze/G-SCR-02_V1.0.md"
+    },
+    {
+      "source_entry": "G-SCR-03_G02锈环星第三册_四条调查支路与三种能源_V1.0_冻结版.docx",
+      "source_sha256": "00e07ed7592c48686c944103b624d7ce5019b32a013e6fa583a00322df11e224",
+      "source_wt_nodes": 648,
+      "source_text_characters": 8293,
+      "captured_text_characters": 8293,
+      "coverage_ratio": 1,
+      "markdown_characters": 11574,
+      "output_path": "docs/baseline/source_text/g02-freeze/G-SCR-03_V1.0.md"
+    },
+    {
+      "source_entry": "G-SCR-04_G02锈环星第四册_磁力手套豆包借电与五塔调查_V1.0_冻结版.docx",
+      "source_sha256": "40cb390ce19bb2fcb714255a59a58f77ece78ca628728bb485270c5b89f66b3d",
+      "source_wt_nodes": 676,
+      "source_text_characters": 8252,
+      "captured_text_characters": 8252,
+      "coverage_ratio": 1,
+      "markdown_characters": 11719,
+      "output_path": "docs/baseline/source_text/g02-freeze/G-SCR-04_V1.0.md"
+    },
+    {
+      "source_entry": "G-SCR-05_G02锈环星第五册_星门核心十二秒Boss与世界改变_V1.0_冻结版.docx",
+      "source_sha256": "f3f1a436897695a05ae0e5336ebfb16de603c3dc0977fa611be37be974e2a1a6",
+      "source_wt_nodes": 832,
+      "source_text_characters": 10582,
+      "captured_text_characters": 10582,
+      "coverage_ratio": 1,
+      "markdown_characters": 14671,
+      "output_path": "docs/baseline/source_text/g02-freeze/G-SCR-05_V1.0.md"
+    },
+    {
+      "source_entry": "星骸拾荒者_HOPA玩法与技术架构冻结修正版_V1.0.docx",
+      "source_sha256": "c38e1adb3833f8313ffb957a2eb19798a85abc35b2db5c7da1334fb5bf52750e",
+      "source_wt_nodes": 190,
+      "source_text_characters": 2550,
+      "captured_text_characters": 2550,
+      "coverage_ratio": 1,
+      "markdown_characters": 3669,
+      "output_path": "docs/baseline/source_text/hopa/HOPA_ARCHITECTURE_V1.0.md"
+    },
+    {
+      "source_entry": "星骸拾荒者_FX-001星宇瞬移_HOPA交互效果详细设计_V1.0.docx",
+      "source_sha256": "c63e65b3f4352fff22d0382b93d514bfe000eb3dd7aa9c6837a515877e6cd860",
+      "source_wt_nodes": 184,
+      "source_text_characters": 1918,
+      "captured_text_characters": 1918,
+      "coverage_ratio": 1,
+      "markdown_characters": 3042,
+      "output_path": "docs/baseline/source_text/hopa/FX-001_V1.0.md"
+    },
+    {
+      "chapter": "G02",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G02_第一星球_锈环星_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "885522d31735bb1770ad714b885751687c166a5d7c7e22966f0f04cc8786b994",
+      "source_wt_nodes": 1347,
+      "source_text_characters": 18076,
+      "captured_text_characters": 18076,
+      "coverage_ratio": 1,
+      "markdown_characters": 23836,
+      "output_path": "docs/story/G01-G13/G02.md"
+    },
+    {
+      "chapter": "G03",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G03_第二星球_齿轮荒原_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "92eabaad07eb4106049f4560d4673dc43335d6bd6b7092d422100b6445677d89",
+      "source_wt_nodes": 857,
+      "source_text_characters": 13462,
+      "captured_text_characters": 13462,
+      "coverage_ratio": 1,
+      "markdown_characters": 17621,
+      "output_path": "docs/story/G01-G13/G03.md"
+    },
+    {
+      "chapter": "G04",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G04_第三星球_镜面沙海_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "28acdf9d46a515ef26d567cc01ac5222d6b8f7503c2399b9d8dce71b9ba5dc27",
+      "source_wt_nodes": 865,
+      "source_text_characters": 13388,
+      "captured_text_characters": 13388,
+      "coverage_ratio": 1,
+      "markdown_characters": 17595,
+      "output_path": "docs/story/G01-G13/G04.md"
+    },
+    {
+      "chapter": "G05",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G05_第四星球_刻度冰原_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "63da3b5803a2c0a4cb7ca7efaa92a9bcb209b28b0d183af4bc506f509a1ee9d8",
+      "source_wt_nodes": 865,
+      "source_text_characters": 13121,
+      "captured_text_characters": 13121,
+      "coverage_ratio": 1,
+      "markdown_characters": 17328,
+      "output_path": "docs/story/G01-G13/G05.md"
+    },
+    {
+      "chapter": "G06",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G06_第五星球_分片群岛_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "6b0fd4db6379df73c01cc27ee1a70b18c6ad25b3beaa6822b1c81199fe62bde7",
+      "source_wt_nodes": 865,
+      "source_text_characters": 13165,
+      "captured_text_characters": 13165,
+      "coverage_ratio": 1,
+      "markdown_characters": 17372,
+      "output_path": "docs/story/G01-G13/G06.md"
+    },
+    {
+      "chapter": "G07",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G07_第六星球_方格城_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "731dfa85fe0d79ba191fb7c651dadcd12e2ad676c95156347438e820fe8b5fa2",
+      "source_wt_nodes": 869,
+      "source_text_characters": 13159,
+      "captured_text_characters": 13159,
+      "coverage_ratio": 1,
+      "markdown_characters": 17379,
+      "output_path": "docs/story/G01-G13/G07.md"
+    },
+    {
+      "chapter": "G08",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G08_第七星球_钟摆之城_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "98661ee09f822adec6b2700ad30bfdc49636d6d610a72c16e357fa56d031d131",
+      "source_wt_nodes": 865,
+      "source_text_characters": 13010,
+      "captured_text_characters": 13010,
+      "coverage_ratio": 1,
+      "markdown_characters": 17217,
+      "output_path": "docs/story/G01-G13/G08.md"
+    },
+    {
+      "chapter": "G09",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G09_第八星球_棋阵卫星_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "3e48cf886600c7f68f4b62b38049848fdc3491ee3a9b3bd033ad8b90cde749b3",
+      "source_wt_nodes": 877,
+      "source_text_characters": 13203,
+      "captured_text_characters": 13203,
+      "coverage_ratio": 1,
+      "markdown_characters": 17472,
+      "output_path": "docs/story/G01-G13/G09.md"
+    },
+    {
+      "chapter": "G10",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G10_第九星球_概率云港_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "c66a78437e1a5b77753655b5b8d18e81fd2399dd1488f169fe56406ee2839e19",
+      "source_wt_nodes": 881,
+      "source_text_characters": 13236,
+      "captured_text_characters": 13236,
+      "coverage_ratio": 1,
+      "markdown_characters": 17519,
+      "output_path": "docs/story/G01-G13/G10.md"
+    },
+    {
+      "chapter": "G11",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G11_第十星球_立体工厂_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "2e26535f99491724692af63069fcb925540a6ddba73c28c16064519546458662",
+      "source_wt_nodes": 889,
+      "source_text_characters": 13290,
+      "captured_text_characters": 13290,
+      "coverage_ratio": 1,
+      "markdown_characters": 17621,
+      "output_path": "docs/story/G01-G13/G11.md"
+    },
+    {
+      "chapter": "G12",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G12_第十一星球_百工星环_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "5c454e3e56a468e6133ec4ed5840b72cebd50bf02cdf2af1e53157ab5dda77a2",
+      "source_wt_nodes": 893,
+      "source_text_characters": 13315,
+      "captured_text_characters": 13315,
+      "coverage_ratio": 1,
+      "markdown_characters": 17661,
+      "output_path": "docs/story/G01-G13/G12.md"
+    },
+    {
+      "chapter": "G13",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G13_第十二星球_零号地球_游戏重构脚本_V2.0_HOPA实施版.docx",
+      "source_sha256": "2e4e4de407b2687b21adede66845cc6f385aa579e3255a5ac719c88a45a65453",
+      "source_wt_nodes": 865,
+      "source_text_characters": 13402,
+      "captured_text_characters": 13402,
+      "coverage_ratio": 1,
+      "markdown_characters": 17590,
+      "output_path": "docs/story/G01-G13/G13.md"
+    },
+    {
+      "chapter": "G02-G13-NOTES",
+      "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G02-G13全章节脚本更新总说明_V2.0.docx",
+      "source_sha256": "b21179efcc66d96bd36246cf932e3496d6d2c4e9b5551d9b0a27617d55bda2e1",
+      "source_wt_nodes": 63,
+      "source_text_characters": 921,
+      "captured_text_characters": 921,
+      "coverage_ratio": 1,
+      "markdown_characters": 1472,
+      "output_path": "docs/story/G01-G13/HOPA_UPDATE_NOTES_V2.0.md"
+    }
+  ],
+  "all_available_documents_full_text_captured": true
+}

@@ -1,0 +1,116 @@
+[
+  {
+    "chapter": "G01",
+    "status": "missing_formal_source",
+    "version": "V3.0",
+    "path": "docs/story/G01-G13/G01.md"
+  },
+  {
+    "chapter": "G02",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G02.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G02_第一星球_锈环星_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "885522d31735bb1770ad714b885751687c166a5d7c7e22966f0f04cc8786b994",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G03",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G03.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G03_第二星球_齿轮荒原_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "92eabaad07eb4106049f4560d4673dc43335d6bd6b7092d422100b6445677d89",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G04",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G04.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G04_第三星球_镜面沙海_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "28acdf9d46a515ef26d567cc01ac5222d6b8f7503c2399b9d8dce71b9ba5dc27",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G05",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G05.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G05_第四星球_刻度冰原_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "63da3b5803a2c0a4cb7ca7efaa92a9bcb209b28b0d183af4bc506f509a1ee9d8",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G06",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G06.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G06_第五星球_分片群岛_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "6b0fd4db6379df73c01cc27ee1a70b18c6ad25b3beaa6822b1c81199fe62bde7",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G07",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G07.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G07_第六星球_方格城_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "731dfa85fe0d79ba191fb7c651dadcd12e2ad676c95156347438e820fe8b5fa2",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G08",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G08.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G08_第七星球_钟摆之城_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "98661ee09f822adec6b2700ad30bfdc49636d6d610a72c16e357fa56d031d131",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G09",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G09.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G09_第八星球_棋阵卫星_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "3e48cf886600c7f68f4b62b38049848fdc3491ee3a9b3bd033ad8b90cde749b3",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G10",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G10.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G10_第九星球_概率云港_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "c66a78437e1a5b77753655b5b8d18e81fd2399dd1488f169fe56406ee2839e19",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G11",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G11.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G11_第十星球_立体工厂_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "2e26535f99491724692af63069fcb925540a6ddba73c28c16064519546458662",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G12",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G12.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G12_第十一星球_百工星环_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "5c454e3e56a468e6133ec4ed5840b72cebd50bf02cdf2af1e53157ab5dda77a2",
+    "coverage_ratio": 1
+  },
+  {
+    "chapter": "G13",
+    "status": "imported_verified",
+    "version": "V2.0",
+    "path": "docs/story/G01-G13/G13.md",
+    "source_entry": "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G13_第十二星球_零号地球_游戏重构脚本_V2.0_HOPA实施版.docx",
+    "source_sha256": "2e4e4de407b2687b21adede66845cc6f385aa579e3255a5ac719c88a45a65453",
+    "coverage_ratio": 1
+  }
+]

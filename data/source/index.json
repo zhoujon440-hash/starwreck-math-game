@@ -1,0 +1,97 @@
+[
+  {
+    "chapter": "G01",
+    "status": "missing_formal_source",
+    "required_version": "V3.0",
+    "reason": "G01整合正式包V3.0未找到",
+    "path": "data/source/g01"
+  },
+  {
+    "chapter": "G02",
+    "status": "imported_verified",
+    "version": "V2.1",
+    "package_id": "PKG-G02-DATA-V2.1",
+    "description_coverage_ratio": 1,
+    "files": 21,
+    "path": "data/source/g02-g13/G02"
+  },
+  {
+    "chapter": "G03",
+    "status": "imported_verified",
+    "version": "V2.1",
+    "package_id": "PKG-G03-DATA-V2.1",
+    "description_coverage_ratio": 1,
+    "files": 21,
+    "path": "data/source/g02-g13/G03"
+  },
+  {
+    "chapter": "G04",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G04"
+  },
+  {
+    "chapter": "G05",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G05"
+  },
+  {
+    "chapter": "G06",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G06"
+  },
+  {
+    "chapter": "G07",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G07"
+  },
+  {
+    "chapter": "G08",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G08"
+  },
+  {
+    "chapter": "G09",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G09"
+  },
+  {
+    "chapter": "G10",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G10"
+  },
+  {
+    "chapter": "G11",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G11"
+  },
+  {
+    "chapter": "G12",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G12"
+  },
+  {
+    "chapter": "G13",
+    "status": "missing_formal_source",
+    "required_version": "V2.1",
+    "reason": "G02—G13完整数据包缺失；不得由HOPA文本反向生成数据",
+    "path": "data/source/g02-g13/G13"
+  }
+]
