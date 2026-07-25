@@ -1,3 +1,10 @@
+import type { CharacterDefinition } from '../content/characters'
+import type {
+  DialogueLineDefinition,
+  DialogueSequenceDefinition,
+} from '../content/dialogues'
+import type { G01StorySceneDefinition } from '../content/story/g01-scenes'
+
 export type SceneStateId = 'S0' | 'S1' | 'S2' | 'S3' | 'S4' | 'S5' | 'S6'
 
 export type Rectangle = {
@@ -79,7 +86,19 @@ export type ChapterDefinition = {
   transitions: StateTransition[]
 }
 
+export type AdventureDefinition = {
+  id: string
+  title: string
+  initialSceneId: string
+  scenes: Record<string, ChapterDefinition>
+  characters: Record<string, CharacterDefinition>
+  dialogues: DialogueLineDefinition[]
+  dialogueSequences: DialogueSequenceDefinition[]
+  storyScenes: G01StorySceneDefinition[]
+}
+
 export type TransitionRecord = {
+  sceneId: string
   from: SceneStateId
   to: SceneStateId
   event: GameEvent
@@ -87,16 +106,28 @@ export type TransitionRecord = {
 }
 
 export type GameSession = {
-  schemaVersion: 1
+  schemaVersion: 2
   chapterId: string
+  currentSceneId: string
   sceneState: SceneStateId
+  sceneProgress: Record<string, SceneStateId>
   foundItemIds: string[]
   inventoryItemIds: string[]
   usedItemIds: string[]
   completedPuzzleIds: string[]
+  puzzleProgress: Record<string, boolean | number | string>
   hintCount: number
   hintLevels: Record<string, number>
   flags: Record<string, boolean | number | string>
+  currentDialogueId: string | null
+  currentDialogueSequenceId: string | null
+  readDialogueIds: string[]
+  skippedDialogueIds: string[]
+  dialogueHistoryIds: string[]
+  completedDialogueSequenceIds: string[]
+  unlockedCharacterIds: string[]
+  shownCharacterProfileIds: string[]
+  characterStates: Record<string, string>
   transitionLog: TransitionRecord[]
   updatedAt: string
 }

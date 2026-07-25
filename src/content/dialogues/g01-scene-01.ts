@@ -228,7 +228,7 @@ export const G01_SCENE_01_DIALOGUES: DialogueLineDefinition[] = [
     skippable: false,
     condition: { flag: 'qima_recovered', equals: true },
     effects: [
-      { type: 'set-character-state', characterId: 'qima', portraitState: 'scanning' },
+      { type: 'set-character-state', characterId: 'qima', portraitState: 'normal' },
       { type: 'set-flag', key: 'g01_scene_01_complete', value: true },
     ],
   },
@@ -305,4 +305,3 @@ export const G01_SCENE_01_SEQUENCES: DialogueSequenceDefinition[] = [
     requiredFirstPlay: true,
   },
 ]
-

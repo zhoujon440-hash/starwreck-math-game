@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { G01 } from '../content/g01'
+import { G01_ADVENTURE } from '../content/g01-adventure'
 import { GameEngine } from './engine'
 import { CircuitRoutingGame } from './minigames/circuit'
 import { LocalSaveRepository, MemorySaveRepository, type StorageLike } from './save'
@@ -119,11 +120,11 @@ describe('GameEngine', () => {
     }
 
     const restored = new GameEngine(G01, new LocalSaveRepository('G01', storage))
-    expect(restored.snapshot.schemaVersion).toBe(1)
+    expect(restored.snapshot.schemaVersion).toBe(2)
     expect(restored.snapshot.sceneState).toBe('S3')
     expect(restored.snapshot.foundItemIds).toContain('ITM-G01-002')
     expect(restored.snapshot.inventoryItemIds).toContain('ITM-G01-002')
-    expect([...values.values()].some((value) => value.includes('"schemaVersion":1'))).toBe(true)
+    expect([...values.values()].some((value) => value.includes('"schemaVersion":2'))).toBe(true)
   })
 
   it('forces a non-zero star-core count from an older G01 save back to zero', () => {
@@ -150,6 +151,113 @@ describe('GameEngine', () => {
     const restored = new LocalSaveRepository('G01', storage).load()
     expect(restored?.flags.world_star_core_count).toBe(0)
     expect(restored?.flags.legacy_marker).toBe('kept')
+  })
+
+  it('unlocks Xingyu and preserves the data-driven opening dialogue order', () => {
+    const engine = new GameEngine(G01_ADVENTURE, new MemorySaveRepository())
+
+    expect(engine.beginScene().ok).toBe(true)
+    expect(engine.currentDialogue?.dialogueId).toBe('DLG-G01-00-001')
+    expect(engine.advanceDialogue().ok).toBe(true)
+    expect(engine.snapshot.unlockedCharacterIds).toContain('xingyu')
+    expect(engine.snapshot.flags.character_profile_xingyu_unlocked).toBe(true)
+    expect(engine.pendingCharacterProfileId).toBe('xingyu')
+    expect(engine.currentDialogue?.dialogueId).toBe('DLG-G01-00-002')
+    expect(engine.acknowledgeCharacterProfile('xingyu').ok).toBe(true)
+    expect(engine.advanceDialogue().ok).toBe(true)
+    expect(engine.currentDialogue?.dialogueId).toBe('DLG-G01-00-003')
+    expect(engine.advanceDialogue().ok).toBe(true)
+    expect(engine.currentDialogue?.dialogueId).toBe('DLG-G01-00-004')
+    expect(engine.advanceDialogue().ok).toBe(true)
+    expect(engine.currentDialogue).toBeNull()
+    expect(engine.snapshot.characterStates.xingyu).toBe('determined')
+  })
+
+  it('restores current dialogue, portrait state and profile presentation from schema v2', () => {
+    const saves = new MemorySaveRepository()
+    const engine = new GameEngine(G01_ADVENTURE, saves)
+    engine.beginScene()
+    engine.advanceDialogue()
+
+    const restored = new GameEngine(G01_ADVENTURE, saves)
+    expect(restored.snapshot.currentSceneId).toBe('SCN-G01-00')
+    expect(restored.currentDialogue?.dialogueId).toBe('DLG-G01-00-002')
+    expect(restored.snapshot.readDialogueIds).toEqual(['DLG-G01-00-001'])
+    expect(restored.snapshot.characterStates.xingyu).toBe('alert')
+    expect(restored.pendingCharacterProfileId).toBe('xingyu')
+    expect(restored.snapshot.flags.world_star_core_count).toBe(0)
+  })
+
+  it('runs the conditional Qima recovery, introduction and first conversation once', () => {
+    const saves = new MemorySaveRepository()
+    const engine = new GameEngine(G01_ADVENTURE, saves)
+    const finishStoryBeat = () => {
+      let guard = 0
+      while ((engine.currentDialogue || engine.pendingCharacterProfileId) && guard < 80) {
+        const profileId = engine.pendingCharacterProfileId
+        if (profileId) engine.acknowledgeCharacterProfile(profileId)
+        else engine.advanceDialogue()
+        guard += 1
+      }
+      expect(guard).toBeLessThan(80)
+    }
+
+    engine.beginScene()
+    finishStoryBeat()
+    engine.findItem('ITM-G01-001')
+    finishStoryBeat()
+    engine.useItem('ITM-G01-001', 'HS-G01-0002')
+    finishStoryBeat()
+    for (const itemId of ['ITM-G01-002', 'ITM-G01-003', 'ITM-G01-004', 'ITM-G01-005']) {
+      engine.findItem(itemId)
+    }
+    finishStoryBeat()
+    engine.useItem('ITM-G01-002', 'HS-G01-0004')
+    finishStoryBeat()
+    engine.inspect('HS-G01-0005')
+    finishStoryBeat()
+    engine.inspect('HS-G01-0006')
+    expect(engine.snapshot.flags.g01_scene_00_story_complete).toBe(true)
+    expect(engine.enterScene('SCN-G01-01').ok).toBe(true)
+    expect(engine.snapshot.characterStates.qima).toBe('offline')
+    finishStoryBeat()
+
+    engine.inspect('HS-G01-0101')
+    finishStoryBeat()
+    expect(engine.snapshot.characterStates.qima).toBe('damaged')
+    for (const itemId of ['ITM-G01-101', 'ITM-G01-102', 'ITM-G01-103', 'ITM-G01-104']) {
+      engine.findItem(itemId)
+    }
+    finishStoryBeat()
+    engine.useItem('ITM-G01-104', 'HS-G01-0103')
+    finishStoryBeat()
+    engine.useItem('ITM-G01-101', 'HS-G01-0104')
+    finishStoryBeat()
+    engine.useItem('ITM-G01-102', 'HS-G01-0105')
+    finishStoryBeat()
+    engine.useItem('ITM-G01-103', 'HS-G01-0106')
+    finishStoryBeat()
+    expect(engine.snapshot.characterStates.qima).toBe('booting')
+
+    expect(engine.completePuzzle('PZL-G01-01-CIRCUIT').ok).toBe(true)
+    expect(engine.currentDialogue?.dialogueId).toBe('DLG-G01-01-010')
+    engine.advanceDialogue()
+    expect(engine.snapshot.flags.qima_recovered).toBe(true)
+    expect(engine.snapshot.flags.character_profile_qima_unlocked).toBe(true)
+    expect(engine.snapshot.characterStates.qima).toBe('normal')
+    expect(engine.pendingCharacterProfileId).toBe('qima')
+    engine.acknowledgeCharacterProfile('qima')
+    expect(engine.currentDialogue?.dialogueId).toBe('DLG-G01-01-011')
+    finishStoryBeat()
+
+    const restored = new GameEngine(G01_ADVENTURE, saves)
+    expect(restored.snapshot.characterStates.qima).toBe('normal')
+    expect(restored.snapshot.flags.g01_scene_01_complete).toBe(true)
+    expect(restored.pendingCharacterProfileId).toBeNull()
+    expect(restored.snapshot.completedDialogueSequenceIds).toContain(
+      'SEQ-G01-01-FIRST-CONVERSATION',
+    )
+    expect(restored.snapshot.flags.world_star_core_count).toBe(0)
   })
 })
 

@@ -26,6 +26,20 @@ export class CircuitRoutingGame implements MiniGameController<string> {
     }
   }
 
+  restore(path: string[], mistakes: number): void {
+    const validPath =
+      path.length <= this.#solution.length &&
+      path.every((nodeId, index) => nodeId === this.#solution[index])
+    this.#path = validPath ? [...path] : []
+    this.#mistakes = Math.max(0, Math.min(this.#maxMistakes, mistakes))
+    this.#status =
+      this.#path.length === this.#solution.length
+        ? 'solved'
+        : this.#mistakes >= this.#maxMistakes
+          ? 'failed'
+          : 'playing'
+  }
+
   start(): void {
     this.#status = 'playing'
     this.#mistakes = 0
@@ -55,4 +69,3 @@ export class CircuitRoutingGame implements MiniGameController<string> {
     this.#path = []
   }
 }
-
