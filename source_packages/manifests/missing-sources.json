@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "issue": 6,
+  "missing_count": 9,
+  "items": [
+    {
+      "source_id": "PKG-G01-V3.0",
+      "name": "G01整合正式包 V3.0",
+      "expected_filename": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0.zip",
+      "expected_sha256": "85a20020d471e6dc77454b90e9d7792216db2555aef4e44fa729862ae9ddc043",
+      "expected_bytes": 2901474,
+      "impact": "G01全文、结构化数据与33项新增资产的正式名称/ID无法导入"
+    },
+    {
+      "source_id": "PKG-G02-G13-DATA-V2.1",
+      "name": "G02—G13数据级制作脚本完整包 V2.1",
+      "expected_filename": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1.zip",
+      "expected_sha256": "4db2cbb67e688aa7b55b5fe509f38377577e25a2259df3011c105f7c52c59708",
+      "expected_bytes": 1112954,
+      "impact": "仅G02和G03独立数据包可用；G04—G13结构化母本缺失"
+    },
+    {
+      "source_id": "PKG-FX-V2.0",
+      "name": "技能/装备效果HOPA正式包 V2.0",
+      "expected_filename": "星骸拾荒者_技能与装备效果HOPA正式包_V2.0.zip",
+      "expected_sha256": "882e933ca90917c37a6cd3c88d5988a2ce0ce8c6dbaf1d86e5f29102290ee5e1",
+      "expected_bytes": 30540605,
+      "impact": "FX-001—041只能由美术主清单建立索引，无法保留V2设计板原包"
+    },
+    {
+      "source_id": "PKG-DANGER-V2.0",
+      "name": "危险视觉HOPA正式包 V2.0",
+      "expected_filename": "星骸拾荒者_危险视觉HOPA正式包_V2.0.zip",
+      "expected_sha256": "981d9069efbc7627d4d64dbabd5795acb85f2a4098d9061ba7717d924669181b",
+      "expected_bytes": 61745430,
+      "impact": "DANGER-001—076只能建立可追踪初始槽位，无法保留V2设计板原包"
+    },
+    {
+      "source_id": "DOC-G-S2-D01-V1.0",
+      "name": "G-S2-D01 S2视觉总方向关键决策清单 V1.0",
+      "expected_filename": "G-S2-D01_*_V1.0*.docx",
+      "expected_sha256": null,
+      "expected_bytes": null,
+      "impact": "仅发现V0.9待确认版，不能冒充冻结V1.0"
+    },
+    {
+      "source_id": "DOC-G-S2-CHG-01-V1.0",
+      "name": "G-S2-CHG-01 V1.0",
+      "expected_filename": "G-S2-CHG-01_*_V1.0*.docx",
+      "expected_sha256": null,
+      "expected_bytes": null,
+      "impact": "正式视觉变更记录缺失"
+    },
+    {
+      "source_id": "DOC-G-CHAR-01-V1.0",
+      "name": "G-CHAR-01 星宇布偶C方案 V1.0",
+      "expected_filename": "G-CHAR-01_*_V1.0*.docx",
+      "expected_sha256": null,
+      "expected_bytes": null,
+      "impact": "星宇布偶C方案仅登记为已确认，正式文本未找到"
+    },
+    {
+      "source_id": "DOC-G-ANIM-01-V1.0",
+      "name": "G-ANIM-01 V1.0",
+      "expected_filename": "G-ANIM-01_*_V1.0*.docx",
+      "expected_sha256": null,
+      "expected_bytes": null,
+      "impact": "正式动画规范文本未找到"
+    },
+    {
+      "source_id": "DOC-G02-BOUNDARY-V2.2",
+      "name": "G02开场边界 V2.2",
+      "expected_filename": "*G02*边界*V2.2*.docx",
+      "expected_sha256": null,
+      "expected_bytes": null,
+      "impact": "无法导入独立V2.2原文；仓库现有06_G01_G02_BOUNDARY仅作为确认规则摘要"
+    }
+  ]
+}

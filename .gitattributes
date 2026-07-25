@@ -3,3 +3,5 @@
 *.jpg binary
 *.webp binary
 
+source_packages/originals-or-release-links/*.zip filter=lfs diff=lfs merge=lfs -text
+archive/legacy/**/*.zip filter=lfs diff=lfs merge=lfs -text
