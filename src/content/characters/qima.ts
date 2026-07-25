@@ -40,4 +40,3 @@ export const QIMA: CharacterDefinition<QimaPortraitState> = {
     { id: 'personality', label: '性格', value: '精确、较真，带一点机械幽默' },
   ],
 }
-

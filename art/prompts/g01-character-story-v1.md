@@ -87,4 +87,3 @@ Materials/textures: chipped ceramic, scratched metal, braided wire, worn polymer
 Constraints: exactly four objects and no extras; the background must be one perfectly uniform #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation; do not use #00ff00 in the objects; crisp separated edges suitable for chroma key; no cast shadow; no text, letters, numbers, labels, symbols, logos, UI, grid borders, arrows, hotspot dots, hands, robot, characters, or watermark
 Avoid: modern consumer electronics, clean retail presentation, toy colors, oversized parts, burnt fuse, extra screws
 ```
-

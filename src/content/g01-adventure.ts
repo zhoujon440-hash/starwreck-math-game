@@ -18,4 +18,3 @@ export const G01_ADVENTURE: AdventureDefinition = {
   dialogueSequences: G01_DIALOGUE_SEQUENCES,
   storyScenes: G01_STORY_SCENES,
 }
-

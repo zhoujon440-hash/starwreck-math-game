@@ -208,4 +208,3 @@ export const G01_SCENE_01: ChapterDefinition = {
 
 export const G01_SCENE_01_ART = '/assets/g01-scene-01/navigation-core.png'
 export const G01_SCENE_01_CORE_ART = '/assets/g01-scene-01/qima-core-closeup.png'
-

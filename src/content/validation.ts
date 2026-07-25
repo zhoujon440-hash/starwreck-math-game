@@ -20,7 +20,6 @@ export const validateCharacterDefinitions = (
   })
   return errors
 }
-
 export const validateDialogueData = (
   dialogues: DialogueLineDefinition[],
   sequences: DialogueSequenceDefinition[],
@@ -66,4 +65,3 @@ export const validateStoryScenes = (scenes: G01StorySceneDefinition[]): string[]
   })
   return errors
 }
-

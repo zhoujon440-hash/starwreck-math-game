@@ -61,4 +61,3 @@ describe('G01 character and story content', () => {
     expect(productionContent).not.toContain(['小', '砾'].join(''))
   })
 })
-

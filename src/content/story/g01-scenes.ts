@@ -137,4 +137,3 @@ export const G01_STORY_SCENES: G01StorySceneDefinition[] = [
     playable: false,
   },
 ]
-

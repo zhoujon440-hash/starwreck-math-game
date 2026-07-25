@@ -48,4 +48,3 @@ export type DialogueSequenceDefinition = {
   dialogueIds: string[]
   requiredFirstPlay: boolean
 }
-

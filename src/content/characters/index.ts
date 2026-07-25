@@ -11,4 +11,3 @@ export const G01_CHARACTERS = {
 } as const
 
 export type G01CharacterKey = keyof typeof G01_CHARACTERS
-

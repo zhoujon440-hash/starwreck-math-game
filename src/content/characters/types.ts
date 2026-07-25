@@ -21,4 +21,3 @@ export type CharacterDefinition<PortraitState extends string = string> = {
   firstAppearanceScene: string
   unlockedProfileSections: CharacterProfileSection[]
 }
-

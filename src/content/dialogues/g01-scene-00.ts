@@ -182,7 +182,6 @@ export const G01_SCENE_00_DIALOGUES: DialogueLineDefinition[] = [
     ],
   },
 ]
-
 export const G01_SCENE_00_SEQUENCES: DialogueSequenceDefinition[] = [
   {
     sequenceId: 'SEQ-G01-00-OPENING',
@@ -232,4 +231,3 @@ export const G01_SCENE_00_SEQUENCES: DialogueSequenceDefinition[] = [
     requiredFirstPlay: false,
   },
 ]
-

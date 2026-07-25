@@ -27,4 +27,3 @@ export const XINGYU: CharacterDefinition<XingyuPortraitState> = {
     { id: 'goal', label: '当前目标', value: '恢复拾光号并寻找失联的七码' },
   ],
 }
-
