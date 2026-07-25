@@ -686,6 +686,13 @@ export class GameView {
     const sequence = this.engine.adventure.dialogueSequences.find(
       (candidate) => candidate.sequenceId === dialogue.sequenceId,
     )
+    const currentSequenceIndex = sequence?.dialogueIds.indexOf(dialogue.dialogueId) ?? -1
+    const canFastSkip = Boolean(
+      sequence &&
+        sequence.dialogueIds
+          .slice(Math.max(0, currentSequenceIndex))
+          .every((dialogueId) => this.#session.readDialogueIds.includes(dialogueId)),
+    )
 
     return `
       <section class="dialogue-stage" aria-label="${escapeHtml(dialogue.speakerName)}的对白">
@@ -720,7 +727,7 @@ export class GameView {
           <div class="dialogue-actions">
             <span>${dialogue.sequence} / ${sequence?.dialogueIds.length ?? dialogue.sequence}</span>
             ${
-              sequence?.requiredFirstPlay
+              sequence?.requiredFirstPlay && !canFastSkip
                 ? '<small>关键剧情</small>'
                 : '<button data-action="skip-dialogue">略过本段</button>'
             }

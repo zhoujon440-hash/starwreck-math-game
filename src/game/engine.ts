@@ -218,9 +218,6 @@ export class GameEngine {
       (candidate) => candidate.sequenceId === this.#session.currentDialogueSequenceId,
     )
     if (!line || !sequence) return { ok: false, message: '当前没有可跳过的对白。' }
-    if (sequence.requiredFirstPlay) {
-      return { ok: false, message: '首次关键剧情需要完整观看。' }
-    }
 
     const currentIndex = sequence.dialogueIds.indexOf(line.dialogueId)
     const remaining = sequence.dialogueIds
@@ -232,7 +229,13 @@ export class GameEngine {
         (dialogue): dialogue is DialogueLineDefinition =>
           Boolean(dialogue && this.#conditionMatches(this.#session, dialogue)),
       )
-    if (remaining.some((dialogue) => !dialogue.skippable)) {
+    const allRemainingRead = remaining.every((dialogue) =>
+      this.#session.readDialogueIds.includes(dialogue.dialogueId),
+    )
+    if (sequence.requiredFirstPlay && !allRemainingRead) {
+      return { ok: false, message: '首次关键剧情需要完整观看。' }
+    }
+    if (!allRemainingRead && remaining.some((dialogue) => !dialogue.skippable)) {
       return { ok: false, message: '这段关键对白不能略过。' }
     }
 

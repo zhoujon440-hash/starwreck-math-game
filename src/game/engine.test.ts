@@ -188,6 +188,48 @@ describe('GameEngine', () => {
     expect(restored.snapshot.flags.world_star_core_count).toBe(0)
   })
 
+  it('protects first-play key dialogue but allows an already-read replay to fast-skip', () => {
+    const values = new Map<string, string>()
+    const storage: StorageLike = {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+      removeItem: (key) => values.delete(key),
+    }
+    const repository = new LocalSaveRepository('G01', storage)
+    const firstPlay = new GameEngine(G01_ADVENTURE, repository)
+    firstPlay.beginScene()
+    expect(firstPlay.skipDialogue().ok).toBe(false)
+
+    const saveKey = 'starwreck:save:G01:v2'
+    const replay = JSON.parse(values.get(saveKey) ?? '{}') as {
+      readDialogueIds: string[]
+      currentDialogueId: string | null
+      currentDialogueSequenceId: string | null
+    }
+    replay.readDialogueIds = [
+      'DLG-G01-00-001',
+      'DLG-G01-00-002',
+      'DLG-G01-00-003',
+      'DLG-G01-00-004',
+    ]
+    replay.currentDialogueId = 'DLG-G01-00-001'
+    replay.currentDialogueSequenceId = 'SEQ-G01-00-OPENING'
+    values.set(saveKey, JSON.stringify(replay))
+
+    const restoredReplay = new GameEngine(
+      G01_ADVENTURE,
+      new LocalSaveRepository('G01', storage),
+    )
+    expect(restoredReplay.skipDialogue().ok).toBe(true)
+    expect(restoredReplay.currentDialogue).toBeNull()
+    expect(restoredReplay.snapshot.skippedDialogueIds).toEqual([
+      'DLG-G01-00-001',
+      'DLG-G01-00-002',
+      'DLG-G01-00-003',
+      'DLG-G01-00-004',
+    ])
+  })
+
   it('runs the conditional Qima recovery, introduction and first conversation once', () => {
     const saves = new MemorySaveRepository()
     const engine = new GameEngine(G01_ADVENTURE, saves)
