@@ -1,0 +1,18 @@
+{
+  "source_package": "PKG-CHARACTERS-V2.1",
+  "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+  "source_entry_sha256": "ea329b30f458a567a92ef0f02b783eb58c4129596e4958e4cf739eb47329816e",
+  "counts": {
+    "characters": 71,
+    "scenes": 91,
+    "props": 46,
+    "mech": 47,
+    "ui": 83,
+    "fx": 41,
+    "danger": 76,
+    "g01_addition": 33
+  },
+  "normalized_asset_total": 488,
+  "design_or_production_master": true,
+  "runtime_asset": false
+}

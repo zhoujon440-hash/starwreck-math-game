@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "rules": [
+    {
+      "current": "人物形象设计全集 V2.1补齐版",
+      "supersedes": [
+        "人物形象设计全集 V2.0",
+        "已生成人物设计打包 V1.0",
+        "星宇写实人类少年方案"
+      ],
+      "status": "current_source_imported",
+      "rule": "V2.1设计/生产母版有效；早期包和写实少年方案仅作legacy。"
+    },
+    {
+      "current": "道具美术正式包 V3.0",
+      "supersedes": [
+        "道具美术设计全集 V2.0",
+        "道具美术设计包 V1.0第一批"
+      ],
+      "status": "current_source_imported",
+      "rule": "PROP-001—046以V3.0为准。"
+    },
+    {
+      "current": "机制可视化HOPA正式包 V2.0",
+      "supersedes": [
+        "MECH-C G08—G10机制可视化确认包 V1.0"
+      ],
+      "status": "current_source_imported",
+      "rule": "MECH-001—047以V2.0总包为准。"
+    },
+    {
+      "current": "技能与装备效果HOPA正式包 V2.0",
+      "supersedes": [
+        "FX-B G02—G05装备效果确认包 V1.0"
+      ],
+      "status": "current_source_imported",
+      "rule": "FX-001—041以已校验V2.0正式清单、章节范围和包内设计板路径为准；V1局部包仅保留为被替代资料。"
+    },
+    {
+      "current": "危险视觉HOPA正式包 V2.0",
+      "supersedes": [
+        "DANGER-B G05—G07危险视觉确认包 V1.0",
+        "DANGER-C G08—G10危险视觉确认包 V1.0"
+      ],
+      "status": "current_source_imported",
+      "rule": "DANGER-001—076以已校验V2.0正式清单、章节范围和包内设计板路径为准；删除旧推算展开规则。"
+    },
+    {
+      "current": "G01整合正式包 V3.0",
+      "supersedes": [
+        "损坏的Codex脚本与架构基线包 V1.0",
+        "G01 HTML5-PWA纯色占位原型 V1.0",
+        "更早G01脚本和实现反推数据"
+      ],
+      "status": "current_source_imported",
+      "rule": "G01全文、结构化数据、33项正式资产和包内G02开场边界V2.2均以已校验V3.0原包为准。"
+    },
+    {
+      "current": "G02—G13 HOPA实施脚本 V2.0",
+      "supersedes": [
+        "G02—G13游戏重构脚本 V1.0中的战斗/Boss表达"
+      ],
+      "status": "current_source_imported",
+      "rule": "保留历史原文；当前执行按非战斗HOPA规则解释，不静默改写源文件。"
+    },
+    {
+      "current": "HTML5/PWA HOPA技术路线",
+      "supersedes": [
+        "Unity当前工程路线",
+        "实时3D、战斗RPG和自由移动路线"
+      ],
+      "status": "current_rule_confirmed",
+      "rule": "Unity数据只保留为结构化母本。"
+    },
+    {
+      "current": "主角名星宇",
+      "supersedes": [
+        "旧名小砾"
+      ],
+      "status": "current_rule_confirmed",
+      "rule": "历史原件不改写；执行层统一映射为星宇。"
+    },
+    {
+      "current": "G-S2-D01 V1.0",
+      "supersedes": [
+        "G-S2-D01 V0.9待确认版"
+      ],
+      "status": "current_source_imported",
+      "rule": "已校验并全文提取冻结V1.0；V0.9待确认版只保留为被替代资料。"
+    }
+  ]
+}

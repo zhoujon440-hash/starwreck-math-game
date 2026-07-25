@@ -1,0 +1,219 @@
+[
+  {
+    "path": "data/source/g02-g13/G05/master/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "format": "xlsx",
+    "extraction": "verbatim_binary"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/场景流程.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "84a62289fd2980cadd2365274176e0733c04adfa2ae26464a1bbed1896e10295",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "场景流程"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/场景流程.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "bf2ef3ce61ee1d6dd5e000c283a701531ecf375987452f4562c911cbbee5f0c1",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "场景流程"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/热点清单.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "19a6c33787fafd2e669693fc80d1c90c6e1460728f91236711de244ade94de8f",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "热点清单"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/热点清单.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "3ed94c0abfe8bc0dcdc2705c90c64fdcc9089c7c743d761e1948141724da9287",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "热点清单"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/找物清单.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "9ee68bfa20f9b8becd547c89a998a7551a3d18181260e7208bab5df95b73c564",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "找物清单"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/找物清单.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "2b668e6a107eaa6e936e2938069352fb4c2f902f5fb0f6ead5e4977c64144cac",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "找物清单"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/背包道具流转.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "2fb8b6c05aae2dc1d3bd38c86c7df31d55dd0bf5fe4ac36caa0ea946f537e804",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "背包道具流转"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/背包道具流转.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "6e710fac1497cfbcd14c4a91d3bb858323c58acc29984a201618c634309a9c7d",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "背包道具流转"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/对话脚本.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "8735428e91ec4b4a11258c4bfd310ee93670ca2806b9f4afd55775f208becb4e",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "对话脚本"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/对话脚本.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "16b866baf3fdad99bb18db9246fd3a658d0c7e884081bc22011345d93edbc251",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "对话脚本"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/场景状态机.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "6eedf3af126fed832f0740e9a2c48f8eacabec9899c08b59eebfc2b78fb84825",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "场景状态机"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/场景状态机.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "3d6d3d436ac599c823b3f9080e0ec609d207d4801bca63ab9166238df6399aa2",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "场景状态机"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/三级提示.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "aa5d4f7a320c3498f426e850a574c62c072d31ef54f49c4f8a8fa0e1c6f8551d",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "三级提示"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/三级提示.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "012d4db54ee0d67d6348f369afeca0df5a0e4eb7819f09343a133583aa4a8e9d",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "三级提示"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/存档与恢复.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "94fac1ffb67bb2c46dc6399b5733acbc0d726bacaa0479598f8ca4693c7d2309",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "存档与恢复"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/存档与恢复.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "2f4e1009d77e02e57555c58d168653286f79522d2688d1e9687a4373eb6fdebd",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "存档与恢复"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/程序变量.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "49d33d3aa3291c79926c240899724f5c6dc8ecc9376797a99837cd24d18cf704",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "程序变量"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/程序变量.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "3db54d7b914155d69fb89457d8580b8ac5b239b5f9b39f4852b3e2cccd0a4ac0",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "程序变量"
+  },
+  {
+    "path": "data/source/g02-g13/G05/csv/资产映射.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "2454e4feccd9b1b80202fc97b9f4cfeaae55a7776791b8b748335ef39db9bab7",
+    "format": "csv",
+    "extraction": "xlsx_sheet_to_csv",
+    "source_sheet": "资产映射"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/资产映射.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "60c589fe150531b5afbdab84f15576418bbe3b1b45de5972938bf5d00c8fb9a4",
+    "format": "json",
+    "extraction": "xlsx_sheet_to_json",
+    "source_sheet": "资产映射"
+  },
+  {
+    "path": "data/source/g02-g13/G05/json/G05_MasterData.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G05_刻度冰原/星骸拾荒者_G05刻度冰原_Unity数据级制作脚本_V2.1.xlsx",
+    "source_sha256": "5a357f11fb98052b18a2ffb5a3fa5dd46902b23a9cc657e8d83940c1fc3c7b81",
+    "sha256": "3ab84f9f381c43a4ac28c7c9a2567632c724752a0d9627831ca406e4a08ad1a0",
+    "format": "json",
+    "extraction": "xlsx_workbook_to_masterdata"
+  }
+]

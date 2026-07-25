@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "name": "星骸拾荒者_Codex脚本与架构基线包_V1.0.zip",
+      "status": "isolated_corrupt",
+      "bytes": 11626,
+      "sha256": "1594cefcc551d1c6f5bc6cd86081ec81d621e0bcbb141540e5434e1bb5e39343",
+      "repository_path": "archive/legacy/corrupt/星骸拾荒者_Codex脚本与架构基线包_V1.0.zip",
+      "reason": "缺少ZIP中央目录结束记录；不得继续作为正式源包。"
+    },
+    {
+      "name": "星骸拾荒者_G01_HTML5-PWA可玩版_V1.0.zip",
+      "status": "isolated_rejected_prototype",
+      "bytes": 25908,
+      "sha256": "62a3686c455d579572bcdf7a75281c4e106dd5d932d100858d3f206403b0be0b",
+      "repository_path": "archive/legacy/originals/星骸拾荒者_G01_HTML5-PWA可玩版_V1.0.zip",
+      "reason": "纯色/占位式旧HTML5原型，不得反推正式G01资料。"
+    },
+    {
+      "name": "星骸拾荒者_Unity项目技术方案与G01-G02垂直切片开发包_V1.0.zip",
+      "status": "isolated_old_technology_route",
+      "bytes": 116526,
+      "sha256": "e503a3d949bcf41738c430e177aca11c5cb2d2592fb89190ca684bb923c865e7",
+      "repository_path": "archive/legacy/originals/星骸拾荒者_Unity项目技术方案与G01-G02垂直切片开发包_V1.0.zip",
+      "reason": "旧Unity当前工程路线；结构化数据概念可参考，但不得恢复Unity方案。"
+    },
+    {
+      "name": "星骸拾荒者_人物形象设计全集_V2.0.zip",
+      "status": "discovered_superseded_not_copied",
+      "bytes": 74338517,
+      "sha256": "9a483277a2903ef188cde882458c8cc9e00e03313c1a289c83cd73a3e419f6e5",
+      "original_discovery_path": "Downloads/星骸拾荒者_人物形象设计全集_V2.0.zip",
+      "superseded_by": "人物形象设计全集 V2.1补齐版"
+    },
+    {
+      "name": "星骸拾荒者_道具美术设计全集_V2.0.zip",
+      "status": "discovered_superseded_not_copied",
+      "bytes": 6681023,
+      "sha256": "f738dd76738c4a7f42fef1ba0f43579776db69901950b7394bcbfce01ac03d44",
+      "original_discovery_path": "Downloads/星骸拾荒者_美术设计全集/星骸拾荒者_道具美术设计全集_V2.0.zip",
+      "superseded_by": "道具美术正式包 V3.0"
+    },
+    {
+      "name": "星骸拾荒者_道具美术设计包_V1.0_第一批.zip",
+      "status": "discovered_superseded_not_copied",
+      "bytes": 3137078,
+      "sha256": "fc68a9f8e2941cc9201d4721ba67558e651b7d9fda48b162b5e92ea85b3556a5",
+      "original_discovery_path": "Downloads/星骸拾荒者_道具美术设计包_V1.0_第一批.zip",
+      "superseded_by": "道具美术正式包 V3.0"
+    },
+    {
+      "name": "星骸拾荒者_FX-B_G02-G05装备效果确认包_V1.0.zip",
+      "status": "discovered_partial_legacy_not_copied",
+      "bytes": 9644350,
+      "sha256": "0dc407843b7320c63e0d46c48a080c8495bae4ad75892d797a31d772b864916e",
+      "original_discovery_path": "Downloads/星骸拾荒者_FX-B_G02-G05装备效果确认包_V1.0.zip",
+      "superseded_by": "技能与装备效果HOPA正式包 V2.0（当前缺失）"
+    },
+    {
+      "name": "星骸拾荒者_DANGER-B_G05-G07危险视觉确认包_V1.0.zip",
+      "status": "discovered_partial_legacy_not_copied",
+      "bytes": 15198849,
+      "sha256": "315e68556143815a2212a12794982d27201155d3673e7752fe9ae1591d357a9f",
+      "original_discovery_path": "Downloads/星骸拾荒者_DANGER-B_G05-G07危险视觉确认包_V1.0.zip",
+      "superseded_by": "危险视觉HOPA正式包 V2.0（当前缺失）"
+    },
+    {
+      "name": "星骸拾荒者_DANGER-C_G08-G10危险视觉确认包_V1.0.zip",
+      "status": "discovered_partial_legacy_not_copied",
+      "bytes": 15228171,
+      "sha256": "3a8e0188b5b7e65ac675e3da280c704bd4575e1b3affbcddbfc03083cec89205",
+      "original_discovery_path": "Downloads/星骸拾荒者_DANGER-C_G08-G10危险视觉确认包_V1.0.zip",
+      "superseded_by": "危险视觉HOPA正式包 V2.0（当前缺失）"
+    },
+    {
+      "name": "星骸拾荒者_MECH-C_G08-G10机制可视化确认包_V1.0.zip",
+      "status": "discovered_superseded_not_copied",
+      "bytes": 10125386,
+      "sha256": "a254bd86bfe041001a70301f6d54be9d83761ab8e8c1a84568ed471d6e6be61d",
+      "original_discovery_path": "Downloads/星骸拾荒者_MECH-C_G08-G10机制可视化确认包_V1.0.zip",
+      "superseded_by": "机制可视化HOPA正式包 V2.0"
+    },
+    {
+      "name": "G-S2-D01 V0.9待确认版",
+      "status": "legacy_pending_draft_not_imported_as_baseline",
+      "superseded_by": "G-S2-D01 V1.0（当前缺失）"
+    },
+    {
+      "name": "旧名、战斗词汇与写实星宇方案",
+      "status": "semantic_legacy_rule",
+      "tokens": [
+        "小砾",
+        "Boss战",
+        "血量",
+        "攻击",
+        "伤害",
+        "敌人AI",
+        "写实人类少年星宇"
+      ],
+      "rule": "历史原件不静默改写；正式执行层按星宇、非战斗HOPA和布偶机械C方案处理。"
+    }
+  ]
+}
+

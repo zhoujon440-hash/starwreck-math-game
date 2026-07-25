@@ -1,0 +1,178 @@
+[
+  {
+    "path": "data/source/g02-g13/G10/master/星骸拾荒者_G10概率云港_Unity数据级制作脚本_V2.1.xlsx",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/星骸拾荒者_G10概率云港_Unity数据级制作脚本_V2.1.xlsx",
+    "sha256": "23f60b365cf306b4329905ac135a0bcf4f8311a4654dd7a2d16a2d83df1bdff9",
+    "format": "xlsx",
+    "extraction": "verbatim_binary"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/背包道具流转.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/背包道具流转.json",
+    "sha256": "a2c9c2e42b1a107c58939e3ca2b3ab15fe63c889568b6fbf62b4a069bc346402",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/场景状态机.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/场景状态机.json",
+    "sha256": "bd64d44cec0169267a7195a02fc447b3001b2a7d4b0cf65d0873bb9b6ee8ba2f",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/对话脚本.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/对话脚本.json",
+    "sha256": "9a5e27258ce407652b7bd342d667fcc204707d26a280d31da8e55e94c79ad2b6",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/存档与恢复.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/存档与恢复.json",
+    "sha256": "bcaaf5b5ff49146d3cdfa0994b36ecfc418de8e7ebf9d529d88832b983bd8e78",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/资产映射.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/资产映射.json",
+    "sha256": "1f0403156a09d8f0c6f67034a8d54e140df0843a49e7062008448e08d3e9405f",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/三级提示.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/三级提示.json",
+    "sha256": "38e48c8e33b8e3e1998e13e72d1c00ffd9140a63f3ad708d6e0b54afe0412631",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/G10_MasterData.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/G10_MasterData.json",
+    "sha256": "d5088d6768fbd265e9bc8fc51d4a4dc278cc9e0f5e60fb6fe30aa6f23ec09a1d",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/热点清单.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/热点清单.json",
+    "sha256": "b19e0389426ab9a2666043b0619259c1412a3f9986644294166e1ef47b5cf904",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/程序变量.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/程序变量.json",
+    "sha256": "43d2aa62ff725c7bb877565dfde7f708f7e4ab44a43d68667fbad219c8aa5749",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/找物清单.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/找物清单.json",
+    "sha256": "5680ed49c89ef0aa61758c864b6ec308d21886c1de60208e08f23a8735b41c89",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/json/场景流程.json",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/03_JSON数据/场景流程.json",
+    "sha256": "93b11b585b82ef78141810b2ebfb29b32e796798aff5e14a4d5bd734244525f2",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/三级提示.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/三级提示.csv",
+    "sha256": "8d3931664094636b69c917a667226007028a16643022184c7fc50bbdf88100ec",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/场景状态机.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/场景状态机.csv",
+    "sha256": "a508f467b8262bf69c80289c738affab83acaea5f2f98d9c36f118f517dfe4db",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/热点清单.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/热点清单.csv",
+    "sha256": "a3bb283a2c4d123de2ae99e89695cadd3e93d8cb8bd32dabae9e88bfb44156e4",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/场景流程.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/场景流程.csv",
+    "sha256": "853bdbec27a647f4677917b42c45725ff01a6ae4671c9e807d9bf20c42156e29",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/找物清单.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/找物清单.csv",
+    "sha256": "edaf9bc76f60f530873daff08d19bff8744b85e80fcd3de81418064c868e5480",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/资产映射.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/资产映射.csv",
+    "sha256": "be76f814a06aba7e9d9f66b619724d9ae215ffda85d6b72deb09f970ca596a48",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/存档与恢复.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/存档与恢复.csv",
+    "sha256": "e0fdf03520af4383f1ca6d034ca70238fc1caeaf43620fd6f340572a2937a34f",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/程序变量.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/程序变量.csv",
+    "sha256": "b3b946fc4330dddcf2641f959a09a653aa76c2370f7756aeab6716bd3d4d4d32",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/背包道具流转.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/背包道具流转.csv",
+    "sha256": "45701c4d08dac15990df0f51406dffdeabd91771e3989b2605fd5bfdd31fe1db",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g02-g13/G10/csv/对话脚本.csv",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G10_概率云港/02_CSV数据表/对话脚本.csv",
+    "sha256": "adc36b3cc00af8c605a2a203f0f96c6c3daa29700e03cc4641625d0945696d97",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  }
+]

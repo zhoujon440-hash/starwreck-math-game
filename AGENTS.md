@@ -29,4 +29,5 @@
 - 测试覆盖数据校验、背包、场景状态、存档恢复、G01到G02交接。
 
 ## 首个任务
-执行 `tasks/TASK-001_G01正式HOPA重构.md`，先把G01做成标准样板，不要提前开发G02。
+按`docs/plan/CODEX_MASTER_PLAN_V2.0.md`的Issue顺序执行。P0-A/P0-B未通过验收前，
+不得执行`tasks/TASK-001_G01正式HOPA重构.md`，不得开发新玩法、角色、场景或G02。
