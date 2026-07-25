@@ -2,6 +2,42 @@
 
 本轮资产使用 Codex 内置图像生成工具生成，未使用 API / CLI fallback。原始输出已复制到项目内，不依赖用户目录中的生成缓存。
 
+## G01 角色与剧情系统第一阶段资产
+
+完整生成提示词保存在 `art/prompts/g01-character-story-v1.md`。
+
+### 星宇
+
+- 键控母版：`art/source/g01-xingyu-portraits-chroma.png`
+- 运行时目录：`public/assets/characters/xingyu/`
+- 状态：`normal`、`alert`、`thinking`、`nervous`、`determined`
+- 处理：内置图像生成 → `remove_chroma_key.py` 软遮罩与去溢色 → 3×2 等分切片。
+
+仓库没有星宇冻结人物设计板。运行时母版只采用任务中明确的“拾光号少年修复者”身份和现有
+拾光号场景的色彩、材质、年龄气质；未提供的服装制式、发型和个人标志仍标记为
+“待项目负责人补充”。本资产不引入组织徽记、武器、新搭档或额外世界观。
+
+### 七码 · EDU-0077
+
+- 键控母版：`art/source/g01-qima-portraits-chroma.png`
+- 运行时目录：`public/assets/characters/qima/`
+- 状态：`offline`、`damaged`、`booting`、`normal`、`question`、`warning`、`proud`、
+  `awkward`、`scanning`
+- 处理：内置图像生成 → `remove_chroma_key.py` 软遮罩与去溢色 → 3×3 等分切片。
+
+设计严格保留任务冻结的旧显示屏头、奶黄色修补机身、像素表情和维修痕迹；所有状态使用同一
+机体轮廓，没有改成人形机器人或文字头像。
+
+### SCN-G01-01 导航核心舱与修复特写
+
+- 场景底图：`public/assets/g01-scene-01/navigation-core.png`
+- 核心特写：`public/assets/g01-scene-01/qima-core-closeup.png`
+- 部件键控母版：`art/source/g01-scene-01-parts-chroma.png`
+- 部件运行时目录：`public/assets/items/g01-scene-01/`
+
+场景与特写均为不含角色和目标物的干净底图。七码和芯片、接线片、微型保险丝、清洁刷使用
+独立透明图层，保证状态切换、拾取和重载后能从画面中真实消失。
+
 ## PR #2 第二轮视觉整改资产
 
 ### 领航舱维修柜关闭状态
