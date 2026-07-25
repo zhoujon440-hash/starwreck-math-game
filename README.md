@@ -28,19 +28,16 @@
 
 ## 当前可玩范围
 
-本轮已完成 `SCN-G01-00《拾光号熄灯》`：
+当前连续可玩两个正式场景：
 
-1. 在断电领航舱中找到应急手灯；
-2. 用手灯调查熔断配电盒；
-3. 打开维修柜局部特写并完成画面找物；
-4. 将临时保险丝放入背包；
-5. 选择或拖拽保险丝到应急照明槽；
-6. 合上保护开关，恢复照明并到达 S5；
-7. 进入 S6 下一场景交接点，但不提前制作后续场景。
+1. `SCN-G01-00《拾光号熄灯》`：在断电领航舱完成找物、维修柜特写、背包拖拽与照明恢复。
+2. `SCN-G01-01《找回七码》`：进入导航核心舱，找到四件修复部件，清理并装回核心，完成线路校准，恢复七码。
 
-PWA 支持离线缓存和本地自动存档。关键道具错误使用不消耗，提示分为方向、区域、短暂高亮三级。
+角色和剧情演出由独立内容数据驱动，支持左右立绘、表情切换、打字机、自动播放、首次关键剧情保护、对话历史、角色介绍与档案解锁。七码按
+`offline → damaged → booting → normal` 完成正式出场。PWA 会保存当前场景、对白位置、角色状态、HOPA、背包和谜题进度；G01 的
+`world_star_core_count` 始终为 `0`。
 
-PR #2 第二轮视觉整改后，维修柜关闭/打开使用两套正式手绘状态图；应急手灯和柜内目标物均缩放并融入环境杂物，拾取与读档后从独立图层消失。场景继续使用统一 `1672 × 941` 设计坐标。正式 UI 默认隐藏内部状态、schema 与开发验收信息；CI 会上传双分辨率全链路截图及仅供验收的固定设施热点校准图。
+其余六个 G01 场景仅有经过校验的剧情节点和关闭入口，尚未制作玩法。
 
 ## 本地运行
 
@@ -59,7 +56,16 @@ npm run test:e2e
 ## 实现资料
 
 - `docs/implementation/G01_SCN-00实现说明.md`
+- `docs/implementation/G01角色与剧情系统说明.md`
+- `docs/story/G01八场剧情结构.md`
+- `docs/story/SCN-G01-00对白表.md`
+- `docs/story/SCN-G01-01对白表.md`
+- `docs/characters/星宇角色说明.md`
+- `docs/characters/七码角色说明.md`
 - `docs/implementation/NEXT.md`
-- `docs/screenshots/SCN-G01-00-1920x1080.png`
-- `docs/screenshots/SCN-G01-00-1366x768.png`
+- `docs/screenshots/G01-character-story-1366x768.png`
+- `docs/screenshots/G01-character-story-1920x1080.png`
+- `docs/screenshots/G01-qima-booting-1366x768.png`
+- `docs/screenshots/G01-first-conversation-1920x1080.png`
+- `docs/screenshots/G01-character-profiles-1920x1080.png`
 - `art/README.md`

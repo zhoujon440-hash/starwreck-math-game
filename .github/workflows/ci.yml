@@ -16,11 +16,11 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
-      - name: Upload G01 visual acceptance pack
+      - name: Upload G01 character and story acceptance pack
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: g01-visual-acceptance-${{ github.run_number }}
-          path: test-results/visual-acceptance
+          name: g01-character-story-acceptance-${{ github.run_number }}
+          path: test-results/character-story-acceptance
           if-no-files-found: error
           retention-days: 14

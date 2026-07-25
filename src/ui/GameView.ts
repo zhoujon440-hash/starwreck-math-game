@@ -104,6 +104,7 @@ export class GameView {
       }
       if (session.completedPuzzleIds.includes(CIRCUIT_ID)) {
         this.#circuitOpen = false
+        this.#zoomOpen = false
       } else {
         this.#restoreCircuit()
         if (
