@@ -2,6 +2,8 @@
 source_package: PKG-PRODUCT-PLAN-V1.1
 source_entry: "G-DOC-GATE-01_G02全量资料与计划确认及封版门禁_V1.3_D0-4确认版.docx"
 source_sha256: 1defb65bf9395518ae965ca1b56d793b2c4c1749540d78e9c4d9df1452069041
+source_bytes: 42427
+table_count: 7
 version: confirmed versions
 purpose: "产品、教育、计划与门禁正式全文"
 extraction: full_text_and_tables_from_ooxml

@@ -1,9 +1,15 @@
 [
   {
     "chapter": "G01",
-    "status": "missing_formal_source",
+    "status": "imported_verified",
     "version": "V3.0",
-    "path": "docs/story/G01-G13/G01.md"
+    "path": "docs/story/G01-G13/G01.md",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/01_G01剧情与HOPA脚本/星骸拾荒者_G01拾光号坠落之前_剧情与HOPA实施脚本_V3.0.docx",
+    "source_sha256": "11746e4b63680b7e5df04b6d55327b622c3fb5bc6b39567f0136be12f71f03fa",
+    "coverage_ratio": 1,
+    "g01_chapter_complete": true,
+    "g01_handoff_to_g02": true,
+    "world_star_core_count": 0
   },
   {
     "chapter": "G02",

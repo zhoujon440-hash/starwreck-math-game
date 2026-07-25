@@ -1,9 +1,11 @@
 ---
-source_package: PKG-G03-DATA-V2.1
-source_entry: "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本说明_V2.1.docx"
+source_package: PKG-G02-G13-DATA-V2.1
+source_entry: "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G03_齿轮荒原/星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本说明_V2.1.docx"
 source_sha256: d4e1c1b8704218c5751ed066559ca858b04359bb4f8cff3fe87fce07c6b477ad
+source_bytes: 37977
+table_count: 0
 version: V2.1
-purpose: "G03结构化制作母本说明；不代表Unity运行时路线"
+purpose: "G03结构化制作数据母本说明；正式运行时为HTML5/PWA"
 extraction: full_text_and_tables_from_ooxml
 runtime_asset: false
 ---

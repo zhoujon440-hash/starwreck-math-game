@@ -2,6 +2,8 @@
 source_package: PKG-PRODUCT-PLAN-V1.1
 source_entry: "G-DOC-CONF-01_G02开发前资料总确认记录_V1.0.docx"
 source_sha256: 45a0afb4e492e4238ba3d0244d558271047efecc5d606018c930daf9f1277180
+source_bytes: 38460
+table_count: 1
 version: confirmed versions
 purpose: "产品、教育、计划与门禁正式全文"
 extraction: full_text_and_tables_from_ooxml

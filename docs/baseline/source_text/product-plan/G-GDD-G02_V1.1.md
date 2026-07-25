@@ -2,6 +2,8 @@
 source_package: PKG-PRODUCT-PLAN-V1.1
 source_entry: "G-GDD-G02_锈环星首发星球产品与教学设计总纲_V1.1_确认版.docx"
 source_sha256: a83784306f6485646fe504860ccca3ebb41ac8f8936ebe13570d3ed131fc6687
+source_bytes: 46686
+table_count: 11
 version: confirmed versions
 purpose: "产品、教育、计划与门禁正式全文"
 extraction: full_text_and_tables_from_ooxml

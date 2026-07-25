@@ -1,9 +1,11 @@
 ---
-source_package: PKG-G02-DATA-V2.1
-source_entry: "星骸拾荒者_G02锈环星_Unity数据级制作脚本_V2.1/星骸拾荒者_G02锈环星_Unity数据级制作脚本说明_V2.1.docx"
+source_package: PKG-G02-G13-DATA-V2.1
+source_entry: "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G02_锈环星/星骸拾荒者_G02锈环星_Unity数据级制作脚本说明_V2.1.docx"
 source_sha256: 131a231e66e2d578ce8fcd11e8c0a83f807ad8f0753b2539f904ba82d2cca330
+source_bytes: 39616
+table_count: 2
 version: V2.1
-purpose: "G02结构化制作母本说明；不代表Unity运行时路线"
+purpose: "G02结构化制作数据母本说明；正式运行时为HTML5/PWA"
 extraction: full_text_and_tables_from_ooxml
 runtime_asset: false
 ---

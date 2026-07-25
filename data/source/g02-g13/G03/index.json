@@ -1,128 +1,178 @@
 [
   {
+    "path": "data/source/g02-g13/G03/master/星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1.xlsx",
+    "package_id": "PKG-G02-G13-DATA-V2.1",
+    "source_entry": "星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1/G03_齿轮荒原/星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1.xlsx",
+    "sha256": "b9996d8d709186d5f25936d6fadd41b2bd3a93fcd05e53b5512b9f1a146ccc8c",
+    "format": "xlsx",
+    "extraction": "verbatim_binary"
+  },
+  {
     "path": "data/source/g02-g13/G03/json/G03_MasterData.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/G03_MasterData.json",
     "sha256": "ad1c439420beda6f894813c7dea0128ed46fd46fe3a7fc6ca2e0f5b25bac392a",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/资产映射.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/资产映射.json",
     "sha256": "1267dc055d6d0796205904677fe263d8448df959340a405959b5174aff50210e",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/热点清单.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/热点清单.json",
     "sha256": "62954c527e7ccfeff9ab0f2899d2b527481b9e6f74bd08d9b05d4866e8dd6e2f",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/三级提示.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/三级提示.json",
     "sha256": "04db4337f39341bebb4c13c940727a50d2ddd030ea1856d46cb65bbe940442cb",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/场景流程.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/场景流程.json",
     "sha256": "7c6770c6be8395e7b0965ada21f9a7621ecb745bbaaae2de386b5df985d73340",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/程序变量.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/程序变量.json",
     "sha256": "973233b5a5d9b22f47244ad45790081b0954685d823f3bb79e17ae80be9ba191",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/场景状态机.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/场景状态机.json",
     "sha256": "7079e4e9f6ec1c857c5c0e96f2947f281ff586eba2ea2ec19ff2689781ae3a78",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/找物清单.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/找物清单.json",
     "sha256": "f1141573f3e182126c65b739ac02f99bfe316b26c6566976118f510720a51c75",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/对话脚本.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/对话脚本.json",
     "sha256": "d0d7f8710b3e0c6273c38c7bfd5ab24cb2ab52ddd555719a4ee76d20b671a2ee",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/背包道具流转.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/背包道具流转.json",
     "sha256": "302763587c4a9da7a05ace881d609e3d5a41d2870ef70a394d1900e3a731473d",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/json/存档与恢复.json",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/03_JSON数据/存档与恢复.json",
     "sha256": "d8634fab016db1570ac09e25579f87a2d616d8afd4b9f69b5fdf8ef4f2d5c5af",
-    "format": "json"
+    "format": "json",
+    "extraction": "verbatim_json"
   },
   {
     "path": "data/source/g02-g13/G03/csv/对话脚本.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/对话脚本.csv",
     "sha256": "ab4798014a55fe55ef1c79f78a88bddf864cf8e582e3bd105d8fab5317d9c999",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/热点清单.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/热点清单.csv",
     "sha256": "baf64d0b8bf1a0971f3770b63a90a58bb4e2a2ee41b6bba15b18828ed4c2607b",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/资产映射.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/资产映射.csv",
     "sha256": "3b3109b89e0b28ca77b34fd63f03f72ce31cf7350ce5bff9584cbefbbe5d7eec",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/背包道具流转.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/背包道具流转.csv",
     "sha256": "4773014f05b3f8256fe941d6bdf3316ab4351038fc92954e681ebdd34433cc84",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/程序变量.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/程序变量.csv",
     "sha256": "31071d743f83b6b83ef51da671b72f1703fe55b67dec0724266975c2f6b914a6",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/场景状态机.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/场景状态机.csv",
     "sha256": "2879df7a07730b3f4274220cfb7016c0f6a6c08e0825e1812c1cf42a3ca71a0a",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/找物清单.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/找物清单.csv",
     "sha256": "8dd8fe07a6c99e53cbe4a1331a127e135c14bf2fb6e6fcd7ed15c5e474fe59b1",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/三级提示.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/三级提示.csv",
     "sha256": "22263ea7065d056962e6fc1255f11b8e18f7ebf7108a1d64675fe064bd7157aa",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/存档与恢复.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/存档与恢复.csv",
     "sha256": "f16a89ef8343cf73dc92ec4438d9fe6eb7b9c0a554d30488a806b1044eae1be6",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   },
   {
     "path": "data/source/g02-g13/G03/csv/场景流程.csv",
+    "package_id": "PKG-G03-DATA-V2.1",
     "source_entry": "星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1/02_CSV数据表/场景流程.csv",
     "sha256": "3182c2ab35da137e825ced4f44e0d80af6bfffd5421978f462731152130bd7d6",
-    "format": "csv"
+    "format": "csv",
+    "extraction": "verbatim_csv"
   }
 ]

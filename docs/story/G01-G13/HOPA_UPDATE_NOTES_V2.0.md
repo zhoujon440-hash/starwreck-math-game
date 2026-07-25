@@ -2,6 +2,8 @@
 source_package: PKG-G02-G13-HOPA-V2.0
 source_entry: "星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0/星骸拾荒者_G02-G13全章节脚本更新总说明_V2.0.docx"
 source_sha256: b21179efcc66d96bd36246cf932e3496d6d2c4e9b5551d9b0a27617d55bda2e1
+source_bytes: 37844
+table_count: 1
 version: V2.0
 purpose: "G02—G13全章节脚本更新总说明"
 extraction: full_text_and_tables_from_ooxml

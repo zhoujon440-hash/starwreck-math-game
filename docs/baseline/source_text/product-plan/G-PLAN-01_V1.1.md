@@ -2,6 +2,8 @@
 source_package: PKG-PRODUCT-PLAN-V1.1
 source_entry: "G-PLAN-01_独立开发总体计划与工作架构_V1.1_确认版.docx"
 source_sha256: 34052c7f21bc708de31e1ea26a70e205fde8e0d285d74a471b312811d446fb90
+source_bytes: 46750
+table_count: 10
 version: confirmed versions
 purpose: "产品、教育、计划与门禁正式全文"
 extraction: full_text_and_tables_from_ooxml

@@ -2,6 +2,8 @@
 source_package: PKG-G02-SCRIPT-FREEZE-V1.0
 source_entry: "G-SCR-01_G02锈环星第一册_开场星宇登场与进入锈环星_V1.0_冻结版.docx"
 source_sha256: 4a3ad6c176a118c12810ef2eda1b6ffe5a8240df7794e65eeebbe2f807a9dba9
+source_bytes: 50120
+table_count: 21
 version: confirmed versions
 purpose: "G02阶段计划与G-SCR-01—05冻结全文"
 extraction: full_text_and_tables_from_ooxml

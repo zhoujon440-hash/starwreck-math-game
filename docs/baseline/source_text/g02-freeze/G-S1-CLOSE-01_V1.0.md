@@ -2,6 +2,8 @@
 source_package: PKG-G02-SCRIPT-FREEZE-V1.0
 source_entry: "G-S1-CLOSE-01_G02五册制作脚本总封版与有效基线索引_V1.0.docx"
 source_sha256: 729b490d377bb65a92a237038d2d86df7d9c3e578b7a38d983d2d4735ba9d874
+source_bytes: 42611
+table_count: 5
 version: confirmed versions
 purpose: "G02阶段计划与G-SCR-01—05冻结全文"
 extraction: full_text_and_tables_from_ooxml

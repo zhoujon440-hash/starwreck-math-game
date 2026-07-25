@@ -2,6 +2,8 @@
 source_package: PKG-PRODUCT-PLAN-V1.1
 source_entry: "G-EDU-01_六年级至初中数学知识点与游戏机制映射_V1.0_确认版.docx"
 source_sha256: b14eddb9753c3901832699b40804b8246001893d7cfa0abd11022989a80701fc
+source_bytes: 45929
+table_count: 8
 version: confirmed versions
 purpose: "产品、教育、计划与门禁正式全文"
 extraction: full_text_and_tables_from_ooxml

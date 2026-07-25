@@ -2,6 +2,8 @@
 source_package: PKG-G02-SCRIPT-FREEZE-V1.0
 source_entry: "G-SCR-03_G02锈环星第三册_四条调查支路与三种能源_V1.0_冻结版.docx"
 source_sha256: 00e07ed7592c48686c944103b624d7ce5019b32a013e6fa583a00322df11e224
+source_bytes: 54481
+table_count: 29
 version: confirmed versions
 purpose: "G02阶段计划与G-SCR-01—05冻结全文"
 extraction: full_text_and_tables_from_ooxml

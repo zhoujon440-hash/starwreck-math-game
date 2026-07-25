@@ -2,6 +2,8 @@
 source_package: PKG-G02-SCRIPT-FREEZE-V1.0
 source_entry: "G-SCR-02_G02锈环星第二册_旧屏幕谷居民救援与阿铆工坊_V1.0_冻结版.docx"
 source_sha256: 263ec5971ab6f49e50e72cf60610a3c221de90a78511e8badb1e4d90f6fdfbc0
+source_bytes: 57898
+table_count: 29
 version: confirmed versions
 purpose: "G02阶段计划与G-SCR-01—05冻结全文"
 extraction: full_text_and_tables_from_ooxml

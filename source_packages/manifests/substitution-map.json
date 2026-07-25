@@ -33,8 +33,8 @@
       "supersedes": [
         "FX-B G02—G05装备效果确认包 V1.0"
       ],
-      "status": "current_source_missing",
-      "rule": "正式V2原包到位前，V1局部包不得升格为事实源。"
+      "status": "current_source_imported",
+      "rule": "FX-001—041以已校验V2.0正式清单、章节范围和包内设计板路径为准；V1局部包仅保留为被替代资料。"
     },
     {
       "current": "危险视觉HOPA正式包 V2.0",
@@ -42,8 +42,8 @@
         "DANGER-B G05—G07危险视觉确认包 V1.0",
         "DANGER-C G08—G10危险视觉确认包 V1.0"
       ],
-      "status": "current_source_missing",
-      "rule": "DANGER-001—076仅保留初始索引；V1局部包不得冒充V2总包。"
+      "status": "current_source_imported",
+      "rule": "DANGER-001—076以已校验V2.0正式清单、章节范围和包内设计板路径为准；删除旧推算展开规则。"
     },
     {
       "current": "G01整合正式包 V3.0",
@@ -52,8 +52,8 @@
         "G01 HTML5-PWA纯色占位原型 V1.0",
         "更早G01脚本和实现反推数据"
       ],
-      "status": "current_source_missing",
-      "rule": "正式V3原包缺失期间，G01全文、数据和33项资产不得由旧原型补造。"
+      "status": "current_source_imported",
+      "rule": "G01全文、结构化数据、33项正式资产和包内G02开场边界V2.2均以已校验V3.0原包为准。"
     },
     {
       "current": "G02—G13 HOPA实施脚本 V2.0",
@@ -85,9 +85,8 @@
       "supersedes": [
         "G-S2-D01 V0.9待确认版"
       ],
-      "status": "current_source_missing",
-      "rule": "只发现V0.9，不能把待确认稿升格为冻结V1.0。"
+      "status": "current_source_imported",
+      "rule": "已校验并全文提取冻结V1.0；V0.9待确认版只保留为被替代资料。"
     }
   ]
 }
-

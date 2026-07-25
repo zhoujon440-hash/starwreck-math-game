@@ -2,6 +2,8 @@
 source_package: PKG-G02-SCRIPT-FREEZE-V1.0
 source_entry: "G-S1-PLAN-01_G02制作脚本推进计划与确认门_V2.0_S1完成版.docx"
 source_sha256: 3f906bc361537775e4dbf8063b4ac08669f2510ba3af720e27b0c5d0d3ca506b
+source_bytes: 39884
+table_count: 2
 version: confirmed versions
 purpose: "G02阶段计划与G-SCR-01—05冻结全文"
 extraction: full_text_and_tables_from_ooxml

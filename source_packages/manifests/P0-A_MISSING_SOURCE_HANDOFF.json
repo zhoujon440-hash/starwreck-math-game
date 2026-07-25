@@ -2,8 +2,8 @@
   "schema_version": 1,
   "issue": 6,
   "pr": 11,
-  "status": "source_files_uploaded_to_controlled_storage_pending_lfs_import",
-  "storage": "google_drive",
+  "status": "resolved_imported_verified",
+  "storage": "git_lfs",
   "files": [
     {
       "source_id": "PKG-G01-V3.0",
@@ -79,5 +79,5 @@
     }
   ],
   "embedded_source_note": "G02开场边界V2.2位于PKG-G01-V3.0内部路径 04_G02开场边界修订/星骸拾荒者_G02开场边界修订_V2.2.docx，不应继续计为独立缺失源。",
-  "next_action": "Codex must download these exact files, verify bytes and SHA-256, add them to the same PR branch using Git LFS where applicable, extract full searchable content, and reduce missing_required to zero."
+  "next_action": "resolved: all eight handoff files were byte/SHA verified, imported through Git LFS, fully extracted where applicable, and missing_required is zero."
 }

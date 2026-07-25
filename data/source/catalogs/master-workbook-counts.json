@@ -6,10 +6,11 @@
     "characters": 71,
     "scenes": 91,
     "props": 46,
-    "fx": 41,
     "mech": 47,
     "ui": 83,
-    "hazards": 32
+    "fx": 41,
+    "danger": 76,
+    "g01_addition": 33
   },
   "normalized_asset_total": 488,
   "design_or_production_master": true,

@@ -2,6 +2,8 @@
 source_package: PKG-G02-SCRIPT-FREEZE-V1.0
 source_entry: "G-SCR-05_G02锈环星第五册_星门核心十二秒Boss与世界改变_V1.0_冻结版.docx"
 source_sha256: f3f1a436897695a05ae0e5336ebfb16de603c3dc0977fa611be37be974e2a1a6
+source_bytes: 63277
+table_count: 35
 version: confirmed versions
 purpose: "G02阶段计划与G-SCR-01—05冻结全文"
 extraction: full_text_and_tables_from_ooxml

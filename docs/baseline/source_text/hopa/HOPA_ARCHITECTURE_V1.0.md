@@ -2,6 +2,8 @@
 source_package: PKG-HOPA-FX001-V1.0
 source_entry: "星骸拾荒者_HOPA玩法与技术架构冻结修正版_V1.0.docx"
 source_sha256: c38e1adb3833f8313ffb957a2eb19798a85abc35b2db5c7da1334fb5bf52750e
+source_bytes: 408034
+table_count: 9
 version: V1.0
 purpose: "HOPA玩法与技术架构冻结修正版完整文本"
 extraction: full_text_and_tables_from_ooxml

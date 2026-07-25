@@ -2,6 +2,8 @@
 source_package: PKG-G02-SCRIPT-FREEZE-V1.0
 source_entry: "G-SCR-04_G02锈环星第四册_磁力手套豆包借电与五塔调查_V1.0_冻结版.docx"
 source_sha256: 40cb390ce19bb2fcb714255a59a58f77ece78ca628728bb485270c5b89f66b3d
+source_bytes: 55097
+table_count: 33
 version: confirmed versions
 purpose: "G02阶段计划与G-SCR-01—05冻结全文"
 extraction: full_text_and_tables_from_ooxml

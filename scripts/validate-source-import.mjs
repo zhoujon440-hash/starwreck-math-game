@@ -12,16 +12,64 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 
+const expectedPackageIds = [
+  "PKG-PRODUCT-PLAN-V1.1",
+  "PKG-G02-SCRIPT-FREEZE-V1.0",
+  "PKG-CHARACTERS-V2.1",
+  "PKG-SCENES-V1.0",
+  "PKG-PROPS-V3.0",
+  "PKG-MECH-V2.0",
+  "PKG-UI-V2.0",
+  "PKG-G02-G13-HOPA-V2.0",
+  "PKG-G02-DATA-V2.1",
+  "PKG-G03-DATA-V2.1",
+  "PKG-HOPA-FX001-V1.0",
+  "PKG-G01-V3.0",
+  "PKG-G02-G13-DATA-V2.1",
+  "PKG-FX-V2.0",
+  "PKG-DANGER-V2.0",
+  "DOC-G-S2-D01-V1.0",
+  "DOC-G-S2-CHG-01-V1.0",
+  "DOC-G-CHAR-01-V1.0",
+  "DOC-G-ANIM-01-V1.0",
+];
+
+const requiredModules = [
+  "场景流程",
+  "热点清单",
+  "找物清单",
+  "背包道具流转",
+  "对话脚本",
+  "场景状态机",
+  "三级提示",
+  "存档与恢复",
+  "程序变量",
+  "资产映射",
+];
+
 function fail(message) {
   throw new Error(message);
+}
+
+function assert(condition, message) {
+  if (!condition) fail(message);
 }
 
 function readJson(path) {
   return JSON.parse(readFileSync(resolve(root, path), "utf8"));
 }
 
-function assert(condition, message) {
-  if (!condition) fail(message);
+function unique(values, label) {
+  assert(new Set(values).size === values.length, `${label} must be unique`);
+}
+
+function exactSet(actual, expected, label) {
+  unique(actual, label);
+  assert(
+    actual.length === expected.length &&
+      expected.every((value) => actual.includes(value)),
+    `${label} mismatch`,
+  );
 }
 
 async function sha256(path) {
@@ -50,10 +98,6 @@ function readPrefix(path, length = 128) {
   }
 }
 
-function unique(values, label) {
-  assert(new Set(values).size === values.length, `${label} must be unique`);
-}
-
 async function verifyPackage(packageRecord) {
   const path = resolve(root, packageRecord.repository_path);
   assert(existsSync(path), `missing imported package: ${packageRecord.repository_path}`);
@@ -79,14 +123,42 @@ async function verifyPackage(packageRecord) {
   );
 }
 
+function exactIdRange(records, field, prefix, count, label) {
+  exactSet(
+    records.map((item) => item[field]),
+    Array.from({ length: count }, (_, index) =>
+      `${prefix}-${String(index + 1).padStart(3, "0")}`),
+    label,
+  );
+}
+
+function validateRawCatalog(path, prefix, count) {
+  const text = readFileSync(resolve(root, path), "utf8").replace(/^\uFEFF/, "");
+  const ids = [...text.matchAll(new RegExp(`^${prefix}-\\d{3},`, "gm"))].map(
+    (match) => match[0].slice(0, -1),
+  );
+  exactSet(
+    ids,
+    Array.from({ length: count }, (_, index) =>
+      `${prefix}-${String(index + 1).padStart(3, "0")}`),
+    `${prefix} raw catalog ids`,
+  );
+}
+
 const packages = readJson("source_packages/manifests/source-packages.json");
 assert(packages.issue === 6, "source package manifest must belong to Issue #6");
-assert(packages.imported.length === 11, "expected 11 verified imported packages");
-assert(packages.missing_required.length === 9, "expected 9 explicit missing sources");
-unique(packages.imported.map((item) => item.package_id), "package ids");
-unique(packages.missing_required.map((item) => item.source_id), "missing source ids");
+exactSet(
+  packages.imported.map((item) => item.package_id),
+  expectedPackageIds,
+  "formal package ids",
+);
+assert(
+  Array.isArray(packages.missing_required) && packages.missing_required.length === 0,
+  "P0-A merge gate requires missing_required.length === 0",
+);
 for (const item of packages.imported) {
   assert(item.status === "imported_verified", `${item.package_id} status is not verified`);
+  assert(item.storage === "git_lfs", `${item.package_id} must use Git LFS`);
   assert(item.expected_bytes === item.observed_bytes, `${item.package_id} byte facts differ`);
   assert(
     item.expected_sha256 === item.observed_sha256,
@@ -96,23 +168,17 @@ for (const item of packages.imported) {
 }
 
 const missing = readJson("source_packages/manifests/missing-sources.json");
-assert(missing.missing_count === 9, "missing source manifest count must be 9");
-assert(
-  missing.items.some((item) => item.source_id === "PKG-G01-V3.0"),
-  "G01 V3.0 missing source must be explicit",
-);
-assert(
-  missing.items.some((item) => item.source_id === "PKG-G02-G13-DATA-V2.1"),
-  "complete G02-G13 V2.1 data package gap must be explicit",
-);
+assert(missing.issue === 6, "missing source report must belong to Issue #6");
+assert(missing.missing_count === 0, "P0-A merge gate requires missing_count === 0");
+assert(Array.isArray(missing.items) && missing.items.length === 0, "missing items must be []");
 
 const extractionStats = readJson(
   "source_packages/manifests/docx-extraction-stats.json",
 );
-assert(extractionStats.documents.length === 29, "expected 29 extracted DOCX documents");
+assert(extractionStats.documents.length === 39, "expected 39 extracted DOCX documents");
 assert(
   extractionStats.all_available_documents_full_text_captured === true,
-  "all available DOCX text must be captured",
+  "all imported DOCX text must be captured",
 );
 for (const document of extractionStats.documents) {
   assert(document.coverage_ratio === 1, `DOCX coverage failed: ${document.source_entry}`);
@@ -124,6 +190,7 @@ for (const document of extractionStats.documents) {
 
 const extracted = readJson("source_packages/manifests/extracted-files.json");
 assert(extracted.count === extracted.files.length, "extracted file count mismatch");
+assert(extracted.count >= 351, "expected at least 351 searchable extracted outputs");
 for (const item of extracted.files) {
   const path = resolve(root, item.output_path);
   assert(existsSync(path), `missing extracted output: ${item.output_path}`);
@@ -138,85 +205,188 @@ for (const item of extracted.files) {
   assert(outputSha === item.output_sha256, `output SHA mismatch: ${item.output_path}`);
 }
 
+const chapters = Array.from(
+  { length: 13 },
+  (_, index) => `G${String(index + 1).padStart(2, "0")}`,
+);
 const storyIndex = readJson("docs/story/G01-G13/index.json");
 assert(storyIndex.length === 13, "G01-G13 story index must contain 13 chapters");
-unique(storyIndex.map((item) => item.chapter), "story chapters");
-assert(
-  storyIndex.find((item) => item.chapter === "G01")?.status === "missing_formal_source",
-  "G01 must remain an explicit missing-source record",
+exactSet(
+  storyIndex.map((item) => item.chapter),
+  chapters,
+  "story chapters",
 );
-for (let number = 2; number <= 13; number += 1) {
-  const chapter = `G${String(number).padStart(2, "0")}`;
-  const record = storyIndex.find((item) => item.chapter === chapter);
-  assert(record?.status === "imported_verified", `${chapter} HOPA text is not verified`);
-  assert(record?.coverage_ratio === 1, `${chapter} HOPA text coverage is not 100%`);
-  assert(existsSync(resolve(root, record.path)), `${chapter} Markdown is missing`);
+for (const record of storyIndex) {
+  assert(record.status === "imported_verified", `${record.chapter} story is not verified`);
+  assert(record.coverage_ratio === 1, `${record.chapter} story coverage is not 100%`);
+  assert(existsSync(resolve(root, record.path)), `${record.chapter} Markdown is missing`);
 }
+assert(
+  storyIndex.find((item) => item.chapter === "G01")?.world_star_core_count === 0,
+  "G01 story index must freeze world_star_core_count at 0",
+);
 
 const dataIndex = readJson("data/source/index.json");
 assert(dataIndex.length === 13, "G01-G13 data index must contain 13 chapters");
-for (const chapter of ["G02", "G03"]) {
+exactSet(
+  dataIndex.map((item) => item.chapter),
+  chapters,
+  "data chapters",
+);
+for (const record of dataIndex) {
+  assert(record.status === "imported_verified", `${record.chapter} data is not verified`);
+  assert(record.files === 22, `${record.chapter} must index workbook + 20 modules + MasterData`);
+  const base =
+    record.chapter === "G01"
+      ? "data/source/g01"
+      : `data/source/g02-g13/${record.chapter}`;
+  const chapterIndex = readJson(`${base}/index.json`);
+  assert(chapterIndex.length === 22, `${record.chapter} file index must contain 22 entries`);
+  for (const moduleName of requiredModules) {
+    assert(existsSync(resolve(root, `${base}/csv/${moduleName}.csv`)), `${record.chapter} missing ${moduleName}.csv`);
+    const moduleJson = readJson(`${base}/json/${moduleName}.json`);
+    assert(Array.isArray(moduleJson) && moduleJson.length > 0, `${record.chapter} ${moduleName}.json is not queryable`);
+  }
+  const master = readJson(`${base}/json/${record.chapter}_MasterData.json`);
+  assert(master.chapter === record.chapter, `${record.chapter} MasterData chapter mismatch`);
   assert(
-    dataIndex.find((item) => item.chapter === chapter)?.status === "imported_verified",
-    `${chapter} V2.1 data must be imported`,
+    requiredModules.every(
+      (moduleName) =>
+        Array.isArray(master.modules?.[moduleName]) &&
+        master.modules[moduleName].length > 0,
+    ),
+    `${record.chapter} MasterData modules are incomplete`,
   );
 }
-for (const chapter of ["G01", "G04", "G05", "G06", "G07", "G08", "G09", "G10", "G11", "G12", "G13"]) {
+for (const chapter of ["G04", "G05"]) {
   assert(
-    dataIndex.find((item) => item.chapter === chapter)?.status === "missing_formal_source",
-    `${chapter} data gap must remain explicit`,
+    dataIndex.find((item) => item.chapter === chapter)?.structured_data_origin ===
+      "deterministic_formal_workbook_extraction",
+    `${chapter} must disclose its formal-workbook transformation`,
   );
 }
+assert(
+  dataIndex.find((item) => item.chapter === "G01")?.world_star_core_count === 0,
+  "G01 data index must freeze world_star_core_count at 0",
+);
+const g01Variables = readJson("data/source/g01/json/程序变量.json");
+assert(
+  g01Variables.some(
+    (item) =>
+      item.变量名 === "world_star_core_count" &&
+      String(item.默认值) === "0" &&
+      item.约束 === "保持0",
+  ),
+  "G01 world_star_core_count source rule must remain 0",
+);
+
+const boundaryPath = "docs/baseline/source_text/g01/G02_OPENING_BOUNDARY_V2.2.md";
+assert(existsSync(resolve(root, boundaryPath)), "G02 opening boundary V2.2 is missing");
+const boundary = readFileSync(resolve(root, boundaryPath), "utf8");
+assert(
+  boundary.includes("04_G02开场边界修订/星骸拾荒者_G02开场边界修订_V2.2.docx"),
+  "G02 boundary provenance must point inside G01 V3.0",
+);
 
 const characters = readJson("data/source/catalogs/characters-71.json");
 assert(characters.length === 71, "character catalog must contain 71 rows");
-const characterIds = characters.map((item) => item["资产ID"]);
-unique(characterIds, "character ids");
-for (let index = 1; index <= 71; index += 1) {
-  assert(
-    characterIds.includes(`CHAR-${String(index).padStart(3, "0")}`),
-    `missing CHAR-${String(index).padStart(3, "0")}`,
-  );
-}
-assert(characters[0]["人物名称"] === "星宇", "CHAR-001 must be 星宇");
+exactIdRange(characters, "catalog_id", "CAT-CHAR", 71, "internal character catalog ids");
+exactIdRange(characters, "source_asset_id", "CHAR", 71, "character source registry ids");
+assert(
+  characters.every(
+    (item) =>
+      item.design_master_status === "complete" &&
+      item.three_view_status === "complete" &&
+      item.runtime_portrait_status === "not_produced" &&
+      item.runtime_scene_asset_status === "not_produced",
+  ),
+  "character master and runtime statuses must remain separated",
+);
+assert(
+  characters.filter((item) => item.official_id !== null).length === 1 &&
+    characters.find((item) => item.character_name === "七码")?.official_id === "EDU-0077",
+  "only 七码 may expose the confirmed official id EDU-0077",
+);
+assert(
+  characters.find((item) => item.character_name === "星宇")?.official_id === null,
+  "星宇 internal catalog id must not be presented as an official id",
+);
 
 const catalog = readJson("data/source/catalogs/asset-catalog-488.json");
 const expectedDomains = {
   character: 71,
   scene: 91,
   prop: 46,
-  fx: 41,
   mechanism: 47,
   ui: 83,
+  fx: 41,
   danger: 76,
   g01_addition: 33,
 };
 assert(catalog.total === 488, "asset catalog total must be 488");
 assert(catalog.assets.length === 488, "asset catalog must contain 488 rows");
 assert(
-  JSON.stringify(catalog.domain_counts) === JSON.stringify(expectedDomains),
+  Object.entries(expectedDomains).every(
+    ([domain, count]) => catalog.domain_counts[domain] === count,
+  ) && Object.keys(catalog.domain_counts).length === Object.keys(expectedDomains).length,
   "asset domain counts do not match the confirmed 488 breakdown",
 );
 unique(catalog.assets.map((item) => item.catalog_id), "asset catalog ids");
 assert(
-  catalog.assets.every((item) => item.runtime_asset === false),
-  "source catalog entries must not be labelled runtime assets",
+  catalog.assets.every(
+    (item) => item.runtime_asset === false && item.acceptance_asset === false,
+  ),
+  "design/production masters must not be labelled runtime or acceptance assets",
+);
+exactIdRange(catalog.assets.filter((item) => item.domain === "scene"), "official_id", "SCN", 91, "scene ids");
+exactIdRange(catalog.assets.filter((item) => item.domain === "prop"), "official_id", "PROP", 46, "prop ids");
+exactIdRange(catalog.assets.filter((item) => item.domain === "mechanism"), "official_id", "MECH", 47, "mechanism ids");
+exactIdRange(catalog.assets.filter((item) => item.domain === "ui"), "official_id", "UI", 83, "UI ids");
+exactIdRange(catalog.assets.filter((item) => item.domain === "fx"), "official_id", "FX", 41, "FX ids");
+exactIdRange(catalog.assets.filter((item) => item.domain === "danger"), "official_id", "DANGER", 76, "DANGER ids");
+const g01Assets = catalog.assets.filter((item) => item.domain === "g01_addition");
+assert(
+  g01Assets.length === 33 &&
+    g01Assets.every(
+      (item) =>
+        typeof item.official_id === "string" &&
+        item.official_id.length > 0 &&
+        typeof item.name === "string" &&
+        item.name.length > 0 &&
+        item.source_package === "PKG-G01-V3.0",
+    ),
+  "G01 33 assets must use the formal V3.0 catalog, not empty slots",
 );
 assert(
   catalog.assets
-    .filter((item) => item.domain === "g01_addition")
-    .every((item) => item.official_id === null && item.name === null),
-  "G01 missing-source slots must not invent official ids or names",
+    .filter((item) => item.domain === "fx")
+    .every((item) => item.source_package === "PKG-FX-V2.0" && item.design_board),
+  "FX-001—041 must use formal V2.0 source paths",
+);
+assert(
+  catalog.assets
+    .filter((item) => item.domain === "danger")
+    .every((item) => item.source_package === "PKG-DANGER-V2.0" && item.design_board),
+  "DANGER-001—076 must use formal V2.0 source paths",
 );
 
-for (const master of [
-  "docs/baseline/production-masters/hopa-fx001/HOPA核心循环_冻结版.png",
-  "docs/baseline/production-masters/hopa-fx001/HOPA场景分层与热点架构.png",
-  "docs/baseline/production-masters/hopa-fx001/HOPA技术模块架构.png",
-  "docs/baseline/production-masters/hopa-fx001/FX-001星宇瞬移_HOPA交互流程.png",
+validateRawCatalog("data/source/catalogs/raw/SCENE-91_V1.0.csv", "SCN", 91);
+validateRawCatalog("data/source/catalogs/raw/PROP-46_V3.0.csv", "PROP", 46);
+validateRawCatalog("data/source/catalogs/raw/MECH-47_V2.0.csv", "MECH", 47);
+validateRawCatalog("data/source/catalogs/raw/UI-83_V2.0.csv", "UI", 83);
+
+const substitution = readJson("source_packages/manifests/substitution-map.json");
+for (const current of [
+  "技能与装备效果HOPA正式包 V2.0",
+  "危险视觉HOPA正式包 V2.0",
+  "G01整合正式包 V3.0",
+  "G-S2-D01 V1.0",
 ]) {
-  assert(existsSync(resolve(root, master)), `missing design/production master: ${master}`);
-  assert(statSync(resolve(root, master)).size > 0, `empty design/production master: ${master}`);
+  assert(
+    substitution.rules.find((item) => item.current === current)?.status ===
+      "current_source_imported",
+    `${current} substitution status is stale`,
+  );
 }
 
 const legacy = readJson("archive/legacy/manifest.json");
@@ -235,12 +405,16 @@ for (const item of legacy.items.filter((entry) => entry.repository_path)) {
 console.log(
   JSON.stringify({
     importedPackages: packages.imported.length,
-    explicitMissingSources: packages.missing_required.length,
+    missingRequired: packages.missing_required.length,
+    missingCount: missing.missing_count,
     extractedFiles: extracted.count,
     extractedDocx: extractionStats.documents.length,
-    storyChaptersIndexed: storyIndex.length,
+    storyChapters: storyIndex.length,
+    dataChapters: dataIndex.length,
     characters: characters.length,
     assets: catalog.assets.length,
+    fx: catalog.domain_counts.fx,
+    danger: catalog.domain_counts.danger,
     status: "ok",
   }),
 );

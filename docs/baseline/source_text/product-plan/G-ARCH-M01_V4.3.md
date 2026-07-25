@@ -2,6 +2,8 @@
 source_package: PKG-PRODUCT-PLAN-V1.1
 source_entry: "G-ARCH-M01_四层成熟度推进与冻结矩阵_V4.3.docx"
 source_sha256: 3a7e65f5e660ed571bb84a67464c1ff90005368b750a9d176db83879e4e48395
+source_bytes: 42006
+table_count: 7
 version: confirmed versions
 purpose: "产品、教育、计划与门禁正式全文"
 extraction: full_text_and_tables_from_ooxml

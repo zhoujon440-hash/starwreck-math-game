@@ -2,6 +2,8 @@
 source_package: PKG-PRODUCT-PLAN-V1.1
 source_entry: "G-PROD-01_公益数学版产品基线_V1.1_确认版.docx"
 source_sha256: f0bf3f9fe63be4069238a9b7a6ee379106c780da9abf99a2c42eca958037cd21
+source_bytes: 45158
+table_count: 10
 version: confirmed versions
 purpose: "产品、教育、计划与门禁正式全文"
 extraction: full_text_and_tables_from_ooxml

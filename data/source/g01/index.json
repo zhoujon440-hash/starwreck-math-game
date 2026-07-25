@@ -1,0 +1,178 @@
+[
+  {
+    "path": "data/source/g01/master/星骸拾荒者_G01拾光号坠落之前_Unity数据级制作脚本_V3.0.xlsx",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/星骸拾荒者_G01拾光号坠落之前_Unity数据级制作脚本_V3.0.xlsx",
+    "sha256": "a951694a1dee03fecda7e735f0376c046642231eae99d43b1ce06dda3ac72d77",
+    "format": "xlsx",
+    "extraction": "verbatim_binary"
+  },
+  {
+    "path": "data/source/g01/json/背包道具流转.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/背包道具流转.json",
+    "sha256": "4753f72df854fad4dd6968cd30a0ed50597a2ec1ddbdbacc64b144528b2c8671",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/场景状态机.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/场景状态机.json",
+    "sha256": "43b898fe5b7174907a580b57a21ebbc0395ffa508e8da8f00e2cfccd470b1dea",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/对话脚本.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/对话脚本.json",
+    "sha256": "ce40f6ec72b1beb512d9b4b27144a87306a40e9ac6e1623e8629b87a7c313b99",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/存档与恢复.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/存档与恢复.json",
+    "sha256": "cbcbbbf740fa949959ec40410b6e2b086348c78974dc349233798127be575f49",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/资产映射.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/资产映射.json",
+    "sha256": "7a263719ed0834240ff5f4a0fcd9f9b4e1aea4aff9e22452fd9894dde0e0d72c",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/三级提示.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/三级提示.json",
+    "sha256": "d3d9a00c9bf44f5fb6aa6a14123892802459bf34a8410809f3385544222148f4",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/热点清单.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/热点清单.json",
+    "sha256": "66f478f98f3a906a3086763f17c37b338bdf554fa78c791e727ebe6574b5b1be",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/程序变量.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/程序变量.json",
+    "sha256": "29c6f257c84c64e49d0701a2de571df6c326e816b15e8d8ca2322fb7a85a311a",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/找物清单.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/找物清单.json",
+    "sha256": "46f4b3af9f400cc6083bec74bd322e94bcf1a3da0f16a462a08910bd30824191",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/G01_MasterData.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/G01_MasterData.json",
+    "sha256": "369b5f098be6dd88e8056e6dba753f8d93b81629a27017a56e11da43590e4d2d",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/json/场景流程.json",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/03_JSON数据/场景流程.json",
+    "sha256": "b29b84a565dde1bb2ef3d180229edfff4612f0f9eb1e5e96c7c759f8daedb626",
+    "format": "json",
+    "extraction": "verbatim_json"
+  },
+  {
+    "path": "data/source/g01/csv/三级提示.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/三级提示.csv",
+    "sha256": "26d76bcdbad03105a0c3c666d7c9a08cd039f659ec1acdcfd131a2ed550b0fa5",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/场景状态机.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/场景状态机.csv",
+    "sha256": "651bf3291e1d859b54efacab86ca9631a10ab8f7053d339f9bc43785e212130b",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/热点清单.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/热点清单.csv",
+    "sha256": "5befb0d00680b27c7424a0f77800f9180587a29fa40695cee0b88202ba7c9e0e",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/场景流程.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/场景流程.csv",
+    "sha256": "28b54918e5b5a307fa6876c5192e9814232876aef8d5571a8c6d90aa44cbec9e",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/找物清单.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/找物清单.csv",
+    "sha256": "60d27f2fb9b8c717d11944f6dcee586cf45291134af7f8de77cdb5f9889400fd",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/资产映射.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/资产映射.csv",
+    "sha256": "4b284666c40925cda09a854875102b70d08b3fc4f249bcaae2e8223a9081eeba",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/存档与恢复.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/存档与恢复.csv",
+    "sha256": "dfa45fe04f294af2fb2e35d455825d86efeae16b79c37c93e65998e37efcde5d",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/程序变量.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/程序变量.csv",
+    "sha256": "249affe80ace1ae16f11436ee90a7ba5a59b3551d4c6fa711e7c8042eb090e1f",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/背包道具流转.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/背包道具流转.csv",
+    "sha256": "ec78e9441c2f8590dfcbdebb829eec60dc78b4bda81e5353730e904638d229ca",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  },
+  {
+    "path": "data/source/g01/csv/对话脚本.csv",
+    "package_id": "PKG-G01-V3.0",
+    "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/03_G01_Unity数据级脚本/02_CSV数据表/对话脚本.csv",
+    "sha256": "9c866d97a5b708d94b4eeecb1d1001d82f282569d62d091ded025c4f28ad825b",
+    "format": "csv",
+    "extraction": "verbatim_csv"
+  }
+]
