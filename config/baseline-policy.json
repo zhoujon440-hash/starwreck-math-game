@@ -19,6 +19,16 @@
       "danger": 76,
       "g01_addition": 33
     },
+    "domain_source_packages": {
+      "character": "PKG-CHARACTERS-V2.1",
+      "scene": "PKG-SCENES-V1.0",
+      "prop": "PKG-PROPS-V3.0",
+      "mechanism": "PKG-MECH-V2.0",
+      "ui": "PKG-UI-V2.0",
+      "fx": "PKG-FX-V2.0",
+      "danger": "PKG-DANGER-V2.0",
+      "g01_addition": "PKG-G01-V3.0"
+    },
     "formal_sequences": {
       "prop": { "prefix": "PROP", "count": 46 },
       "fx": { "prefix": "FX", "count": 41 },

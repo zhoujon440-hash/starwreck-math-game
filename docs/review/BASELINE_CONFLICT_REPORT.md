@@ -10,6 +10,7 @@
 | BC-002 | 人工源包摘要曾滞后于 P0-A 机器清单。 | `source_packages/manifests/source-packages.json`、`sha256sums.txt` 与 `missing-sources.json`。 | 人工摘要已于 2026-07-28 同步为 19 项正式源、缺失 0；机器清单继续是事实源，`SOURCE-SHA-LIST-EXACT-MATCH` 阻止集合、路径或 SHA 漂移。 |
 | BC-003 | 角色源表中的 `CHAR-001—071` 是源资产行号，但不是官方连续角色编号。 | `CAT-CHAR-001—071` 为内部 `catalog_id`；只有七码保留官方 ID `EDU-0077`，其余 `official_id=null`。 | `CAT-CHAR-NO-FAKE-OFFICIAL-ID` 和角色身份规则硬门禁。 |
 | BC-004 | 设计/三视图母版完成状态可能被误读为运行时立绘或场景资产已完成。 | 71/71 设计与三视图完成；运行时人物资产均未制作。 | 设计状态与运行时状态分栏校验；任何母版被标成 `runtime_asset=true` 都失败。 |
+| BC-005 | 488 聚合目录曾整体归到人物包主清单，掩盖场景、道具、机制、UI、FX、危险和 G01 新增项的真实来源。 | 聚合目录是八个正式域清单共同派生的 `multi_source_derived_catalog`，每个资产仍保留自己的正式包、真实包内条目和条目 SHA。 | `CAT-ASSET-MULTI-SOURCE-PROVENANCE`、`CAT-ASSET-SOURCE-DIVERSITY`、`CAT-ASSET-DERIVED-CATALOG-PROVENANCE` 联合门禁；三个聚合输出登记生成脚本和八个输入条目。 |
 
 ## 当前无未解析 P0 冲突
 
@@ -20,4 +21,6 @@
 - `SOURCE_PACKAGE_MANIFEST.md` 仍是非权威人工摘要；其当前内容已同步，但不能替代机器清单与独立 SHA 清单。
 - G02 V2.1 的旧开场行仍在正式源数据中。任何运行时转换器都必须读取已登记的 V2.2 有效边界，不能直接把旧首行当成当前开场。
 - 禁用词扫描覆盖当前执行代码、配置、Schema、普通测试和当前执行文档；正式源全文、legacy、冲突/替代报告和负向 fixture 中的历史词汇由来源隔离控制，不能静默删除。
+- 禁用词扫描按文件路径和句子语义区分“当前实现”与“禁止/历史说明”；新增措辞若既不像实现又不符合明确隔离或禁用语义，可能需要先补充权威上下文。
 - 危险恢复和关键道具的补充布尔字段属于结构化适配契约，来源登记在 `config/baseline-policy.json`；它们不回写或伪装成正式源数据字段。
+- 488 聚合目录是可重复生成的索引，不是运行时资产完成证明；正式源清单变更后必须重新运行导入器和三条多源门禁。

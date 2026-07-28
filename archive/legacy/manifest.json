@@ -55,7 +55,7 @@
       "bytes": 9644350,
       "sha256": "0dc407843b7320c63e0d46c48a080c8495bae4ad75892d797a31d772b864916e",
       "original_discovery_path": "Downloads/星骸拾荒者_FX-B_G02-G05装备效果确认包_V1.0.zip",
-      "superseded_by": "技能与装备效果HOPA正式包 V2.0"
+      "superseded_by": "技能与装备效果HOPA正式包 V2.0（当前缺失）"
     },
     {
       "name": "星骸拾荒者_DANGER-B_G05-G07危险视觉确认包_V1.0.zip",
@@ -63,7 +63,7 @@
       "bytes": 15198849,
       "sha256": "315e68556143815a2212a12794982d27201155d3673e7752fe9ae1591d357a9f",
       "original_discovery_path": "Downloads/星骸拾荒者_DANGER-B_G05-G07危险视觉确认包_V1.0.zip",
-      "superseded_by": "危险视觉HOPA正式包 V2.0"
+      "superseded_by": "危险视觉HOPA正式包 V2.0（当前缺失）"
     },
     {
       "name": "星骸拾荒者_DANGER-C_G08-G10危险视觉确认包_V1.0.zip",
@@ -71,7 +71,7 @@
       "bytes": 15228171,
       "sha256": "3a8e0188b5b7e65ac675e3da280c704bd4575e1b3affbcddbfc03083cec89205",
       "original_discovery_path": "Downloads/星骸拾荒者_DANGER-C_G08-G10危险视觉确认包_V1.0.zip",
-      "superseded_by": "危险视觉HOPA正式包 V2.0"
+      "superseded_by": "危险视觉HOPA正式包 V2.0（当前缺失）"
     },
     {
       "name": "星骸拾荒者_MECH-C_G08-G10机制可视化确认包_V1.0.zip",
@@ -84,7 +84,7 @@
     {
       "name": "G-S2-D01 V0.9待确认版",
       "status": "legacy_pending_draft_not_imported_as_baseline",
-      "superseded_by": "G-S2-D01 V1.0"
+      "superseded_by": "G-S2-D01 V1.0（当前缺失）"
     },
     {
       "name": "旧名、战斗词汇与写实星宇方案",
@@ -102,3 +102,4 @@
     }
   ]
 }
+

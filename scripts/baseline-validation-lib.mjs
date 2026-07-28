@@ -1,11 +1,12 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   applyStrictFixture,
   validateExpandedForbidden,
   validateStarCoreContracts,
+  validateStrictCatalogSources,
   validateStrictHopa,
   validateStrictSource,
 } from "./baseline-strict-validation.mjs";
@@ -138,7 +139,7 @@ export function applyFixture(snapshot, fixturePath) {
     case "boss-current-execution-term":
       snapshot.syntheticCurrentExecutionFiles.push({
         path: "src/negative-fixture.ts",
-        content: "export const Boss = { implementation: true };",
+        content: "export const Boss战实现 = { enabled: true };",
       });
       break;
     case "modified-source-sha":
@@ -475,18 +476,6 @@ export function validateSchemasAndHopa(snapshot) {
   return { issues, ruleCount };
 }
 
-function walkFiles(root, base, extensions, output = []) {
-  const target = join(root, base);
-  if (!existsSync(target)) return output;
-  for (const entry of readdirSync(target)) {
-    const absolute = join(target, entry);
-    const rel = relative(root, absolute).replaceAll("\\", "/");
-    if (statSync(absolute).isDirectory()) walkFiles(root, rel, extensions, output);
-    else if (extensions.some((extension) => rel.endsWith(extension))) output.push(rel);
-  }
-  return output;
-}
-
 export function validateForbiddenTerms(snapshot) {
   const issues = [];
   let ruleCount = 0;
@@ -497,19 +486,6 @@ export function validateForbiddenTerms(snapshot) {
   const runtimeTech = snapshot.dataIndex.map((row) => row.runtime_technology);
   add(runtimeTech.every((value) => value === "HTML5/PWA + Vite + TypeScript"), "TECH-RUNTIME-HTML5-PWA", "data/source/index.json#/runtime_technology", [...new Set(runtimeTech)], ["HTML5/PWA + Vite + TypeScript"], "docs/baseline/02_HOPA_ARCHITECTURE.md", "confirmed", "Restore HTML5/PWA + Vite + TypeScript as the only current runtime route.");
   add(Boolean(snapshot.packageJson.devDependencies?.vite && snapshot.packageJson.devDependencies?.typescript && snapshot.packageJson.dependencies?.["vite-plugin-pwa"]), "TECH-PACKAGE-STACK", "package.json", { vite: snapshot.packageJson.devDependencies?.vite, typescript: snapshot.packageJson.devDependencies?.typescript, pwa: snapshot.packageJson.dependencies?.["vite-plugin-pwa"] }, "all present", "docs/baseline/02_HOPA_ARCHITECTURE.md", "confirmed", "Restore the frozen Vite, TypeScript, and PWA dependencies.");
-  const runtimeFiles = walkFiles(snapshot.root, "src", [".ts", ".tsx", ".js", ".jsx"]);
-  const files = runtimeFiles.map((path) => ({
-    path,
-    content: readFileSync(join(snapshot.root, path), "utf8"),
-  })).concat(snapshot.syntheticCurrentExecutionFiles);
-  const forbidden = snapshot.policy.forbidden.current_execution_patterns.map((value) => new RegExp(value, "i"));
-  const matches = [];
-  for (const file of files) {
-    for (const pattern of forbidden) {
-      if (pattern.test(file.content)) matches.push({ path: file.path, pattern: pattern.source });
-    }
-  }
-  add(matches.length === 0, "TECH-FORBIDDEN-CURRENT-EXECUTION", "src/**", matches, [], "docs/baseline/03_GLOBAL_FROZEN_RULES.md", "confirmed", "Remove current implementation of prohibited combat, RPG, enemy-AI, Boss, or free real-time 3D routes; historical references belong only in isolated provenance.");
   const currentNames = snapshot.characters.map((row) => row.character_name);
   add(!currentNames.includes("小砾"), "TECH-LEGACY-PROTAGONIST-NAME", "data/source/catalogs/characters-71.json#/character_name", currentNames.filter((name) => name === "小砾"), [], "docs/baseline/00_SOURCE_OF_TRUTH.md", "confirmed", "Restore 星宇 as the current protagonist; keep the old name only in legacy/provenance records.");
   return { issues, ruleCount };
@@ -531,7 +507,20 @@ export function validateSourceLayer(snapshot) {
   add(duplicateNames.length === 0 && duplicateShas.length === 0, "SOURCE-NO-DUPLICATES", "source_packages/manifests/source-packages.json#/imported", { names: duplicateNames.map((row) => row.filename), sha: duplicateShas.map((row) => row.package_id) }, { names: [], sha: [] }, "Issue #6 P0-A", "accepted main", "Resolve duplicate package identity without replacing source bytes.");
   const missingPaths = manifest.imported.filter((row) => !existsSync(join(snapshot.root, row.repository_path)));
   add(missingPaths.length === 0, "SOURCE-REPOSITORY-PATHS", "source_packages/manifests/source-packages.json#/repository_path", missingPaths.map((row) => row.package_id), [], "Issue #6 P0-A", "accepted main", "Restore the LFS-tracked source object at its manifested repository path.");
-  const badProvenance = snapshot.extractedFiles.files.filter((row) => !row.source_package || !row.source_entry || !row.source_entry_sha256 || !row.output_path);
+  const badProvenance = snapshot.extractedFiles.files.filter((row) => {
+    if (!row.output_path) return true;
+    if (row.extraction === "multi_source_derived_catalog") {
+      return (
+        !row.generated_by ||
+        !Array.isArray(row.derived_from) ||
+        row.derived_from.length === 0 ||
+        row.derived_from.some((ref) =>
+          !ref.source_package || !ref.source_entry || !ref.source_entry_sha256
+        )
+      );
+    }
+    return !row.source_package || !row.source_entry || !row.source_entry_sha256;
+  });
   add(badProvenance.length === 0 && snapshot.extractedFiles.count === snapshot.extractedFiles.files.length, "SOURCE-EXTRACTION-PROVENANCE", "source_packages/manifests/extracted-files.json", { missing: badProvenance.length, declared: snapshot.extractedFiles.count, actual: snapshot.extractedFiles.files.length }, { missing: 0, declared: snapshot.extractedFiles.files.length, actual: snapshot.extractedFiles.files.length }, "Issue #6 P0-A", "accepted main", "Regenerate the extraction manifest with full provenance.");
   const strict = validateStrictSource(snapshot);
   return { issues: issues.concat(strict.issues), ruleCount: ruleCount + strict.ruleCount };
@@ -541,6 +530,7 @@ export function runAll(snapshot) {
   const sections = [
     validateSourceLayer(snapshot),
     validateCatalogs(snapshot),
+    validateStrictCatalogSources(snapshot),
     validateStory(snapshot),
     validateStarCoreContracts(snapshot),
     validateSchemasAndHopa(snapshot),

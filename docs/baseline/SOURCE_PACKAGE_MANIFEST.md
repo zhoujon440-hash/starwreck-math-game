@@ -38,6 +38,23 @@
 
 设计母版、三视图母版和生产规范的完成，不等于运行时透明资产、可播放动画或验收截图已经制作。目录必须分别记录设计/生产母版状态与运行时资产状态；不得用前者推断后者。
 
+## 488 资产目录来源
+
+`data/source/catalogs/asset-catalog-488.json` 是八个正式域清单共同生成的多源派生目录，不隶属于人物主清单：
+
+| 域 | 正式来源 | 数量 |
+| --- | --- | ---: |
+| character | `PKG-CHARACTERS-V2.1` | 71 |
+| scene | `PKG-SCENES-V1.0` | 91 |
+| prop | `PKG-PROPS-V3.0` | 46 |
+| mechanism | `PKG-MECH-V2.0` | 47 |
+| ui | `PKG-UI-V2.0` | 83 |
+| fx | `PKG-FX-V2.0` | 41 |
+| danger | `PKG-DANGER-V2.0` | 76 |
+| g01_addition | `PKG-G01-V3.0` | 33 |
+
+聚合目录的生成方式、脚本、八个输入条目及条目 SHA 登记在 `source_packages/manifests/extracted-files.json`；单项资产的正式包、包内条目和 SHA 登记在资产目录自身。两层来源都由 baseline gate 逐字节验证。
+
 ## Legacy 隔离
 
 损坏、旧技术路线和被替代原件只允许位于 `archive/legacy/**` 或明确的来源冲突/替代报告中，不得进入当前执行索引、资产来源、运行时配置或正式章节入口。

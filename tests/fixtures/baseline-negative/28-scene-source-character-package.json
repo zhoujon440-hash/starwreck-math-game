@@ -1,0 +1,1 @@
+{"id":"NEG-28-SCENE-SOURCE-CHARACTER-PACKAGE","mutation":"scene-source-character-package","expected_rule":"CAT-ASSET-MULTI-SOURCE-PROVENANCE","expected_context":["SCN-001","wrong_domain_package","PKG-CHARACTERS-V2.1","PKG-SCENES-V1.0"]}

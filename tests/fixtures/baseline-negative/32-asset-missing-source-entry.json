@@ -1,0 +1,1 @@
+{"id":"NEG-32-ASSET-MISSING-SOURCE-ENTRY","mutation":"asset-missing-source-entry","expected_rule":"CAT-ASSET-MULTI-SOURCE-PROVENANCE","expected_context":["PROP-001","missing:source_entry","PKG-PROPS-V3.0"]}

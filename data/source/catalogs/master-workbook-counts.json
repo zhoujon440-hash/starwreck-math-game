@@ -1,7 +1,64 @@
 {
-  "source_package": "PKG-CHARACTERS-V2.1",
-  "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
-  "source_entry_sha256": "ea329b30f458a567a92ef0f02b783eb58c4129596e4958e4cf739eb47329816e",
+  "provenance_type": "multi_source_derived_catalog",
+  "generated_by": "scripts/import_source_baseline.py#build_catalogs",
+  "derived_from": [
+    {
+      "domain": "character",
+      "source_package": "PKG-CHARACTERS-V2.1",
+      "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+      "source_entry_sha256": "ea329b30f458a567a92ef0f02b783eb58c4129596e4958e4cf739eb47329816e",
+      "source_granularity": "registry_workbook"
+    },
+    {
+      "domain": "scene",
+      "source_package": "PKG-SCENES-V1.0",
+      "source_entry": "星骸拾荒者_场景美术设计全集_V1.0/04_清单与说明/91场景完成清单.csv",
+      "source_entry_sha256": "bb97ca16ee759bea6fbf4b0761d3f73016ee20be077f53e3df4f672e8e96b80d",
+      "source_granularity": "formal_catalog_entry"
+    },
+    {
+      "domain": "prop",
+      "source_package": "PKG-PROPS-V3.0",
+      "source_entry": "星骸拾荒者_道具美术正式包_V3.0/02_核查清单与说明/46件道具正式清单.csv",
+      "source_entry_sha256": "78abadd186c22a4852591ebeff9fb0f370e6fa0fcc92d722da9b0304678dee21",
+      "source_granularity": "formal_catalog_entry"
+    },
+    {
+      "domain": "mechanism",
+      "source_package": "PKG-MECH-V2.0",
+      "source_entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/05_总清单与封版说明/47项机制可视化正式清单.csv",
+      "source_entry_sha256": "c37ef26a98e11fc6077c7d3df2b65258da3f2ad2f8b18705b7b7eaab24c6bf36",
+      "source_granularity": "formal_catalog_entry"
+    },
+    {
+      "domain": "ui",
+      "source_package": "PKG-UI-V2.0",
+      "source_entry": "星骸拾荒者_界面美术HOPA正式包_V2.0/05_总清单与封版说明/83项界面美术正式清单.csv",
+      "source_entry_sha256": "f8545e960a5d1c331eb51c3cd428209786846efda6a5e5736736858e53e25970",
+      "source_granularity": "formal_catalog_entry"
+    },
+    {
+      "domain": "fx",
+      "source_package": "PKG-FX-V2.0",
+      "source_entry": "星骸拾荒者_技能与装备效果HOPA正式包_V2.0/05_总清单与封版说明/41项技能与装备效果正式清单.csv",
+      "source_entry_sha256": "2b425fbc769b19f166c51aec5f83307ac3c2f617a29b23277d22d048b90b0fc0",
+      "source_granularity": "formal_catalog_entry"
+    },
+    {
+      "domain": "danger",
+      "source_package": "PKG-DANGER-V2.0",
+      "source_entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/05_总清单与封版说明/76项危险视觉正式清单.csv",
+      "source_entry_sha256": "4b7b69038877e02a03bdb6502b92502e1277a81aa2bdef9feb17f5a0ce8d7276",
+      "source_granularity": "formal_catalog_entry"
+    },
+    {
+      "domain": "g01_addition",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/02_美术资产清单/星骸拾荒者_G01序章美术资产清单_V3.0.xlsx",
+      "source_entry_sha256": "57795a0911b9659f923f6f89915df82373afb5b528bc5769d3aeb4fdff356f18",
+      "source_granularity": "formal_catalog_entry"
+    }
+  ],
   "counts": {
     "characters": 71,
     "scenes": 91,

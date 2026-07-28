@@ -596,6 +596,24 @@ def record_extraction(
     )
 
 
+def record_derived_catalog(
+    records: list[dict[str, Any]],
+    *,
+    output: Path,
+    derived_from: list[dict[str, Any]],
+) -> None:
+    records.append(
+        {
+            "output_path": repository_path(output),
+            "output_sha256": sha256_canonical_text_file(output),
+            "output_hash_mode": "canonical_lf",
+            "extraction": "multi_source_derived_catalog",
+            "generated_by": "scripts/import_source_baseline.py#build_catalogs",
+            "derived_from": derived_from,
+        }
+    )
+
+
 def extract_docx_entry(
     package: Path,
     package_id: str,
@@ -1179,8 +1197,10 @@ def normalize_asset_row(
     source: dict[str, Any],
     domain: str,
     source_sheet: str,
-    source_entry: str,
-    source_sha256: str,
+    source_package: str = "PKG-CHARACTERS-V2.1",
+    source_entry: str = "",
+    source_sha256: str = "",
+    source_status: str = "legacy_catalog_normalization",
 ) -> dict[str, Any]:
     name = (
         source.get("人物名称")
@@ -1199,10 +1219,11 @@ def normalize_asset_row(
         "maturity": source.get("当前状态"),
         "priority": source.get("优先级"),
         "source_sheet": source_sheet,
-        "source_package": "PKG-CHARACTERS-V2.1",
+        "source_package": source_package,
         "source_entry": source_entry,
         "source_sha256": source_sha256,
-        "source_status": "indexed_from_confirmed_master",
+        "source_granularity": "formal_catalog_entry",
+        "source_status": source_status,
         "design_master": True,
         "production_spec": True,
         "runtime_asset": False,
@@ -1408,12 +1429,32 @@ def build_catalogs_legacy(
 
 def build_catalogs(
     character_package: Path,
+    scene_package: Path,
+    prop_package: Path,
+    mech_package: Path,
+    ui_package: Path,
     fx_package: Path,
     danger_package: Path,
     g01_package: Path,
     repo: Path,
     records: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    def read_formal_csv(
+        source_package: Path, prefix: str, count: int
+    ) -> tuple[list[dict[str, str]], str, bytes]:
+        with zipfile.ZipFile(source_package) as archive:
+            for entry in archive.namelist():
+                if not entry.lower().endswith(".csv"):
+                    continue
+                data = archive.read(entry)
+                try:
+                    rows = list(csv.DictReader(io.StringIO(data.decode("utf-8-sig"))))
+                except UnicodeDecodeError:
+                    continue
+                if len(rows) == count and rows and rows[0].get("资产ID", "").startswith(prefix):
+                    return rows, entry, data
+        raise ValueError(f"{source_package.name}: no formal {prefix} catalog with {count} rows")
+
     master_data, master_entry = xlsx_master_from_character_package(character_package)
     master_sha = sha256_bytes(master_data)
     workbook = openpyxl.load_workbook(io.BytesIO(master_data), data_only=False)
@@ -1483,6 +1524,7 @@ def build_catalogs(
             "source_package": row["source_package"],
             "source_entry": row["source_entry"],
             "source_sha256": row["source_sha256"],
+            "source_granularity": "design_board_entry",
             "source_status": "71/71_design_identity_and_three_view_verified",
             "design_master": True,
             "production_spec": True,
@@ -1491,35 +1533,65 @@ def build_catalogs(
         }
         for row in characters
     ]
-    for key, domain, sheet in (
-        ("scenes", "scene", "场景清单"),
-        ("props", "prop", "装备道具"),
-        ("mech", "mechanism", "玩法机制"),
-        ("ui", "ui", "UI清单"),
-    ):
+    formal_domains = (
+        ("scenes", "scene", "场景清单", scene_package, "PKG-SCENES-V1.0", "SCN", 91),
+        ("props", "prop", "装备道具", prop_package, "PKG-PROPS-V3.0", "PROP", 46),
+        ("mech", "mechanism", "玩法机制", mech_package, "PKG-MECH-V2.0", "MECH", 47),
+        ("ui", "ui", "UI清单", ui_package, "PKG-UI-V2.0", "UI", 83),
+    )
+    formal_input_records: list[dict[str, Any]] = [
+        {
+            "domain": "character",
+            "source_package": "PKG-CHARACTERS-V2.1",
+            "source_entry": master_entry,
+            "source_entry_sha256": master_sha,
+            "source_granularity": "registry_workbook",
+        }
+    ]
+    for key, domain, sheet, package, package_id, prefix, count in formal_domains:
+        formal_rows, formal_entry, formal_data = read_formal_csv(package, prefix, count)
+        master_ids = {row["资产ID"] for row in tables[key]}
+        formal_ids = {row["资产ID"] for row in formal_rows}
+        if master_ids != formal_ids:
+            raise ValueError(
+                f"{domain} formal catalog IDs differ from registry: "
+                f"missing={sorted(master_ids - formal_ids)}, "
+                f"extra={sorted(formal_ids - master_ids)}"
+            )
+        formal_sha = sha256_bytes(formal_data)
+        formal_input_records.append(
+            {
+                "domain": domain,
+                "source_package": package_id,
+                "source_entry": formal_entry,
+                "source_entry_sha256": formal_sha,
+                "source_granularity": "formal_catalog_entry",
+            }
+        )
         assets.extend(
-            normalize_asset_row(row, domain, sheet, master_entry, master_sha)
+            normalize_asset_row(
+                row,
+                domain,
+                sheet,
+                package_id,
+                formal_entry,
+                formal_sha,
+                "formal_catalog_verified",
+            )
             for row in tables[key]
         )
 
-    def read_formal_csv(
-        source_package: Path, prefix: str, count: int
-    ) -> tuple[list[dict[str, str]], str, bytes]:
-        with zipfile.ZipFile(source_package) as archive:
-            for entry in archive.namelist():
-                if not entry.lower().endswith(".csv"):
-                    continue
-                data = archive.read(entry)
-                try:
-                    rows = list(csv.DictReader(io.StringIO(data.decode("utf-8-sig"))))
-                except UnicodeDecodeError:
-                    continue
-                if len(rows) == count and rows and rows[0].get("资产ID", "").startswith(prefix):
-                    return rows, entry, data
-        raise ValueError(f"{source_package.name}: no formal {prefix} catalog with {count} rows")
-
     fx_rows, fx_entry, fx_data = read_formal_csv(fx_package, "FX-", 41)
     fx_sha = sha256_bytes(fx_data)
+    formal_input_records.append(
+        {
+            "domain": "fx",
+            "source_package": "PKG-FX-V2.0",
+            "source_entry": fx_entry,
+            "source_entry_sha256": fx_sha,
+            "source_granularity": "formal_catalog_entry",
+        }
+    )
     with zipfile.ZipFile(fx_package) as archive:
         fx_files = archive.namelist()
     for row in fx_rows:
@@ -1556,6 +1628,7 @@ def build_catalogs(
                 "source_package": "PKG-FX-V2.0",
                 "source_entry": fx_entry,
                 "source_sha256": fx_sha,
+                "source_granularity": "formal_catalog_entry",
                 "design_board": board,
                 "source_status": "formal_V2.0_catalog",
                 "design_master": board is not None,
@@ -1569,6 +1642,15 @@ def build_catalogs(
         danger_package, "DANGER-", 76
     )
     danger_sha = sha256_bytes(danger_data)
+    formal_input_records.append(
+        {
+            "domain": "danger",
+            "source_package": "PKG-DANGER-V2.0",
+            "source_entry": danger_entry,
+            "source_entry_sha256": danger_sha,
+            "source_granularity": "formal_catalog_entry",
+        }
+    )
     with zipfile.ZipFile(danger_package) as archive:
         danger_files = archive.namelist()
     for row in danger_rows:
@@ -1600,6 +1682,7 @@ def build_catalogs(
                 "source_package": "PKG-DANGER-V2.0",
                 "source_entry": danger_entry,
                 "source_sha256": danger_sha,
+                "source_granularity": "formal_catalog_entry",
                 "design_board": board,
                 "source_status": "formal_V2.0_catalog",
                 "design_master": board is not None,
@@ -1618,6 +1701,15 @@ def build_catalogs(
         g01_data = archive.read(g01_entry)
         g01_files = archive.namelist()
     g01_workbook = openpyxl.load_workbook(io.BytesIO(g01_data), data_only=False)
+    formal_input_records.append(
+        {
+            "domain": "g01_addition",
+            "source_package": "PKG-G01-V3.0",
+            "source_entry": g01_entry,
+            "source_entry_sha256": sha256_bytes(g01_data),
+            "source_granularity": "formal_catalog_entry",
+        }
+    )
     sheet = g01_workbook["G01美术资产清单"]
     headers = [cell.value for cell in sheet[3]]
     category_board = {
@@ -1653,6 +1745,7 @@ def build_catalogs(
                 "source_package": "PKG-G01-V3.0",
                 "source_entry": g01_entry,
                 "source_sha256": sha256_bytes(g01_data),
+                "source_granularity": "formal_catalog_entry",
                 "design_board": board,
                 "source_status": "formal_V3.0_catalog",
                 "design_master": True,
@@ -1667,6 +1760,7 @@ def build_catalogs(
 
     domain_counts: dict[str, int] = {}
     for row in assets:
+        row["id"] = row["catalog_id"]
         domain_counts[row["domain"]] = domain_counts.get(row["domain"], 0) + 1
     expected_domains = {
         "character": 71,
@@ -1692,6 +1786,10 @@ def build_catalogs(
             "domain_counts": domain_counts,
             "source_packages": [
                 "PKG-CHARACTERS-V2.1",
+                "PKG-SCENES-V1.0",
+                "PKG-PROPS-V3.0",
+                "PKG-MECH-V2.0",
+                "PKG-UI-V2.0",
                 "PKG-FX-V2.0",
                 "PKG-DANGER-V2.0",
                 "PKG-G01-V3.0",
@@ -1704,9 +1802,9 @@ def build_catalogs(
     write_json(
         catalogs_dir / "master-workbook-counts.json",
         {
-            "source_package": "PKG-CHARACTERS-V2.1",
-            "source_entry": master_entry,
-            "source_entry_sha256": master_sha,
+            "provenance_type": "multi_source_derived_catalog",
+            "generated_by": "scripts/import_source_baseline.py#build_catalogs",
+            "derived_from": formal_input_records,
             "counts": {**observed, "fx": 41, "danger": 76, "g01_addition": 33},
             "normalized_asset_total": 488,
             "design_or_production_master": True,
@@ -1716,9 +1814,6 @@ def build_catalogs(
     for output in (
         catalogs_dir / "characters-71.json",
         catalogs_dir / "characters-71.csv",
-        catalogs_dir / "asset-catalog-488.json",
-        catalogs_dir / "asset-catalog-488.csv",
-        catalogs_dir / "master-workbook-counts.json",
     ):
         record_extraction(
             records,
@@ -1727,6 +1822,16 @@ def build_catalogs(
             entry=master_entry,
             source_data=master_data,
             extraction="formal_catalog_normalization",
+        )
+    for output in (
+        catalogs_dir / "asset-catalog-488.json",
+        catalogs_dir / "asset-catalog-488.csv",
+        catalogs_dir / "master-workbook-counts.json",
+    ):
+        record_derived_catalog(
+            records,
+            output=output,
+            derived_from=formal_input_records,
         )
     return characters, assets
 
@@ -2004,6 +2109,10 @@ def main() -> int:
     write_data_index(repo, data_status)
     build_catalogs(
         paths["PKG-CHARACTERS-V2.1"],
+        paths["PKG-SCENES-V1.0"],
+        paths["PKG-PROPS-V3.0"],
+        paths["PKG-MECH-V2.0"],
+        paths["PKG-UI-V2.0"],
         paths["PKG-FX-V2.0"],
         paths["PKG-DANGER-V2.0"],
         paths["PKG-G01-V3.0"],

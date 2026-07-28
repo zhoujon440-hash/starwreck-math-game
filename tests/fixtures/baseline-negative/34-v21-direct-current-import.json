@@ -1,0 +1,1 @@
+{"id":"NEG-34-V21-DIRECT-CURRENT-IMPORT","mutation":"v2.1-direct-current-import","expected_rule":"TECH-FORBIDDEN-CURRENT-EXECUTION","expected_context":["docs/plan/current-import.md","v2.1-direct-import"]}

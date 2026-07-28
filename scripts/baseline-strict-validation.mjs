@@ -136,35 +136,59 @@ export function validateStrictSource(snapshot) {
   );
 
   const archiveCache = new Map();
+  const sourceBytesFor = (reference) => {
+    const pkg = packageById.get(reference.source_package);
+    if (!pkg) throw new Error(`unknown source_package: ${reference.source_package}`);
+    const packagePath = join(snapshot.root, pkg.repository_path);
+    if (pkg.filename.toLowerCase().endsWith(".docx")) {
+      if (reference.source_entry !== pkg.filename) {
+        throw new Error(`DOCX source_entry mismatch: ${reference.source_entry}`);
+      }
+      return readFileSync(packagePath);
+    }
+    if (!archiveCache.has(pkg.package_id)) {
+      archiveCache.set(pkg.package_id, unzipEntries(readFileSync(packagePath)));
+    }
+    const sourceBytes = archiveCache.get(pkg.package_id).get(reference.source_entry);
+    if (!sourceBytes) {
+      throw new Error(`source_entry missing in ZIP: ${reference.source_entry}`);
+    }
+    return sourceBytes;
+  };
   const extractionProblems = [];
   for (const row of snapshot.extractedFiles.files) {
-    const pkg = packageById.get(row.source_package);
-    if (!pkg) {
-      extractionProblems.push({ output_path: row.output_path, problem: "unknown source_package", value: row.source_package });
-      continue;
-    }
-    const packagePath = join(snapshot.root, pkg.repository_path);
     try {
-      let sourceBytes;
-      if (pkg.filename.toLowerCase().endsWith(".docx")) {
-        if (row.source_entry !== pkg.filename) {
-          extractionProblems.push({ output_path: row.output_path, problem: "DOCX source_entry mismatch", value: row.source_entry });
-          continue;
+      if (row.extraction === "multi_source_derived_catalog") {
+        if (
+          !Array.isArray(row.derived_from) ||
+          row.derived_from.length !== 8 ||
+          row.generated_by !== "scripts/import_source_baseline.py#build_catalogs"
+        ) {
+          extractionProblems.push({
+            output_path: row.output_path,
+            problem: "invalid multi-source derived catalog declaration",
+            value: { derived_from: row.derived_from, generated_by: row.generated_by },
+          });
         }
-        sourceBytes = readFileSync(packagePath);
       } else {
-        if (!archiveCache.has(pkg.package_id)) {
-          archiveCache.set(pkg.package_id, unzipEntries(readFileSync(packagePath)));
-        }
-        sourceBytes = archiveCache.get(pkg.package_id).get(row.source_entry);
-        if (!sourceBytes) {
-          extractionProblems.push({ output_path: row.output_path, problem: "source_entry missing in ZIP", value: row.source_entry });
-          continue;
+        if (!row.source_package || !row.source_entry || !row.source_entry_sha256) {
+          extractionProblems.push({ output_path: row.output_path, problem: "missing direct-source provenance" });
         }
       }
-      const innerSha = sha256Buffer(sourceBytes);
-      if (innerSha !== row.source_entry_sha256) {
-        extractionProblems.push({ output_path: row.output_path, problem: "source_entry_sha256 mismatch", actual: row.source_entry_sha256, expected: innerSha });
+      const references =
+        row.extraction === "multi_source_derived_catalog" ? row.derived_from ?? [] : [row];
+      for (const reference of references) {
+        const innerSha = sha256Buffer(sourceBytesFor(reference));
+        if (innerSha !== reference.source_entry_sha256) {
+          extractionProblems.push({
+            output_path: row.output_path,
+            problem: "source_entry_sha256 mismatch",
+            source_package: reference.source_package,
+            source_entry: reference.source_entry,
+            actual: reference.source_entry_sha256,
+            expected: innerSha,
+          });
+        }
       }
       const outputPath = join(snapshot.root, row.output_path);
       if (!existsSync(outputPath)) {
@@ -244,6 +268,156 @@ export function validateStrictSource(snapshot) {
     "docs/baseline/01_VERSION_PRIORITY.md",
     "confirmed",
     "Keep superseded identities out of current execution indexes, asset provenance, runtime configuration, and chapter entries.",
+  );
+  return { issues, ruleCount };
+}
+
+export function validateStrictCatalogSources(snapshot) {
+  const issues = [];
+  let ruleCount = 0;
+  const add = (condition, ...args) => {
+    ruleCount += 1;
+    if (!condition) issues.push(makeIssue(...args));
+  };
+  const expectedPackages = snapshot.policy.catalog.domain_source_packages;
+  const packageById = new Map(
+    snapshot.sourceManifest.imported.map((row) => [row.package_id, row]),
+  );
+  const archiveCache = new Map();
+  const entryBytes = (packageId, sourceEntry) => {
+    const pkg = packageById.get(packageId);
+    if (!pkg) return null;
+    if (!archiveCache.has(packageId)) {
+      archiveCache.set(
+        packageId,
+        unzipEntries(readFileSync(join(snapshot.root, pkg.repository_path))),
+      );
+    }
+    return archiveCache.get(packageId).get(sourceEntry) ?? null;
+  };
+  const problems = [];
+  const required = [
+    "id",
+    "catalog_id",
+    "official_id",
+    "domain",
+    "name",
+    "source_package",
+    "source_entry",
+    "source_sha256",
+    "source_granularity",
+    "design_master",
+    "production_spec",
+    "runtime_asset",
+    "acceptance_asset",
+  ];
+  for (const asset of snapshot.catalog.assets) {
+    const expectedPackage = expectedPackages[asset.domain];
+    const missing = required.filter((field) => !(field in asset) || asset[field] === "");
+    if (!("chapter" in asset) && !("scope" in asset)) missing.push("chapter_or_scope");
+    let sourceEntrySha = null;
+    let entryProblem = null;
+    try {
+      const bytes = entryBytes(asset.source_package, asset.source_entry);
+      if (!bytes) entryProblem = "source_entry_not_found";
+      else sourceEntrySha = sha256Buffer(bytes);
+    } catch (error) {
+      entryProblem = error.message;
+    }
+    const reasons = [];
+    if (missing.length) reasons.push(`missing:${missing.join(",")}`);
+    if (asset.id !== asset.catalog_id) reasons.push("id_catalog_id_mismatch");
+    if (asset.source_package !== expectedPackage) reasons.push("wrong_domain_package");
+    if (entryProblem) reasons.push(entryProblem);
+    if (sourceEntrySha && sourceEntrySha !== asset.source_sha256) reasons.push("source_sha256_mismatch");
+    if (asset.runtime_asset !== false || asset.acceptance_asset !== false) {
+      reasons.push("design_master_promoted_to_runtime_or_acceptance");
+    }
+    if (reasons.length) {
+      problems.push({
+        catalog_id: asset.catalog_id,
+        domain: asset.domain,
+        reasons,
+        actual_source: {
+          package: asset.source_package ?? null,
+          entry: asset.source_entry ?? null,
+          sha256: asset.source_sha256 ?? null,
+          runtime_asset: asset.runtime_asset ?? null,
+          acceptance_asset: asset.acceptance_asset ?? null,
+        },
+        expected_formal_source: {
+          package: expectedPackage ?? null,
+          entry: "real entry in the corresponding formal package",
+          sha256: sourceEntrySha ?? "SHA-256 of that real entry",
+          runtime_asset: false,
+          acceptance_asset: false,
+        },
+      });
+    }
+  }
+  add(
+    problems.length === 0,
+    "CAT-ASSET-MULTI-SOURCE-PROVENANCE",
+    "data/source/catalogs/asset-catalog-488.json#/assets",
+    { problem_count: problems.length, assets: problems.slice(0, 50) },
+    { problem_count: 0, assets: [] },
+    "docs/baseline/08_CONFIRMED_BASELINE_V2.md",
+    "formal V1.0/V2.0/V2.1/V3.0 packages",
+    "Restore each listed catalog_id to its domain's formal package, real package entry, entry SHA, and non-runtime design-master status.",
+  );
+  const expectedPackageSet = [...new Set(Object.values(expectedPackages))].sort();
+  const actualPackageSet = [...new Set(snapshot.catalog.assets.map((asset) => asset.source_package))].sort();
+  const entrySet = new Set(snapshot.catalog.assets.map((asset) => asset.source_entry));
+  const shaSet = new Set(snapshot.catalog.assets.map((asset) => asset.source_sha256));
+  add(
+    expectedPackageSet.length === 8 &&
+      JSON.stringify(actualPackageSet) === JSON.stringify(expectedPackageSet) &&
+      entrySet.size >= 8 &&
+      shaSet.size >= 8 &&
+      JSON.stringify([...snapshot.catalog.source_packages].sort()) ===
+        JSON.stringify(expectedPackageSet),
+    "CAT-ASSET-SOURCE-DIVERSITY",
+    "data/source/catalogs/asset-catalog-488.json",
+    {
+      packages: actualPackageSet,
+      declared_packages: snapshot.catalog.source_packages,
+      unique_entries: entrySet.size,
+      unique_shas: shaSet.size,
+    },
+    {
+      packages: expectedPackageSet,
+      declared_packages: expectedPackageSet,
+      minimum_unique_entries: 8,
+      minimum_unique_shas: 8,
+    },
+    "docs/baseline/08_CONFIRMED_BASELINE_V2.md",
+    "488-asset multi-source baseline",
+    "Restore the eight formal asset-source domains; do not collapse the catalog onto one package, entry, or SHA.",
+  );
+  const derivedOutputs = new Set([
+    "data/source/catalogs/asset-catalog-488.csv",
+    "data/source/catalogs/asset-catalog-488.json",
+    "data/source/catalogs/master-workbook-counts.json",
+  ]);
+  const derivedProblems = snapshot.extractedFiles.files
+    .filter((row) => derivedOutputs.has(row.output_path))
+    .filter((row) => {
+      const packages = (row.derived_from ?? []).map((ref) => ref.source_package).sort();
+      return (
+        row.extraction !== "multi_source_derived_catalog" ||
+        row.generated_by !== "scripts/import_source_baseline.py#build_catalogs" ||
+        JSON.stringify(packages) !== JSON.stringify(expectedPackageSet)
+      );
+    });
+  add(
+    derivedProblems.length === 0,
+    "CAT-ASSET-DERIVED-CATALOG-PROVENANCE",
+    "source_packages/manifests/extracted-files.json",
+    derivedProblems,
+    [],
+    "scripts/import_source_baseline.py#build_catalogs",
+    "deterministic multi-source derivation",
+    "Declare all three aggregate outputs as multi_source_derived_catalog with the exact eight formal inputs and generation script.",
   );
   return { issues, ruleCount };
 }
@@ -499,7 +673,7 @@ export function validateStarCoreContracts(snapshot) {
 
 function currentExecutionFiles(snapshot) {
   const roots = [
-    "src", "config", "schemas", "tests", "tasks",
+    "src", "public", "config", "schemas", "tests", "tasks",
     "docs/baseline", "docs/plan", "docs/project", "docs/implementation", "docs/chapters",
   ];
   const fixed = [
@@ -507,12 +681,15 @@ function currentExecutionFiles(snapshot) {
     "vite.config.ts", "playwright.config.ts", "tsconfig.json", "tsconfig.app.json", "tsconfig.node.json",
   ];
   const allowedExtensions = /\.(?:ts|tsx|js|jsx|mjs|cjs|json|md)$/;
+  const isExplicitlyIsolated = (path) =>
+    path.startsWith("tests/fixtures/baseline-negative/") ||
+    path.startsWith("docs/baseline/source_text/") ||
+    path === "docs/review/BASELINE_CONFLICT_REPORT.md" ||
+    path === "source_packages/manifests/substitution-map.json";
   const files = [...new Set(roots.flatMap((base) => walk(snapshot.root, base)).concat(fixed))]
     .filter((path) => existsSync(join(snapshot.root, path)))
     .filter((path) => allowedExtensions.test(path))
-    .filter((path) => !path.startsWith("tests/fixtures/baseline-negative/"))
-    .filter((path) => !path.startsWith("docs/baseline/source_text/"))
-    .filter((path) => !["docs/review/BASELINE_CONFLICT_REPORT.md", "docs/review/BASELINE_COMPLETENESS_REPORT.md"].includes(path))
+    .filter((path) => !isExplicitlyIsolated(path))
     .map((path) => {
       let content = readFileSync(join(snapshot.root, path), "utf8");
       if (path === "config/baseline-policy.json") {
@@ -523,7 +700,9 @@ function currentExecutionFiles(snapshot) {
       }
       return { path, content };
     });
-  return files.concat(snapshot.syntheticCurrentExecutionFiles);
+  return files.concat(
+    snapshot.syntheticCurrentExecutionFiles.filter((file) => !isExplicitlyIsolated(file.path)),
+  );
 }
 
 export function validateExpandedForbidden(snapshot) {
@@ -538,16 +717,52 @@ export function validateExpandedForbidden(snapshot) {
     ["legacy-name", /小砾/],
     ["unity-current-runtime", /(?:当前运行时|当前引擎|runtime_technology|runtime|engine)\s*(?:为|是|=|:|：)\s*["']?Unity|Unity\s*(?:为|是)\s*(?:当前运行时|当前引擎)/i],
     ["v2.1-direct-import", /V2\.1[^.\n]{0,30}(?:直接|可直接)[^.\n]{0,20}(?:导入|运行)[^.\n]{0,20}(?:当前引擎|运行时|runtime|engine)/i],
-    ["combat-implementation", /(?:战斗|血量|伤害|攻击|敌人\s*AI|Boss\s*战|技能树|自由实时\s*3D|combat|hit\s*points?|damage|attack|enemy\s*AI|boss\s*battle|skill[ _-]?tree|free[ _-]?roam(?:ing)?\s*3D)[^.\n]{0,35}(?:实现|系统|逻辑|handler|class|function|component|enabled|true|current|runtime)/i],
+    ["combat-implementation", /(?:(?:实现|开发|新增|启用|配置|编写)[^.\n]{0,35})?(?:战斗|血量|伤害|攻击|敌人\s*AI|Boss\s*战|技能树|自由实时\s*3D|combat|hit\s*points?|damage|attack|enemy\s*AI|boss\s*battle|skill[ _-]?tree|free[ _-]?roam(?:ing)?\s*3D)[^.\n]{0,35}(?:实现|系统|逻辑|handler|class|function|component|enabled|true|current|runtime|模式|功能)/i],
   ];
+  const legacyProhibitionPaths = new Set([
+    "AGENTS.md",
+    "docs/baseline/00_SOURCE_OF_TRUTH.md",
+    "docs/baseline/01_VERSION_PRIORITY.md",
+    "docs/baseline/03_GLOBAL_FROZEN_RULES.md",
+    "docs/baseline/07_CODEX_PREDEVELOPMENT_GATE.md",
+    "docs/baseline/characters/CHAR-001_XINGYU.md",
+    "tasks/TASK-001_G01正式HOPA重构.md",
+  ]);
+  const isProhibition = (line) =>
+    /禁止|不得|不做|不属于|不是当前|不代表当前|只允许|仅.{0,20}(?:历史|结构化|归档)|废弃表达|非战斗|没有传统|无战斗|未引用|验收不通过|验收禁区/.test(line);
+  const isAllowedLegacyProhibition = (file, lines, lineIndex) => {
+    if (!legacyProhibitionPaths.has(file.path)) return false;
+    const line = lines[lineIndex];
+    if (
+      /(?:禁止|不得)[^。\n]{0,30}(?:旧名[^。\n]{0,10})?小砾/.test(line) ||
+      /(?:旧名[^。\n]{0,10})?小砾[^。\n]{0,30}只允许[^。\n]{0,30}(?:legacy|历史归档)/i.test(line) ||
+      /小砾[^。\n]{0,20}映射为/.test(line) ||
+      /(?:没有|未引用)[^。\n]{0,20}小砾/.test(line)
+    ) {
+      return true;
+    }
+    if (file.path === "tasks/TASK-001_G01正式HOPA重构.md") {
+      const context = lines.slice(Math.max(0, lineIndex - 8), lineIndex + 1).join("\n");
+      return /验收禁区/.test(context) &&
+        /(?:出现以下任意一项，验收不通过|出现任一情况即不通过)/.test(context);
+    }
+    return false;
+  };
   const matches = [];
   for (const file of files) {
-    for (const [lineIndex, line] of file.content.split(/\r?\n/).entries()) {
-      const prohibition = /禁止|不得|不属于|不是当前|仅.{0,20}(?:历史|结构化)|非战斗|没有传统|无战斗/.test(line);
+    const lines = file.content.split(/\r?\n/);
+    for (const [lineIndex, line] of lines.entries()) {
       for (const [kind, pattern] of patterns) {
-        if (kind !== "legacy-name" && prohibition) continue;
+        if (kind === "legacy-name" && isAllowedLegacyProhibition(file, lines, lineIndex)) continue;
+        if (kind !== "legacy-name" && isProhibition(line)) continue;
         if (pattern.test(line)) {
-          matches.push({ path: `${file.path}:${lineIndex + 1}`, kind, pattern: pattern.source });
+          matches.push({
+            path: `${file.path}:${lineIndex + 1}`,
+            kind,
+            actual: line.trim(),
+            expected: "historical/prohibitive context or no current implementation semantics",
+            action: "Remove the current implementation/configuration, or move genuine history to an explicitly isolated provenance path.",
+          });
         }
       }
     }
@@ -583,6 +798,52 @@ export function applyStrictFixture(snapshot, mutation) {
       break;
     case "unity-current-config":
       snapshot.policy.runtime_technology = "Unity";
+      break;
+    case "scene-source-character-package": {
+      const scene = snapshot.catalog.assets.find((asset) => asset.domain === "scene");
+      const character = snapshot.catalog.assets.find((asset) => asset.domain === "character");
+      scene.source_package = character.source_package;
+      scene.source_entry = character.source_entry;
+      scene.source_sha256 = character.source_sha256;
+      break;
+    }
+    case "fx-source-character-xlsx": {
+      const fx = snapshot.catalog.assets.find((asset) => asset.domain === "fx");
+      const character = snapshot.characters[0];
+      fx.source_package = character.source_package;
+      fx.source_entry = character.registry_source_entry;
+      fx.source_sha256 = character.registry_source_sha256;
+      break;
+    }
+    case "g01-danger-source-danger-package": {
+      const g01Danger = snapshot.catalog.assets.find(
+        (asset) => asset.domain === "g01_addition" && asset.type === "危险视觉",
+      );
+      const danger = snapshot.catalog.assets.find((asset) => asset.domain === "danger");
+      g01Danger.source_package = danger.source_package;
+      g01Danger.source_entry = danger.source_entry;
+      g01Danger.source_sha256 = danger.source_sha256;
+      break;
+    }
+    case "all-asset-source-shas-same": {
+      const sharedSha = snapshot.catalog.assets[0].source_sha256;
+      for (const asset of snapshot.catalog.assets) asset.source_sha256 = sharedSha;
+      break;
+    }
+    case "asset-missing-source-entry":
+      delete snapshot.catalog.assets.find((asset) => asset.domain === "prop").source_entry;
+      break;
+    case "current-task-requires-combat":
+      snapshot.syntheticCurrentExecutionFiles.push({
+        path: "tasks/current-combat.md",
+        content: "本任务要求实现战斗系统、血量、攻击和敌人AI。",
+      });
+      break;
+    case "v2.1-direct-current-import":
+      snapshot.syntheticCurrentExecutionFiles.push({
+        path: "docs/plan/current-import.md",
+        content: "V2.1可直接导入当前引擎运行。",
+      });
       break;
     case "hint-missing-second": {
       const rows = snapshot.chapters.G02.modules["三级提示"];
