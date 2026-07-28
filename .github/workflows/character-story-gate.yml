@@ -1,0 +1,49 @@
+name: Character Story Gate
+
+on:
+  push:
+    branches:
+      - codex/g01-character-story-v2
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  character-story-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:sources
+      - run: npm run validate:baseline
+      - run: npm run test:baseline
+      - run: npm run validate:characters
+      - run: npm run test:characters
+      - run: npm run validate:character-story -- --allow-source-gap
+      - run: npm run test:character-story
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Enforce formal SCN-G01-01 art readiness
+        run: npm run validate:character-story
+      - name: Upload character story evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: character-story-evidence-${{ github.run_number }}
+          path: |
+            test-results/character-story/**
+            test-results/visual-acceptance/**
+            docs/story-runtime/G01_CHARACTER_STORY_RUNTIME.md
+            docs/review/G01_SCN01_FORMAL_ART_BLOCKER.md
+            config/character-story-policy.json
+          if-no-files-found: error
+          retention-days: 30
