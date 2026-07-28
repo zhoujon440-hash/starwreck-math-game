@@ -1,0 +1,5 @@
+{
+  "id": "one chapter has the wrong star-core before value",
+  "mutation": "star-core-wrong-value",
+  "expected_rule": "STORY-STAR-CORE-STATE-TRANSITION"
+}

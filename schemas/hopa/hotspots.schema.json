@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hotspots.schema.json",
+  "title": "HOPA 热点清单",
+  "x-rule-suffix": "HOTSPOTS",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": ["热点ID", "场景ID", "热点名称", "热点类型", "操作方式", "前置条件", "成功结果", "错误反馈", "完成后状态", "目标ID"],
+    "additionalProperties": false,
+    "properties": {
+      "热点ID": { "type": "string", "pattern": "^HS-G\\d{2}-\\d{4}$" },
+      "场景ID": { "type": "string", "pattern": "^SCN-G\\d{2}-\\d{2}[A-Z]?$" },
+      "热点名称": { "type": "string" },
+      "热点类型": { "type": "string" },
+      "操作方式": { "type": "string" },
+      "前置条件": { "type": "string" },
+      "成功结果": { "type": "string" },
+      "错误反馈": { "type": "string" },
+      "完成后状态": { "type": "string" },
+      "目标ID": { "type": "string" },
+      "证据ID": { "type": "string" }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"id":"NEG-41-FORMAL-ASSET-WRONG-SCOPE","mutation":"formal-asset-wrong-scope","expected_rule":"CAT-ASSET-FORMAL-ROW-CONTENT","expected_context":["FX-001","scope","错误范围","核心角色","PKG-FX-V2.0"]}

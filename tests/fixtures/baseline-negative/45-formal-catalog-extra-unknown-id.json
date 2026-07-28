@@ -1,0 +1,1 @@
+{"id":"NEG-45-FORMAL-CATALOG-EXTRA-UNKNOWN-ID","mutation":"formal-catalog-extra-unknown-id","expected_rule":"CAT-ASSET-FORMAL-ROW-UNIQUE","expected_context":["SCN-999","formal_row_count\":0","catalog_row_count\":1","PKG-SCENES-V1.0"]}

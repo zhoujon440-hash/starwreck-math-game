@@ -1,0 +1,5 @@
+{
+  "id": "danger recovery drops key items",
+  "mutation": "danger-drops-key-items",
+  "expected_rule": "HOPA-DANGER-SOFT-FAILURE-RECOVERY"
+}

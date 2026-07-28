@@ -1,0 +1,5 @@
+{
+  "id": "one chapter counts a star core twice",
+  "mutation": "star-core-duplicate",
+  "expected_rule": "STORY-STAR-CORE-STATE-TRANSITION"
+}

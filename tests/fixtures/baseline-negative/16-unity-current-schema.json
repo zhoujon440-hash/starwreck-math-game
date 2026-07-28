@@ -1,0 +1,5 @@
+{
+  "id": "Unity declared as current runtime in a schema",
+  "mutation": "unity-current-schema",
+  "expected_rule": "TECH-FORBIDDEN-CURRENT-EXECUTION"
+}

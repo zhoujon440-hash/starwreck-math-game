@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dialogue.schema.json",
+  "title": "HOPA 对话脚本",
+  "x-rule-suffix": "DIALOGUE",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": ["对话ID", "场景ID", "说话者", "台词", "类型", "触发条件", "跳过规则", "关联"],
+    "additionalProperties": false,
+    "properties": {
+      "对话ID": { "type": "string", "pattern": "^DLG-G\\d{2}-\\d{4}$" },
+      "场景ID": { "type": "string", "pattern": "^SCN-G\\d{2}-\\d{2}[A-Z]?$" },
+      "说话者": { "type": "string" },
+      "台词": { "type": "string" },
+      "类型": { "type": "string" },
+      "触发条件": { "type": "string" },
+      "跳过规则": { "type": "string" },
+      "关联": { "type": "string" }
+    }
+  }
+}

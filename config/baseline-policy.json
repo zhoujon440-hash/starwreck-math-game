@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "runtime_technology": "HTML5/PWA + Vite + TypeScript",
+  "authority": {
+    "confirmed_baseline": "docs/baseline/08_CONFIRMED_BASELINE_V2.md",
+    "g01_g02_boundary": "docs/baseline/source_text/g01/G02_OPENING_BOUNDARY_V2.2.md",
+    "g01_source": "PKG-G01-V3.0",
+    "g02_data_source": "PKG-G02-G13-DATA-V2.1"
+  },
+  "catalog": {
+    "total": 488,
+    "mapping_version": "formal-row-authority-v1",
+    "generated_by": "scripts/import_source_baseline.py#build_catalogs",
+    "registry_reference_role": "cross_check_only",
+    "formal_row_rules": [
+      "CAT-ASSET-FORMAL-ROW-CONTENT",
+      "CAT-ASSET-FORMAL-ROW-UNIQUE"
+    ],
+    "domain_counts": {
+      "character": 71,
+      "scene": 91,
+      "prop": 46,
+      "mechanism": 47,
+      "ui": 83,
+      "fx": 41,
+      "danger": 76,
+      "g01_addition": 33
+    },
+    "domain_source_packages": {
+      "character": "PKG-CHARACTERS-V2.1",
+      "scene": "PKG-SCENES-V1.0",
+      "prop": "PKG-PROPS-V3.0",
+      "mechanism": "PKG-MECH-V2.0",
+      "ui": "PKG-UI-V2.0",
+      "fx": "PKG-FX-V2.0",
+      "danger": "PKG-DANGER-V2.0",
+      "g01_addition": "PKG-G01-V3.0"
+    },
+    "formal_sequences": {
+      "prop": { "prefix": "PROP", "count": 46 },
+      "fx": { "prefix": "FX", "count": 41 },
+      "mechanism": { "prefix": "MECH", "count": 47 },
+      "danger": { "prefix": "DANGER", "count": 76 },
+      "ui": { "prefix": "UI", "count": 83 }
+    }
+  },
+  "story": {
+    "g01_scene_count": 8,
+    "main_planets": ["G02", "G03", "G04", "G05", "G06", "G07", "G08", "G09", "G10", "G11", "G12", "G13"],
+    "g02_effective_opening": "旧屏幕谷外缘交接",
+    "g02_source_row_status": "superseded_by_G02_opening_boundary_V2.2",
+    "g01_world_star_core_count": 0,
+    "star_core_contracts": [
+      { "chapter": "G02", "completion_variable": "g02_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G02-027", "before": 0, "after": 1, "delta": 1, "formal_script_path": "docs/story/G01-G13/G02.md", "master_data_path": "data/source/g02-g13/G02/json/G02_MasterData.json", "program_variables_path": "data/source/g02-g13/G02/json/程序变量.json" },
+      { "chapter": "G03", "completion_variable": "g03_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G03-028", "before": 1, "after": 2, "delta": 1, "formal_script_path": "docs/story/G01-G13/G03.md", "master_data_path": "data/source/g02-g13/G03/json/G03_MasterData.json", "program_variables_path": "data/source/g02-g13/G03/json/程序变量.json" },
+      { "chapter": "G04", "completion_variable": "g04_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G04-028", "before": 2, "after": 3, "delta": 1, "formal_script_path": "docs/story/G01-G13/G04.md", "master_data_path": "data/source/g02-g13/G04/json/G04_MasterData.json", "program_variables_path": "data/source/g02-g13/G04/json/程序变量.json" },
+      { "chapter": "G05", "completion_variable": "g05_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G05-028", "before": 3, "after": 4, "delta": 1, "formal_script_path": "docs/story/G01-G13/G05.md", "master_data_path": "data/source/g02-g13/G05/json/G05_MasterData.json", "program_variables_path": "data/source/g02-g13/G05/json/程序变量.json" },
+      { "chapter": "G06", "completion_variable": "g06_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G06-024", "before": 4, "after": 5, "delta": 1, "formal_script_path": "docs/story/G01-G13/G06.md", "master_data_path": "data/source/g02-g13/G06/json/G06_MasterData.json", "program_variables_path": "data/source/g02-g13/G06/json/程序变量.json" },
+      { "chapter": "G07", "completion_variable": "g07_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G07-024", "before": 5, "after": 6, "delta": 1, "formal_script_path": "docs/story/G01-G13/G07.md", "master_data_path": "data/source/g02-g13/G07/json/G07_MasterData.json", "program_variables_path": "data/source/g02-g13/G07/json/程序变量.json" },
+      { "chapter": "G08", "completion_variable": "g08_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G08-024", "before": 6, "after": 7, "delta": 1, "formal_script_path": "docs/story/G01-G13/G08.md", "master_data_path": "data/source/g02-g13/G08/json/G08_MasterData.json", "program_variables_path": "data/source/g02-g13/G08/json/程序变量.json" },
+      { "chapter": "G09", "completion_variable": "g09_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G09-024", "before": 7, "after": 8, "delta": 1, "formal_script_path": "docs/story/G01-G13/G09.md", "master_data_path": "data/source/g02-g13/G09/json/G09_MasterData.json", "program_variables_path": "data/source/g02-g13/G09/json/程序变量.json" },
+      { "chapter": "G10", "completion_variable": "g10_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G10-024", "before": 8, "after": 9, "delta": 1, "formal_script_path": "docs/story/G01-G13/G10.md", "master_data_path": "data/source/g02-g13/G10/json/G10_MasterData.json", "program_variables_path": "data/source/g02-g13/G10/json/程序变量.json" },
+      { "chapter": "G11", "completion_variable": "g11_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G11-024", "before": 9, "after": 10, "delta": 1, "formal_script_path": "docs/story/G01-G13/G11.md", "master_data_path": "data/source/g02-g13/G11/json/G11_MasterData.json", "program_variables_path": "data/source/g02-g13/G11/json/程序变量.json" },
+      { "chapter": "G12", "completion_variable": "g12_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G12-024", "before": 10, "after": 11, "delta": 1, "formal_script_path": "docs/story/G01-G13/G12.md", "master_data_path": "data/source/g02-g13/G12/json/G12_MasterData.json", "program_variables_path": "data/source/g02-g13/G12/json/程序变量.json" },
+      { "chapter": "G13", "completion_variable": "g13_chapter_complete", "star_core_variable": "world_star_core_count", "star_core_variable_id": "VAR-G13-024", "before": 11, "after": 12, "delta": 1, "formal_script_path": "docs/story/G01-G13/G13.md", "master_data_path": "data/source/g02-g13/G13/json/G13_MasterData.json", "program_variables_path": "data/source/g02-g13/G13/json/程序变量.json" }
+    ]
+  },
+  "source_integrity": {
+    "current_source_rules": {
+      "人物形象设计全集 V2.1补齐版": "PKG-CHARACTERS-V2.1",
+      "道具美术正式包 V3.0": "PKG-PROPS-V3.0",
+      "机制可视化HOPA正式包 V2.0": "PKG-MECH-V2.0",
+      "技能与装备效果HOPA正式包 V2.0": "PKG-FX-V2.0",
+      "危险视觉HOPA正式包 V2.0": "PKG-DANGER-V2.0",
+      "G01整合正式包 V3.0": "PKG-G01-V3.0",
+      "G02—G13 HOPA实施脚本 V2.0": "PKG-G02-G13-HOPA-V2.0",
+      "G-S2-D01 V1.0": "DOC-G-S2-D01-V1.0"
+    },
+    "confirmed_rules": [
+      "HTML5/PWA HOPA技术路线",
+      "主角名星宇"
+    ],
+    "confirmed_history_records": [
+      "人物形象设计全集 V2.0",
+      "已生成人物设计打包 V1.0",
+      "星宇写实人类少年方案",
+      "道具美术设计全集 V2.0",
+      "道具美术设计包 V1.0第一批",
+      "MECH-C G08—G10机制可视化确认包 V1.0",
+      "FX-B G02—G05装备效果确认包 V1.0",
+      "DANGER-B G05—G07危险视觉确认包 V1.0",
+      "DANGER-C G08—G10危险视觉确认包 V1.0",
+      "损坏的Codex脚本与架构基线包 V1.0",
+      "G01 HTML5-PWA纯色占位原型 V1.0",
+      "更早G01脚本和实现反推数据",
+      "G02—G13游戏重构脚本 V1.0中的战斗/Boss表达",
+      "Unity当前工程路线",
+      "实时3D、战斗RPG和自由移动路线",
+      "G-S2-D01 V0.9待确认版",
+      "旧名小砾"
+    ]
+  },
+  "hopa_contracts": {
+    "critical_item_adapter": {
+      "source": "docs/baseline/02_HOPA_ARCHITECTURE.md#关键道具错误使用",
+      "identification": "formal inventory key/evidence markers plus formal flow and mandatory-HOS references",
+      "fallback_wrong_use_feedback": "错误目标拒绝：道具仍在背包，正确进度不变",
+      "item_retained": true,
+      "correct_progress_unchanged": true,
+      "consumed_on_wrong_use": false
+    },
+    "danger_failure_adapter": {
+      "source": "docs/baseline/02_HOPA_ARCHITECTURE.md#危险软失败恢复",
+      "adaptation_note": "Formal DANGER rows identify hazards; chapter save/recovery rows provide safe nodes. These adapter booleans state the confirmed runtime contract without editing formal source data.",
+      "preserve_key_items": true,
+      "preserve_evidence": true,
+      "preserve_completed_correct_steps": true,
+      "preserve_mechanism_progress": true,
+      "retry_allowed": true,
+      "planet_chapters": {
+        "锈环星": "G02",
+        "齿轮荒原": "G03",
+        "镜面沙海": "G04",
+        "刻度冰原": "G05",
+        "分片群岛": "G06",
+        "方格城": "G07",
+        "钟摆之城": "G08",
+        "棋阵卫星": "G09",
+        "概率云港": "G10",
+        "立体工厂": "G11",
+        "百工星环": "G12",
+        "零号地球": "G13"
+      }
+    }
+  },
+  "forbidden": {
+    "current_execution_patterns": [
+      "\\bcombat\\b",
+      "\\benemyAI\\b",
+      "\\bBoss\\b",
+      "\\bskill[ _-]?tree\\b",
+      "\\bfree[ _-]?roam(?:ing)?\\b",
+      "小砾",
+      "\\bUnity\\b",
+      "V2\\.1.{0,24}(直接|可直接).{0,24}(导入|运行)",
+      "战斗系统",
+      "Boss战",
+      "血条",
+      "伤害系统",
+      "攻击系统",
+      "敌人AI",
+      "技能树",
+      "自由实时3D"
+    ]
+  }
+}

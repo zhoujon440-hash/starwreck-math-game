@@ -1,0 +1,5 @@
+{
+  "id": "danger recovery drops evidence",
+  "mutation": "danger-drops-evidence",
+  "expected_rule": "HOPA-DANGER-SOFT-FAILURE-RECOVERY"
+}

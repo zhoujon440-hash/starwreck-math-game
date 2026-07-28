@@ -596,6 +596,28 @@ def record_extraction(
     )
 
 
+def record_derived_catalog(
+    records: list[dict[str, Any]],
+    *,
+    output: Path,
+    derived_from: list[dict[str, Any]],
+    field_authority_map: dict[str, Any],
+) -> None:
+    records.append(
+        {
+            "output_path": repository_path(output),
+            "output_sha256": sha256_canonical_text_file(output),
+            "output_hash_mode": "canonical_lf",
+            "extraction": "multi_source_derived_catalog",
+            "generated_by": CATALOG_GENERATOR,
+            "mapping_version": CATALOG_MAPPING_VERSION,
+            "registry_reference_role": REGISTRY_REFERENCE_ROLE,
+            "field_authority_map": field_authority_map,
+            "derived_from": derived_from,
+        }
+    )
+
+
 def extract_docx_entry(
     package: Path,
     package_id: str,
@@ -1175,12 +1197,19 @@ def sheet_rows(
     return rows
 
 
-def normalize_asset_row(
+CATALOG_MAPPING_VERSION = "formal-row-authority-v1"
+CATALOG_GENERATOR = "scripts/import_source_baseline.py#build_catalogs"
+REGISTRY_REFERENCE_ROLE = "cross_check_only"
+
+
+def normalize_legacy_asset_row(
     source: dict[str, Any],
     domain: str,
     source_sheet: str,
-    source_entry: str,
-    source_sha256: str,
+    source_package: str = "PKG-CHARACTERS-V2.1",
+    source_entry: str = "",
+    source_sha256: str = "",
+    source_status: str = "legacy_catalog_normalization",
 ) -> dict[str, Any]:
     name = (
         source.get("人物名称")
@@ -1199,14 +1228,182 @@ def normalize_asset_row(
         "maturity": source.get("当前状态"),
         "priority": source.get("优先级"),
         "source_sheet": source_sheet,
-        "source_package": "PKG-CHARACTERS-V2.1",
+        "source_package": source_package,
         "source_entry": source_entry,
         "source_sha256": source_sha256,
-        "source_status": "indexed_from_confirmed_master",
+        "source_granularity": "formal_catalog_entry",
+        "source_status": source_status,
         "design_master": True,
         "production_spec": True,
         "runtime_asset": False,
         "acceptance_asset": False,
+    }
+
+
+def require_formal_fields(
+    row: dict[str, Any],
+    *,
+    package_id: str,
+    source_entry: str,
+    required: tuple[str, ...],
+) -> None:
+    asset_id = row.get("资产ID", "<missing-id>")
+    missing = [field for field in required if field not in row or row[field] in (None, "")]
+    if missing:
+        raise ValueError(
+            f"{package_id}:{source_entry}:{asset_id}: missing formal fields {missing}"
+        )
+
+
+def formal_source_fields(
+    *,
+    package_id: str,
+    source_entry: str,
+    source_sha256: str,
+    row_id: str,
+) -> dict[str, Any]:
+    return {
+        "source_package": package_id,
+        "source_entry": source_entry,
+        "source_sha256": source_sha256,
+        "source_granularity": "formal_catalog_entry",
+        "formal_row_id": row_id,
+        "source_status": "formal_row_authoritative",
+        "design_master": True,
+        "production_spec": True,
+        "runtime_asset": False,
+        "acceptance_asset": False,
+    }
+
+
+def normalize_scene_formal_row(
+    row: dict[str, Any], package_id: str, source_entry: str, source_sha256: str
+) -> dict[str, Any]:
+    require_formal_fields(
+        row,
+        package_id=package_id,
+        source_entry=source_entry,
+        required=("资产ID", "星球编号", "星球/范围", "场景名称", "状态", "优先级", "交付状态"),
+    )
+    asset_id = row["资产ID"]
+    return {
+        "catalog_id": asset_id,
+        "official_id": asset_id,
+        "domain": "scene",
+        "name": row["场景名称"],
+        "chapter": row["星球编号"],
+        "scope": row["星球/范围"],
+        "maturity": row["状态"],
+        "priority": row["优先级"],
+        "delivery_status": row["交付状态"],
+        **formal_source_fields(
+            package_id=package_id,
+            source_entry=source_entry,
+            source_sha256=source_sha256,
+            row_id=asset_id,
+        ),
+    }
+
+
+def normalize_prop_formal_row(
+    row: dict[str, Any], package_id: str, source_entry: str, source_sha256: str
+) -> dict[str, Any]:
+    require_formal_fields(
+        row,
+        package_id=package_id,
+        source_entry=source_entry,
+        required=("资产ID", "星球编号", "星球", "道具名称", "对应正式板", "状态", "核查结论"),
+    )
+    asset_id = row["资产ID"]
+    return {
+        "catalog_id": asset_id,
+        "official_id": asset_id,
+        "domain": "prop",
+        "name": row["道具名称"],
+        "chapter": row["星球编号"],
+        "scope": row["星球"],
+        "design_board": row["对应正式板"],
+        "maturity": row["状态"],
+        "verification_result": row["核查结论"],
+        **formal_source_fields(
+            package_id=package_id,
+            source_entry=source_entry,
+            source_sha256=source_sha256,
+            row_id=asset_id,
+        ),
+    }
+
+
+def normalize_mech_formal_row(
+    row: dict[str, Any], package_id: str, source_entry: str, source_sha256: str
+) -> dict[str, Any]:
+    require_formal_fields(
+        row,
+        package_id=package_id,
+        source_entry=source_entry,
+        required=("资产ID", "星球", "机制名称", "状态", "冻结版本"),
+    )
+    asset_id = row["资产ID"]
+    chapter_match = re.match(r"^(G\d{2})\b", row["星球"])
+    return {
+        "catalog_id": asset_id,
+        "official_id": asset_id,
+        "domain": "mechanism",
+        "name": row["机制名称"],
+        "mechanism_name": row["机制名称"],
+        "chapter": chapter_match.group(1) if chapter_match else row["星球"],
+        "scope": row["星球"],
+        "maturity": row["状态"],
+        "freeze_version": row["冻结版本"],
+        **formal_source_fields(
+            package_id=package_id,
+            source_entry=source_entry,
+            source_sha256=source_sha256,
+            row_id=asset_id,
+        ),
+    }
+
+
+def normalize_ui_formal_row(
+    row: dict[str, Any], package_id: str, source_entry: str, source_sha256: str
+) -> dict[str, Any]:
+    require_formal_fields(
+        row,
+        package_id=package_id,
+        source_entry=source_entry,
+        required=(
+            "资产ID",
+            "范围",
+            "星球",
+            "界面名称",
+            "类别",
+            "分批",
+            "独立设计板",
+            "确认状态",
+            "冻结版本",
+        ),
+    )
+    asset_id = row["资产ID"]
+    return {
+        "catalog_id": asset_id,
+        "official_id": asset_id,
+        "domain": "ui",
+        "name": row["界面名称"],
+        "chapter": row["范围"],
+        "scope": row["星球"],
+        "type": row["类别"],
+        "category": row["类别"],
+        "batch": row["分批"],
+        "independent_board_status": row["独立设计板"],
+        "confirmation_status": row["确认状态"],
+        "maturity": row["确认状态"],
+        "freeze_version": row["冻结版本"],
+        **formal_source_fields(
+            package_id=package_id,
+            source_entry=source_entry,
+            source_sha256=source_sha256,
+            row_id=asset_id,
+        ),
     }
 
 
@@ -1246,23 +1443,23 @@ def build_catalogs_legacy(
 
     assets: list[dict[str, Any]] = []
     assets.extend(
-        normalize_asset_row(row, "character", "人物清单")
+        normalize_legacy_asset_row(row, "character", "人物清单")
         for row in tables["characters"]
     )
     assets.extend(
-        normalize_asset_row(row, "scene", "场景清单") for row in tables["scenes"]
+        normalize_legacy_asset_row(row, "scene", "场景清单") for row in tables["scenes"]
     )
     assets.extend(
-        normalize_asset_row(row, "prop", "装备道具") for row in tables["props"]
+        normalize_legacy_asset_row(row, "prop", "装备道具") for row in tables["props"]
     )
     assets.extend(
-        normalize_asset_row(row, "fx", "技能特效") for row in tables["fx"]
+        normalize_legacy_asset_row(row, "fx", "技能特效") for row in tables["fx"]
     )
     assets.extend(
-        normalize_asset_row(row, "mechanism", "玩法机制")
+        normalize_legacy_asset_row(row, "mechanism", "玩法机制")
         for row in tables["mech"]
     )
-    assets.extend(normalize_asset_row(row, "ui", "UI清单") for row in tables["ui"])
+    assets.extend(normalize_legacy_asset_row(row, "ui", "UI清单") for row in tables["ui"])
 
     danger_rows: list[dict[str, Any]] = []
     for index, row in enumerate(tables["hazards"], start=1):
@@ -1408,12 +1605,32 @@ def build_catalogs_legacy(
 
 def build_catalogs(
     character_package: Path,
+    scene_package: Path,
+    prop_package: Path,
+    mech_package: Path,
+    ui_package: Path,
     fx_package: Path,
     danger_package: Path,
     g01_package: Path,
     repo: Path,
     records: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    def read_formal_csv(
+        source_package: Path, prefix: str, count: int
+    ) -> tuple[list[dict[str, str]], str, bytes]:
+        with zipfile.ZipFile(source_package) as archive:
+            for entry in archive.namelist():
+                if not entry.lower().endswith(".csv"):
+                    continue
+                data = archive.read(entry)
+                try:
+                    rows = list(csv.DictReader(io.StringIO(data.decode("utf-8-sig"))))
+                except UnicodeDecodeError:
+                    continue
+                if len(rows) == count and rows and rows[0].get("资产ID", "").startswith(prefix):
+                    return rows, entry, data
+        raise ValueError(f"{source_package.name}: no formal {prefix} catalog with {count} rows")
+
     master_data, master_entry = xlsx_master_from_character_package(character_package)
     master_sha = sha256_bytes(master_data)
     workbook = openpyxl.load_workbook(io.BytesIO(master_data), data_only=False)
@@ -1483,6 +1700,10 @@ def build_catalogs(
             "source_package": row["source_package"],
             "source_entry": row["source_entry"],
             "source_sha256": row["source_sha256"],
+            "source_granularity": "design_board_entry",
+            "formal_row_id": row["source_asset_id"],
+            "formal_row_entry": row["registry_source_entry"],
+            "formal_row_sha256": row["registry_source_sha256"],
             "source_status": "71/71_design_identity_and_three_view_verified",
             "design_master": True,
             "production_spec": True,
@@ -1491,40 +1712,181 @@ def build_catalogs(
         }
         for row in characters
     ]
-    for key, domain, sheet in (
-        ("scenes", "scene", "场景清单"),
-        ("props", "prop", "装备道具"),
-        ("mech", "mechanism", "玩法机制"),
-        ("ui", "ui", "UI清单"),
-    ):
-        assets.extend(
-            normalize_asset_row(row, domain, sheet, master_entry, master_sha)
-            for row in tables[key]
+    formal_domains = (
+        (
+            "scenes",
+            "scene",
+            scene_package,
+            "PKG-SCENES-V1.0",
+            "SCN",
+            91,
+            normalize_scene_formal_row,
+            {"name": "场景名称", "chapter": "星球编号", "scope": "星球/范围", "maturity": "状态", "priority": "优先级", "delivery_status": "交付状态"},
+        ),
+        (
+            "props",
+            "prop",
+            prop_package,
+            "PKG-PROPS-V3.0",
+            "PROP",
+            46,
+            normalize_prop_formal_row,
+            {"name": "道具名称", "chapter": "星球编号", "scope": "星球", "design_board": "对应正式板", "maturity": "状态", "verification_result": "核查结论"},
+        ),
+        (
+            "mech",
+            "mechanism",
+            mech_package,
+            "PKG-MECH-V2.0",
+            "MECH",
+            47,
+            normalize_mech_formal_row,
+            {"name": "机制名称", "mechanism_name": "机制名称", "chapter": "星球[Gxx前缀]", "scope": "星球", "maturity": "状态", "freeze_version": "冻结版本"},
+        ),
+        (
+            "ui",
+            "ui",
+            ui_package,
+            "PKG-UI-V2.0",
+            "UI",
+            83,
+            normalize_ui_formal_row,
+            {"name": "界面名称", "chapter": "范围", "scope": "星球", "type": "类别", "category": "类别", "batch": "分批", "independent_board_status": "独立设计板", "confirmation_status": "确认状态", "maturity": "确认状态", "freeze_version": "冻结版本"},
+        ),
+    )
+    field_authority_map: dict[str, Any] = {
+        "character": {
+            "source_package": "PKG-CHARACTERS-V2.1",
+            "source_entry": master_entry,
+            "worksheet": "人物清单",
+            "fields": {
+                "formal_row_id": "资产ID",
+                "name": "人物名称",
+                "chapter": "星球编号",
+                "type": "类别",
+                "registry_status_at_V1.0": "当前状态",
+            },
+            "design_master_fields": "同包内十二星球人物三视图",
+            "registry_reference_role": "character_identity_source_only",
+        }
+    }
+    registry_diff_rows: list[dict[str, Any]] = []
+    formal_input_records: list[dict[str, Any]] = [
+        {
+            "domain": "character",
+            "source_package": "PKG-CHARACTERS-V2.1",
+            "source_entry": master_entry,
+            "source_entry_sha256": master_sha,
+            "source_granularity": "registry_workbook",
+        }
+    ]
+    for key, domain, package, package_id, prefix, count, normalizer, field_map in formal_domains:
+        formal_rows, formal_entry, formal_data = read_formal_csv(package, prefix, count)
+        master_ids = {row["资产ID"] for row in tables[key]}
+        formal_ids = {row["资产ID"] for row in formal_rows}
+        if master_ids != formal_ids:
+            raise ValueError(
+                f"{domain} formal catalog IDs differ from registry: "
+                f"missing={sorted(master_ids - formal_ids)}, "
+                f"extra={sorted(formal_ids - master_ids)}"
+            )
+        formal_sha = sha256_bytes(formal_data)
+        formal_input_records.append(
+            {
+                "domain": domain,
+                "source_package": package_id,
+                "source_entry": formal_entry,
+                "source_entry_sha256": formal_sha,
+                "source_granularity": "formal_catalog_entry",
+            }
         )
+        field_authority_map[domain] = {
+            "source_package": package_id,
+            "source_entry": formal_entry,
+            "fields": field_map,
+            "registry_reference_role": REGISTRY_REFERENCE_ROLE,
+        }
+        normalized_rows = [
+            normalizer(row, package_id, formal_entry, formal_sha) for row in formal_rows
+        ]
+        assets.extend(normalized_rows)
 
-    def read_formal_csv(
-        source_package: Path, prefix: str, count: int
-    ) -> tuple[list[dict[str, str]], str, bytes]:
-        with zipfile.ZipFile(source_package) as archive:
-            for entry in archive.namelist():
-                if not entry.lower().endswith(".csv"):
-                    continue
-                data = archive.read(entry)
-                try:
-                    rows = list(csv.DictReader(io.StringIO(data.decode("utf-8-sig"))))
-                except UnicodeDecodeError:
-                    continue
-                if len(rows) == count and rows and rows[0].get("资产ID", "").startswith(prefix):
-                    return rows, entry, data
-        raise ValueError(f"{source_package.name}: no formal {prefix} catalog with {count} rows")
+        registry_by_id = {row["资产ID"]: row for row in tables[key]}
+        registry_name_field = {
+            "scene": "场景名称",
+            "prop": "名称",
+            "mechanism": "机制名称",
+            "ui": "名称",
+        }[domain]
+        formal_name_field = {
+            "scene": "场景名称",
+            "prop": "道具名称",
+            "mechanism": "机制名称",
+            "ui": "界面名称",
+        }[domain]
+        formal_status_field = "确认状态" if domain == "ui" else "状态"
+        for formal_row in formal_rows:
+            asset_id = formal_row["资产ID"]
+            registry_row = registry_by_id[asset_id]
+            registry_name = registry_row.get(registry_name_field)
+            formal_name = formal_row.get(formal_name_field)
+            registry_status = registry_row.get("当前状态")
+            formal_status = formal_row.get(formal_status_field)
+            differences: list[str] = []
+            if registry_name != formal_name:
+                differences.append("name")
+            if registry_status != formal_status:
+                differences.append("status")
+            if differences:
+                registry_diff_rows.append(
+                    {
+                        "asset_id": asset_id,
+                        "domain": domain,
+                        "registry_name": registry_name,
+                        "formal_name": formal_name,
+                        "registry_status": registry_status,
+                        "formal_status": formal_status,
+                        "difference_type": "+".join(differences),
+                        "current_authority": f"{package_id}:{formal_entry}",
+                        "manual_action": "否；正式清单优先，旧登记表仅保留交叉核对记录",
+                    }
+                )
 
     fx_rows, fx_entry, fx_data = read_formal_csv(fx_package, "FX-", 41)
     fx_sha = sha256_bytes(fx_data)
+    formal_input_records.append(
+        {
+            "domain": "fx",
+            "source_package": "PKG-FX-V2.0",
+            "source_entry": fx_entry,
+            "source_entry_sha256": fx_sha,
+            "source_granularity": "formal_catalog_entry",
+        }
+    )
     with zipfile.ZipFile(fx_package) as archive:
         fx_files = archive.namelist()
+    field_authority_map["fx"] = {
+        "source_package": "PKG-FX-V2.0",
+        "source_entry": fx_entry,
+        "fields": {
+            "name": "角色/装备",
+            "chapter": "范围[Gxx前缀；无前缀为GLOBAL]",
+            "scope": "范围",
+            "hopa_interaction": "HOPA交互效果",
+            "maturity": "状态",
+            "freeze_version": "冻结版本",
+        },
+        "registry_reference_role": REGISTRY_REFERENCE_ROLE,
+    }
     for row in fx_rows:
+        require_formal_fields(
+            row,
+            package_id="PKG-FX-V2.0",
+            source_entry=fx_entry,
+            required=("资产ID", "范围", "角色/装备", "HOPA交互效果", "状态", "冻结版本"),
+        )
         asset_id = row["资产ID"]
-        scope = row.get("范围")
+        scope = row["范围"]
         chapter = re.search(r"G\d{2}", scope or "")
         board = next(
             (
@@ -1550,18 +1912,16 @@ def build_catalogs(
                 "name": row.get("角色/装备"),
                 "chapter": chapter.group(0) if chapter else "GLOBAL",
                 "scope": scope,
-                "type": "core_ability" if asset_number <= 6 else "equipment_effect",
-                "hopa_interaction": row.get("HOPA交互效果"),
-                "maturity": row.get("状态"),
-                "source_package": "PKG-FX-V2.0",
-                "source_entry": fx_entry,
-                "source_sha256": fx_sha,
+                "hopa_interaction": row["HOPA交互效果"],
+                "maturity": row["状态"],
+                "freeze_version": row["冻结版本"],
                 "design_board": board,
-                "source_status": "formal_V2.0_catalog",
-                "design_master": board is not None,
-                "production_spec": True,
-                "runtime_asset": False,
-                "acceptance_asset": False,
+                **formal_source_fields(
+                    package_id="PKG-FX-V2.0",
+                    source_entry=fx_entry,
+                    source_sha256=fx_sha,
+                    row_id=asset_id,
+                ),
             }
         )
 
@@ -1569,12 +1929,43 @@ def build_catalogs(
         danger_package, "DANGER-", 76
     )
     danger_sha = sha256_bytes(danger_data)
+    formal_input_records.append(
+        {
+            "domain": "danger",
+            "source_package": "PKG-DANGER-V2.0",
+            "source_entry": danger_entry,
+            "source_entry_sha256": danger_sha,
+            "source_granularity": "formal_catalog_entry",
+        }
+    )
     with zipfile.ZipFile(danger_package) as archive:
         danger_files = archive.namelist()
+    field_authority_map["danger"] = {
+        "source_package": "PKG-DANGER-V2.0",
+        "source_entry": danger_entry,
+        "fields": {
+            "name": "危险名称",
+            "chapter": "星球",
+            "scope": "星球",
+            "type": "类型",
+            "application_scene": "应用场景",
+            "batch": "分批",
+            "independent_board_status": "独立设计板",
+            "confirmation_status": "确认状态",
+            "maturity": "确认状态",
+            "freeze_version": "冻结版本",
+        },
+        "registry_reference_role": REGISTRY_REFERENCE_ROLE,
+    }
     for row in danger_rows:
+        require_formal_fields(
+            row,
+            package_id="PKG-DANGER-V2.0",
+            source_entry=danger_entry,
+            required=("资产ID", "星球", "危险名称", "类型", "应用场景", "分批", "独立设计板", "确认状态", "冻结版本"),
+        )
         asset_id = row["资产ID"]
-        scope = row.get("范围") or row.get("章节") or row.get("星球")
-        chapter = re.search(r"G\d{2}", scope or "")
+        scope = row["星球"]
         board = next(
             (
                 name
@@ -1589,23 +1980,23 @@ def build_catalogs(
                 "catalog_id": asset_id,
                 "official_id": asset_id,
                 "domain": "danger",
-                "name": row.get("名称") or row.get("危险名称"),
-                "chapter": chapter.group(0) if chapter else scope,
+                "name": row["危险名称"],
+                "chapter": row["星球"],
                 "scope": scope,
-                "type": row.get("类型") or "environmental_danger",
-                "risk_omen": row.get("风险预兆") or row.get("预兆"),
-                "soft_failure": row.get("软失败表现") or row.get("软失败"),
-                "safe_recovery_node": row.get("安全恢复节点") or row.get("恢复节点"),
-                "maturity": row.get("状态"),
-                "source_package": "PKG-DANGER-V2.0",
-                "source_entry": danger_entry,
-                "source_sha256": danger_sha,
+                "type": row["类型"],
+                "application_scene": row["应用场景"],
+                "batch": row["分批"],
+                "independent_board_status": row["独立设计板"],
+                "confirmation_status": row["确认状态"],
+                "maturity": row["确认状态"],
+                "freeze_version": row["冻结版本"],
                 "design_board": board,
-                "source_status": "formal_V2.0_catalog",
-                "design_master": board is not None,
-                "production_spec": True,
-                "runtime_asset": False,
-                "acceptance_asset": False,
+                **formal_source_fields(
+                    package_id="PKG-DANGER-V2.0",
+                    source_entry=danger_entry,
+                    source_sha256=danger_sha,
+                    row_id=asset_id,
+                ),
             }
         )
 
@@ -1618,6 +2009,15 @@ def build_catalogs(
         g01_data = archive.read(g01_entry)
         g01_files = archive.namelist()
     g01_workbook = openpyxl.load_workbook(io.BytesIO(g01_data), data_only=False)
+    formal_input_records.append(
+        {
+            "domain": "g01_addition",
+            "source_package": "PKG-G01-V3.0",
+            "source_entry": g01_entry,
+            "source_entry_sha256": sha256_bytes(g01_data),
+            "source_granularity": "formal_catalog_entry",
+        }
+    )
     sheet = g01_workbook["G01美术资产清单"]
     headers = [cell.value for cell in sheet[3]]
     category_board = {
@@ -1626,6 +2026,21 @@ def build_catalogs(
         "效果": "G01序章道具与效果设计总览.png",
         "危险视觉": "G01教学机制与危险视觉总览.png",
         "教学机制视觉": "G01教学机制与危险视觉总览.png",
+    }
+    field_authority_map["g01_addition"] = {
+        "source_package": "PKG-G01-V3.0",
+        "source_entry": g01_entry,
+        "worksheet": "G01美术资产清单",
+        "fields": {
+            "name": "名称",
+            "chapter": "constant:G01",
+            "scope": "constant:G01序章",
+            "type": "类别",
+            "delivery_form": "交付形态",
+            "freeze_requirement": "冻结要求",
+            "maturity": "状态",
+        },
+        "registry_reference_role": "not_applicable",
     }
     g01_assets: list[dict[str, Any]] = []
     for values in sheet.iter_rows(min_row=4, values_only=True):
@@ -1636,6 +2051,12 @@ def build_catalogs(
             for index, value in enumerate(values)
             if index < len(headers) and headers[index] and value is not None
         }
+        require_formal_fields(
+            row,
+            package_id="PKG-G01-V3.0",
+            source_entry=g01_entry,
+            required=("资产ID", "类别", "名称", "交付形态", "冻结要求", "状态"),
+        )
         board_name = category_board[row["类别"]]
         board = next(name for name in g01_files if name.endswith(board_name))
         g01_assets.append(
@@ -1653,6 +2074,8 @@ def build_catalogs(
                 "source_package": "PKG-G01-V3.0",
                 "source_entry": g01_entry,
                 "source_sha256": sha256_bytes(g01_data),
+                "source_granularity": "formal_catalog_entry",
+                "formal_row_id": row["资产ID"],
                 "design_board": board,
                 "source_status": "formal_V3.0_catalog",
                 "design_master": True,
@@ -1667,6 +2090,7 @@ def build_catalogs(
 
     domain_counts: dict[str, int] = {}
     for row in assets:
+        row["id"] = row["catalog_id"]
         domain_counts[row["domain"]] = domain_counts.get(row["domain"], 0) + 1
     expected_domains = {
         "character": 71,
@@ -1682,16 +2106,55 @@ def build_catalogs(
         raise ValueError(f"asset catalog mismatch: total={len(assets)}, domains={domain_counts}")
 
     catalogs_dir = repo / "data/source/catalogs"
+    report_path = repo / "docs/review/ASSET_REGISTRY_VS_FORMAL_CATALOG_DIFF.md"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_lines = [
+        "# 旧项目总登记表与正式域清单差异报告",
+        "",
+        f"- 生成器：`{CATALOG_GENERATOR}`",
+        f"- 映射版本：`{CATALOG_MAPPING_VERSION}`",
+        f"- 差异条目：{len(registry_diff_rows)}",
+        "- 当前字段权威：各域正式 CSV/XLSX 的唯一正式行",
+        "- 旧项目总登记表角色：`cross_check_only`，不得覆盖正式名称、状态、范围、类别或版本字段",
+        "- 人工处理：正式包版本优先级明确的差异无需阻断；无法判定权威来源时导入器直接失败",
+        "",
+        "| asset_id | domain | registry_name | formal_name | registry_status | formal_status | difference_type | current_authority | manual_action |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
+    for difference in registry_diff_rows:
+        values = [
+            difference["asset_id"],
+            difference["domain"],
+            difference["registry_name"],
+            difference["formal_name"],
+            difference["registry_status"],
+            difference["formal_status"],
+            difference["difference_type"],
+            difference["current_authority"],
+            difference["manual_action"],
+        ]
+        report_lines.append(
+            "| " + " | ".join(str(value or "").replace("|", "\\|").replace("\n", " ") for value in values) + " |"
+        )
+    report_path.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
     write_json(catalogs_dir / "characters-71.json", characters)
     write_csv(catalogs_dir / "characters-71.csv", characters)
     write_json(
         catalogs_dir / "asset-catalog-488.json",
         {
-            "schema_version": 2,
+            "schema_version": 3,
             "total": len(assets),
             "domain_counts": domain_counts,
+            "generated_by": CATALOG_GENERATOR,
+            "mapping_version": CATALOG_MAPPING_VERSION,
+            "registry_reference_role": REGISTRY_REFERENCE_ROLE,
+            "field_authority_map": field_authority_map,
             "source_packages": [
                 "PKG-CHARACTERS-V2.1",
+                "PKG-SCENES-V1.0",
+                "PKG-PROPS-V3.0",
+                "PKG-MECH-V2.0",
+                "PKG-UI-V2.0",
                 "PKG-FX-V2.0",
                 "PKG-DANGER-V2.0",
                 "PKG-G01-V3.0",
@@ -1704,38 +2167,43 @@ def build_catalogs(
     write_json(
         catalogs_dir / "master-workbook-counts.json",
         {
-            "source_package": "PKG-CHARACTERS-V2.1",
-            "source_entry": master_entry,
-            "source_entry_sha256": master_sha,
+            "provenance_type": "multi_source_derived_catalog",
+            "generated_by": CATALOG_GENERATOR,
+            "mapping_version": CATALOG_MAPPING_VERSION,
+            "registry_reference_role": REGISTRY_REFERENCE_ROLE,
+            "field_authority_map": field_authority_map,
+            "derived_from": formal_input_records,
             "counts": {**observed, "fx": 41, "danger": 76, "g01_addition": 33},
             "normalized_asset_total": 488,
+            "formal_row_unique_count": len(assets),
+            "registry_formal_difference_count": len(registry_diff_rows),
+            "registry_formal_difference_report": repository_path(report_path),
             "design_or_production_master": True,
             "runtime_asset": False,
         },
     )
-    provenance = json.dumps(
-        {
-            "character_master": master_sha,
-            "fx_catalog": fx_sha,
-            "danger_catalog": danger_sha,
-            "g01_catalog": sha256_bytes(g01_data),
-        },
-        sort_keys=True,
-    ).encode()
     for output in (
         catalogs_dir / "characters-71.json",
         catalogs_dir / "characters-71.csv",
-        catalogs_dir / "asset-catalog-488.json",
-        catalogs_dir / "asset-catalog-488.csv",
-        catalogs_dir / "master-workbook-counts.json",
     ):
         record_extraction(
             records,
             output=output,
-            package_id="P0-A-MULTI-SOURCE",
-            entry="characters+fx+danger+g01 formal catalogs",
-            source_data=provenance,
+            package_id="PKG-CHARACTERS-V2.1",
+            entry=master_entry,
+            source_data=master_data,
             extraction="formal_catalog_normalization",
+        )
+    for output in (
+        catalogs_dir / "asset-catalog-488.json",
+        catalogs_dir / "asset-catalog-488.csv",
+        catalogs_dir / "master-workbook-counts.json",
+    ):
+        record_derived_catalog(
+            records,
+            output=output,
+            derived_from=formal_input_records,
+            field_authority_map=field_authority_map,
         )
     return characters, assets
 
@@ -2013,6 +2481,10 @@ def main() -> int:
     write_data_index(repo, data_status)
     build_catalogs(
         paths["PKG-CHARACTERS-V2.1"],
+        paths["PKG-SCENES-V1.0"],
+        paths["PKG-PROPS-V3.0"],
+        paths["PKG-MECH-V2.0"],
+        paths["PKG-UI-V2.0"],
         paths["PKG-FX-V2.0"],
         paths["PKG-DANGER-V2.0"],
         paths["PKG-G01-V3.0"],

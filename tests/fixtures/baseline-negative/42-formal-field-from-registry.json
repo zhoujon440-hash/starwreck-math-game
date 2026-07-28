@@ -1,0 +1,1 @@
+{"id":"NEG-42-FORMAL-FIELD-FROM-REGISTRY","mutation":"formal-field-from-registry","expected_rule":"CAT-ASSET-FORMAL-ROW-CONTENT","expected_context":["UI-001","maturity","未设计","已确认冻结","cross-check only"]}

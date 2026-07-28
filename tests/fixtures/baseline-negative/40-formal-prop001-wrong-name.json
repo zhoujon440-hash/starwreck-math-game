@@ -1,0 +1,1 @@
+{"id":"NEG-40-FORMAL-PROP001-WRONG-NAME","mutation":"formal-prop001-wrong-name","expected_rule":"CAT-ASSET-FORMAL-ROW-CONTENT","expected_context":["PROP-001","name","错误道具名称","磁力手套","PKG-PROPS-V3.0"]}

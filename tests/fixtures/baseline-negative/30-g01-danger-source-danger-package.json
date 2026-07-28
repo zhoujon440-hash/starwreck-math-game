@@ -1,0 +1,1 @@
+{"id":"NEG-30-G01-DANGER-SOURCE-DANGER-PACKAGE","mutation":"g01-danger-source-danger-package","expected_rule":"CAT-ASSET-MULTI-SOURCE-PROVENANCE","expected_context":["DANGER-G01-001","wrong_domain_package","PKG-DANGER-V2.0","PKG-G01-V3.0"]}

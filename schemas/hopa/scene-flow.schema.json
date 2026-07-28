@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scene-flow.schema.json",
+  "title": "HOPA 场景流程",
+  "x-rule-suffix": "SCENE-FLOW",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": ["场景ID", "场景名称", "地点", "场景类型", "角色", "核心目标", "下一场景", "存档点", "关键道具", "危险ID", "UI引用"],
+    "additionalProperties": false,
+    "properties": {
+      "场景ID": { "type": "string", "pattern": "^SCN-G\\d{2}-\\d{2}[A-Z]?$" },
+      "场景名称": { "type": "string" },
+      "地点": { "type": "string" },
+      "场景类型": { "type": "string" },
+      "角色": { "type": "string" },
+      "核心目标": { "type": "string" },
+      "下一场景": { "type": "string" },
+      "存档点": { "type": "string" },
+      "关键道具": { "type": "string" },
+      "危险ID": { "type": "string" },
+      "UI引用": { "type": "string" }
+    }
+  }
+}

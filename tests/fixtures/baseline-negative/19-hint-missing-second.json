@@ -1,0 +1,5 @@
+{
+  "id": "hint group missing level two",
+  "mutation": "hint-missing-second",
+  "expected_rule": "HOPA-HINT-EXACT-THREE-ORDERED"
+}

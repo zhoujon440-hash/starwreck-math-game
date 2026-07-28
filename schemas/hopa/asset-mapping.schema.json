@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "asset-mapping.schema.json",
+  "title": "HOPA 资产映射",
+  "x-rule-suffix": "ASSET-MAPPING",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": ["映射ID", "资产ID", "资产名称", "应用场景", "UI", "热点/入口", "关联危险/机制", "说明"],
+    "additionalProperties": false,
+    "properties": {
+      "映射ID": { "type": "string", "pattern": "^MAP-G\\d{2}-\\d{3}$" },
+      "资产ID": { "type": "string" },
+      "资产名称": { "type": "string" },
+      "应用场景": { "type": "string" },
+      "UI": { "type": "string" },
+      "热点/入口": { "type": "string" },
+      "关联危险/机制": { "type": "string" },
+      "说明": { "type": "string" }
+    }
+  }
+}

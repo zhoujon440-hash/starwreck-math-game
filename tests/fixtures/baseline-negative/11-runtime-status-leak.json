@@ -1,0 +1,1 @@
+{"id":"NEG-11-RUNTIME-STATUS-LEAK","mutation":"design-master-marked-runtime-ready","expected_rule":"CAT-ASSET-MULTI-SOURCE-PROVENANCE","expected_context":["CAT-CHAR-001","design_master_promoted_to_runtime_or_acceptance","PKG-CHARACTERS-V2.1"]}

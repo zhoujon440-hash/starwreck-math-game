@@ -1,0 +1,5 @@
+{
+  "id": "hint group duplicates level one",
+  "mutation": "hint-duplicate-first",
+  "expected_rule": "HOPA-HINT-EXACT-THREE-ORDERED"
+}

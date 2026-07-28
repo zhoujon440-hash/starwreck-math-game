@@ -1,0 +1,1 @@
+{"id":"NEG-33-CURRENT-TASK-REQUIRES-COMBAT","mutation":"current-task-requires-combat","expected_rule":"TECH-FORBIDDEN-CURRENT-EXECUTION","expected_context":["tasks/current-combat.md","combat-implementation"]}

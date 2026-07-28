@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scene-state.schema.json",
+  "title": "HOPA 场景状态机",
+  "x-rule-suffix": "SCENE-STATE",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": ["状态ID", "场景ID", "状态码", "状态名称", "进入条件", "状态效果", "存档规则"],
+    "additionalProperties": false,
+    "properties": {
+      "状态ID": { "type": "string", "pattern": "^SCN-G\\d{2}-\\d{2}[A-Z]?-S[0-6]$" },
+      "场景ID": { "type": "string", "pattern": "^SCN-G\\d{2}-\\d{2}[A-Z]?$" },
+      "状态码": { "type": "string", "enum": ["S0", "S1", "S2", "S3", "S4", "S5", "S6"] },
+      "状态名称": { "type": "string" },
+      "状态说明": { "type": "string" },
+      "进入条件": { "type": "string" },
+      "状态效果": { "type": "string" },
+      "存档规则": { "type": "string" }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "id": "danger recovery drops completed correct steps",
+  "mutation": "danger-drops-correct-steps",
+  "expected_rule": "HOPA-DANGER-SOFT-FAILURE-RECOVERY"
+}

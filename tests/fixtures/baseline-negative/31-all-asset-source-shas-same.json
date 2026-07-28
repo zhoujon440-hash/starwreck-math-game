@@ -1,0 +1,1 @@
+{"id":"NEG-31-ALL-ASSET-SOURCE-SHAS-SAME","mutation":"all-asset-source-shas-same","expected_rule":"CAT-ASSET-MULTI-SOURCE-PROVENANCE","expected_context":["source_sha256_mismatch","CAT-CHAR-008"]}

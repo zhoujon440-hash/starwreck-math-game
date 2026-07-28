@@ -4,48 +4,573 @@
   "files": [
     {
       "output_path": "data/source/catalogs/asset-catalog-488.csv",
-      "output_sha256": "777842b695f4d6e59ebd9a408cce41782792f33b7e45cb0873126bbbbf5bba38",
+      "output_sha256": "261f15ce557570218a037582577e1e38a58a95f0039c415e8d5426a1f9552290",
       "output_hash_mode": "canonical_lf",
-      "source_package": "P0-A-MULTI-SOURCE",
-      "source_entry": "characters+fx+danger+g01 formal catalogs",
-      "source_entry_sha256": "40b231f8478e4ef5c0eb67f1a5e1a079536b555cf54efeab588d3a9a86869f54",
-      "extraction": "formal_catalog_normalization"
+      "extraction": "multi_source_derived_catalog",
+      "generated_by": "scripts/import_source_baseline.py#build_catalogs",
+      "mapping_version": "formal-row-authority-v1",
+      "registry_reference_role": "cross_check_only",
+      "field_authority_map": {
+        "character": {
+          "source_package": "PKG-CHARACTERS-V2.1",
+          "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+          "worksheet": "人物清单",
+          "fields": {
+            "formal_row_id": "资产ID",
+            "name": "人物名称",
+            "chapter": "星球编号",
+            "type": "类别",
+            "registry_status_at_V1.0": "当前状态"
+          },
+          "design_master_fields": "同包内十二星球人物三视图",
+          "registry_reference_role": "character_identity_source_only"
+        },
+        "scene": {
+          "source_package": "PKG-SCENES-V1.0",
+          "source_entry": "星骸拾荒者_场景美术设计全集_V1.0/04_清单与说明/91场景完成清单.csv",
+          "fields": {
+            "name": "场景名称",
+            "chapter": "星球编号",
+            "scope": "星球/范围",
+            "maturity": "状态",
+            "priority": "优先级",
+            "delivery_status": "交付状态"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "prop": {
+          "source_package": "PKG-PROPS-V3.0",
+          "source_entry": "星骸拾荒者_道具美术正式包_V3.0/02_核查清单与说明/46件道具正式清单.csv",
+          "fields": {
+            "name": "道具名称",
+            "chapter": "星球编号",
+            "scope": "星球",
+            "design_board": "对应正式板",
+            "maturity": "状态",
+            "verification_result": "核查结论"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "mechanism": {
+          "source_package": "PKG-MECH-V2.0",
+          "source_entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/05_总清单与封版说明/47项机制可视化正式清单.csv",
+          "fields": {
+            "name": "机制名称",
+            "mechanism_name": "机制名称",
+            "chapter": "星球[Gxx前缀]",
+            "scope": "星球",
+            "maturity": "状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "ui": {
+          "source_package": "PKG-UI-V2.0",
+          "source_entry": "星骸拾荒者_界面美术HOPA正式包_V2.0/05_总清单与封版说明/83项界面美术正式清单.csv",
+          "fields": {
+            "name": "界面名称",
+            "chapter": "范围",
+            "scope": "星球",
+            "type": "类别",
+            "category": "类别",
+            "batch": "分批",
+            "independent_board_status": "独立设计板",
+            "confirmation_status": "确认状态",
+            "maturity": "确认状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "fx": {
+          "source_package": "PKG-FX-V2.0",
+          "source_entry": "星骸拾荒者_技能与装备效果HOPA正式包_V2.0/05_总清单与封版说明/41项技能与装备效果正式清单.csv",
+          "fields": {
+            "name": "角色/装备",
+            "chapter": "范围[Gxx前缀；无前缀为GLOBAL]",
+            "scope": "范围",
+            "hopa_interaction": "HOPA交互效果",
+            "maturity": "状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "danger": {
+          "source_package": "PKG-DANGER-V2.0",
+          "source_entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/05_总清单与封版说明/76项危险视觉正式清单.csv",
+          "fields": {
+            "name": "危险名称",
+            "chapter": "星球",
+            "scope": "星球",
+            "type": "类型",
+            "application_scene": "应用场景",
+            "batch": "分批",
+            "independent_board_status": "独立设计板",
+            "confirmation_status": "确认状态",
+            "maturity": "确认状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "g01_addition": {
+          "source_package": "PKG-G01-V3.0",
+          "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/02_美术资产清单/星骸拾荒者_G01序章美术资产清单_V3.0.xlsx",
+          "worksheet": "G01美术资产清单",
+          "fields": {
+            "name": "名称",
+            "chapter": "constant:G01",
+            "scope": "constant:G01序章",
+            "type": "类别",
+            "delivery_form": "交付形态",
+            "freeze_requirement": "冻结要求",
+            "maturity": "状态"
+          },
+          "registry_reference_role": "not_applicable"
+        }
+      },
+      "derived_from": [
+        {
+          "domain": "character",
+          "source_package": "PKG-CHARACTERS-V2.1",
+          "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+          "source_entry_sha256": "ea329b30f458a567a92ef0f02b783eb58c4129596e4958e4cf739eb47329816e",
+          "source_granularity": "registry_workbook"
+        },
+        {
+          "domain": "scene",
+          "source_package": "PKG-SCENES-V1.0",
+          "source_entry": "星骸拾荒者_场景美术设计全集_V1.0/04_清单与说明/91场景完成清单.csv",
+          "source_entry_sha256": "bb97ca16ee759bea6fbf4b0761d3f73016ee20be077f53e3df4f672e8e96b80d",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "prop",
+          "source_package": "PKG-PROPS-V3.0",
+          "source_entry": "星骸拾荒者_道具美术正式包_V3.0/02_核查清单与说明/46件道具正式清单.csv",
+          "source_entry_sha256": "78abadd186c22a4852591ebeff9fb0f370e6fa0fcc92d722da9b0304678dee21",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "mechanism",
+          "source_package": "PKG-MECH-V2.0",
+          "source_entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/05_总清单与封版说明/47项机制可视化正式清单.csv",
+          "source_entry_sha256": "c37ef26a98e11fc6077c7d3df2b65258da3f2ad2f8b18705b7b7eaab24c6bf36",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "ui",
+          "source_package": "PKG-UI-V2.0",
+          "source_entry": "星骸拾荒者_界面美术HOPA正式包_V2.0/05_总清单与封版说明/83项界面美术正式清单.csv",
+          "source_entry_sha256": "f8545e960a5d1c331eb51c3cd428209786846efda6a5e5736736858e53e25970",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "fx",
+          "source_package": "PKG-FX-V2.0",
+          "source_entry": "星骸拾荒者_技能与装备效果HOPA正式包_V2.0/05_总清单与封版说明/41项技能与装备效果正式清单.csv",
+          "source_entry_sha256": "2b425fbc769b19f166c51aec5f83307ac3c2f617a29b23277d22d048b90b0fc0",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "danger",
+          "source_package": "PKG-DANGER-V2.0",
+          "source_entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/05_总清单与封版说明/76项危险视觉正式清单.csv",
+          "source_entry_sha256": "4b7b69038877e02a03bdb6502b92502e1277a81aa2bdef9feb17f5a0ce8d7276",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "g01_addition",
+          "source_package": "PKG-G01-V3.0",
+          "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/02_美术资产清单/星骸拾荒者_G01序章美术资产清单_V3.0.xlsx",
+          "source_entry_sha256": "57795a0911b9659f923f6f89915df82373afb5b528bc5769d3aeb4fdff356f18",
+          "source_granularity": "formal_catalog_entry"
+        }
+      ]
     },
     {
       "output_path": "data/source/catalogs/asset-catalog-488.json",
-      "output_sha256": "fab7bef1422b68ea3eb7a9e133a74adb1edfc6504f29724dc6b0b41cdab414c4",
+      "output_sha256": "98c72f5ef4e47b980bf7badfff11b27b323ca6a21cc778359b5360bbec22e9d4",
       "output_hash_mode": "canonical_lf",
-      "source_package": "P0-A-MULTI-SOURCE",
-      "source_entry": "characters+fx+danger+g01 formal catalogs",
-      "source_entry_sha256": "40b231f8478e4ef5c0eb67f1a5e1a079536b555cf54efeab588d3a9a86869f54",
-      "extraction": "formal_catalog_normalization"
+      "extraction": "multi_source_derived_catalog",
+      "generated_by": "scripts/import_source_baseline.py#build_catalogs",
+      "mapping_version": "formal-row-authority-v1",
+      "registry_reference_role": "cross_check_only",
+      "field_authority_map": {
+        "character": {
+          "source_package": "PKG-CHARACTERS-V2.1",
+          "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+          "worksheet": "人物清单",
+          "fields": {
+            "formal_row_id": "资产ID",
+            "name": "人物名称",
+            "chapter": "星球编号",
+            "type": "类别",
+            "registry_status_at_V1.0": "当前状态"
+          },
+          "design_master_fields": "同包内十二星球人物三视图",
+          "registry_reference_role": "character_identity_source_only"
+        },
+        "scene": {
+          "source_package": "PKG-SCENES-V1.0",
+          "source_entry": "星骸拾荒者_场景美术设计全集_V1.0/04_清单与说明/91场景完成清单.csv",
+          "fields": {
+            "name": "场景名称",
+            "chapter": "星球编号",
+            "scope": "星球/范围",
+            "maturity": "状态",
+            "priority": "优先级",
+            "delivery_status": "交付状态"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "prop": {
+          "source_package": "PKG-PROPS-V3.0",
+          "source_entry": "星骸拾荒者_道具美术正式包_V3.0/02_核查清单与说明/46件道具正式清单.csv",
+          "fields": {
+            "name": "道具名称",
+            "chapter": "星球编号",
+            "scope": "星球",
+            "design_board": "对应正式板",
+            "maturity": "状态",
+            "verification_result": "核查结论"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "mechanism": {
+          "source_package": "PKG-MECH-V2.0",
+          "source_entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/05_总清单与封版说明/47项机制可视化正式清单.csv",
+          "fields": {
+            "name": "机制名称",
+            "mechanism_name": "机制名称",
+            "chapter": "星球[Gxx前缀]",
+            "scope": "星球",
+            "maturity": "状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "ui": {
+          "source_package": "PKG-UI-V2.0",
+          "source_entry": "星骸拾荒者_界面美术HOPA正式包_V2.0/05_总清单与封版说明/83项界面美术正式清单.csv",
+          "fields": {
+            "name": "界面名称",
+            "chapter": "范围",
+            "scope": "星球",
+            "type": "类别",
+            "category": "类别",
+            "batch": "分批",
+            "independent_board_status": "独立设计板",
+            "confirmation_status": "确认状态",
+            "maturity": "确认状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "fx": {
+          "source_package": "PKG-FX-V2.0",
+          "source_entry": "星骸拾荒者_技能与装备效果HOPA正式包_V2.0/05_总清单与封版说明/41项技能与装备效果正式清单.csv",
+          "fields": {
+            "name": "角色/装备",
+            "chapter": "范围[Gxx前缀；无前缀为GLOBAL]",
+            "scope": "范围",
+            "hopa_interaction": "HOPA交互效果",
+            "maturity": "状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "danger": {
+          "source_package": "PKG-DANGER-V2.0",
+          "source_entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/05_总清单与封版说明/76项危险视觉正式清单.csv",
+          "fields": {
+            "name": "危险名称",
+            "chapter": "星球",
+            "scope": "星球",
+            "type": "类型",
+            "application_scene": "应用场景",
+            "batch": "分批",
+            "independent_board_status": "独立设计板",
+            "confirmation_status": "确认状态",
+            "maturity": "确认状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "g01_addition": {
+          "source_package": "PKG-G01-V3.0",
+          "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/02_美术资产清单/星骸拾荒者_G01序章美术资产清单_V3.0.xlsx",
+          "worksheet": "G01美术资产清单",
+          "fields": {
+            "name": "名称",
+            "chapter": "constant:G01",
+            "scope": "constant:G01序章",
+            "type": "类别",
+            "delivery_form": "交付形态",
+            "freeze_requirement": "冻结要求",
+            "maturity": "状态"
+          },
+          "registry_reference_role": "not_applicable"
+        }
+      },
+      "derived_from": [
+        {
+          "domain": "character",
+          "source_package": "PKG-CHARACTERS-V2.1",
+          "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+          "source_entry_sha256": "ea329b30f458a567a92ef0f02b783eb58c4129596e4958e4cf739eb47329816e",
+          "source_granularity": "registry_workbook"
+        },
+        {
+          "domain": "scene",
+          "source_package": "PKG-SCENES-V1.0",
+          "source_entry": "星骸拾荒者_场景美术设计全集_V1.0/04_清单与说明/91场景完成清单.csv",
+          "source_entry_sha256": "bb97ca16ee759bea6fbf4b0761d3f73016ee20be077f53e3df4f672e8e96b80d",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "prop",
+          "source_package": "PKG-PROPS-V3.0",
+          "source_entry": "星骸拾荒者_道具美术正式包_V3.0/02_核查清单与说明/46件道具正式清单.csv",
+          "source_entry_sha256": "78abadd186c22a4852591ebeff9fb0f370e6fa0fcc92d722da9b0304678dee21",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "mechanism",
+          "source_package": "PKG-MECH-V2.0",
+          "source_entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/05_总清单与封版说明/47项机制可视化正式清单.csv",
+          "source_entry_sha256": "c37ef26a98e11fc6077c7d3df2b65258da3f2ad2f8b18705b7b7eaab24c6bf36",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "ui",
+          "source_package": "PKG-UI-V2.0",
+          "source_entry": "星骸拾荒者_界面美术HOPA正式包_V2.0/05_总清单与封版说明/83项界面美术正式清单.csv",
+          "source_entry_sha256": "f8545e960a5d1c331eb51c3cd428209786846efda6a5e5736736858e53e25970",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "fx",
+          "source_package": "PKG-FX-V2.0",
+          "source_entry": "星骸拾荒者_技能与装备效果HOPA正式包_V2.0/05_总清单与封版说明/41项技能与装备效果正式清单.csv",
+          "source_entry_sha256": "2b425fbc769b19f166c51aec5f83307ac3c2f617a29b23277d22d048b90b0fc0",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "danger",
+          "source_package": "PKG-DANGER-V2.0",
+          "source_entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/05_总清单与封版说明/76项危险视觉正式清单.csv",
+          "source_entry_sha256": "4b7b69038877e02a03bdb6502b92502e1277a81aa2bdef9feb17f5a0ce8d7276",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "g01_addition",
+          "source_package": "PKG-G01-V3.0",
+          "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/02_美术资产清单/星骸拾荒者_G01序章美术资产清单_V3.0.xlsx",
+          "source_entry_sha256": "57795a0911b9659f923f6f89915df82373afb5b528bc5769d3aeb4fdff356f18",
+          "source_granularity": "formal_catalog_entry"
+        }
+      ]
     },
     {
       "output_path": "data/source/catalogs/characters-71.csv",
       "output_sha256": "ad7529bf48bb1bb83f2cb51d4897af5aab0b281e3f23fe61125b0b956255535c",
       "output_hash_mode": "canonical_lf",
-      "source_package": "P0-A-MULTI-SOURCE",
-      "source_entry": "characters+fx+danger+g01 formal catalogs",
-      "source_entry_sha256": "40b231f8478e4ef5c0eb67f1a5e1a079536b555cf54efeab588d3a9a86869f54",
+      "source_package": "PKG-CHARACTERS-V2.1",
+      "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+      "source_entry_sha256": "ea329b30f458a567a92ef0f02b783eb58c4129596e4958e4cf739eb47329816e",
       "extraction": "formal_catalog_normalization"
     },
     {
       "output_path": "data/source/catalogs/characters-71.json",
       "output_sha256": "f4c87e9007630226acab469ec8088867067d339dfb2737d97f64d1b528622a6c",
       "output_hash_mode": "canonical_lf",
-      "source_package": "P0-A-MULTI-SOURCE",
-      "source_entry": "characters+fx+danger+g01 formal catalogs",
-      "source_entry_sha256": "40b231f8478e4ef5c0eb67f1a5e1a079536b555cf54efeab588d3a9a86869f54",
+      "source_package": "PKG-CHARACTERS-V2.1",
+      "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+      "source_entry_sha256": "ea329b30f458a567a92ef0f02b783eb58c4129596e4958e4cf739eb47329816e",
       "extraction": "formal_catalog_normalization"
     },
     {
       "output_path": "data/source/catalogs/master-workbook-counts.json",
-      "output_sha256": "3655e9212777014f68485827977ee1f21e3fa98d71c0a66e7ee1cf1961b5260a",
+      "output_sha256": "37eca1a74a5785a044996ea5bfd94bc4bd822edec05630e0f3cd31252e24a783",
       "output_hash_mode": "canonical_lf",
-      "source_package": "P0-A-MULTI-SOURCE",
-      "source_entry": "characters+fx+danger+g01 formal catalogs",
-      "source_entry_sha256": "40b231f8478e4ef5c0eb67f1a5e1a079536b555cf54efeab588d3a9a86869f54",
-      "extraction": "formal_catalog_normalization"
+      "extraction": "multi_source_derived_catalog",
+      "generated_by": "scripts/import_source_baseline.py#build_catalogs",
+      "mapping_version": "formal-row-authority-v1",
+      "registry_reference_role": "cross_check_only",
+      "field_authority_map": {
+        "character": {
+          "source_package": "PKG-CHARACTERS-V2.1",
+          "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+          "worksheet": "人物清单",
+          "fields": {
+            "formal_row_id": "资产ID",
+            "name": "人物名称",
+            "chapter": "星球编号",
+            "type": "类别",
+            "registry_status_at_V1.0": "当前状态"
+          },
+          "design_master_fields": "同包内十二星球人物三视图",
+          "registry_reference_role": "character_identity_source_only"
+        },
+        "scene": {
+          "source_package": "PKG-SCENES-V1.0",
+          "source_entry": "星骸拾荒者_场景美术设计全集_V1.0/04_清单与说明/91场景完成清单.csv",
+          "fields": {
+            "name": "场景名称",
+            "chapter": "星球编号",
+            "scope": "星球/范围",
+            "maturity": "状态",
+            "priority": "优先级",
+            "delivery_status": "交付状态"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "prop": {
+          "source_package": "PKG-PROPS-V3.0",
+          "source_entry": "星骸拾荒者_道具美术正式包_V3.0/02_核查清单与说明/46件道具正式清单.csv",
+          "fields": {
+            "name": "道具名称",
+            "chapter": "星球编号",
+            "scope": "星球",
+            "design_board": "对应正式板",
+            "maturity": "状态",
+            "verification_result": "核查结论"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "mechanism": {
+          "source_package": "PKG-MECH-V2.0",
+          "source_entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/05_总清单与封版说明/47项机制可视化正式清单.csv",
+          "fields": {
+            "name": "机制名称",
+            "mechanism_name": "机制名称",
+            "chapter": "星球[Gxx前缀]",
+            "scope": "星球",
+            "maturity": "状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "ui": {
+          "source_package": "PKG-UI-V2.0",
+          "source_entry": "星骸拾荒者_界面美术HOPA正式包_V2.0/05_总清单与封版说明/83项界面美术正式清单.csv",
+          "fields": {
+            "name": "界面名称",
+            "chapter": "范围",
+            "scope": "星球",
+            "type": "类别",
+            "category": "类别",
+            "batch": "分批",
+            "independent_board_status": "独立设计板",
+            "confirmation_status": "确认状态",
+            "maturity": "确认状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "fx": {
+          "source_package": "PKG-FX-V2.0",
+          "source_entry": "星骸拾荒者_技能与装备效果HOPA正式包_V2.0/05_总清单与封版说明/41项技能与装备效果正式清单.csv",
+          "fields": {
+            "name": "角色/装备",
+            "chapter": "范围[Gxx前缀；无前缀为GLOBAL]",
+            "scope": "范围",
+            "hopa_interaction": "HOPA交互效果",
+            "maturity": "状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "danger": {
+          "source_package": "PKG-DANGER-V2.0",
+          "source_entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/05_总清单与封版说明/76项危险视觉正式清单.csv",
+          "fields": {
+            "name": "危险名称",
+            "chapter": "星球",
+            "scope": "星球",
+            "type": "类型",
+            "application_scene": "应用场景",
+            "batch": "分批",
+            "independent_board_status": "独立设计板",
+            "confirmation_status": "确认状态",
+            "maturity": "确认状态",
+            "freeze_version": "冻结版本"
+          },
+          "registry_reference_role": "cross_check_only"
+        },
+        "g01_addition": {
+          "source_package": "PKG-G01-V3.0",
+          "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/02_美术资产清单/星骸拾荒者_G01序章美术资产清单_V3.0.xlsx",
+          "worksheet": "G01美术资产清单",
+          "fields": {
+            "name": "名称",
+            "chapter": "constant:G01",
+            "scope": "constant:G01序章",
+            "type": "类别",
+            "delivery_form": "交付形态",
+            "freeze_requirement": "冻结要求",
+            "maturity": "状态"
+          },
+          "registry_reference_role": "not_applicable"
+        }
+      },
+      "derived_from": [
+        {
+          "domain": "character",
+          "source_package": "PKG-CHARACTERS-V2.1",
+          "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/02_清单与说明/星骸拾荒者_全项目美术资产主清单_V1.0.xlsx",
+          "source_entry_sha256": "ea329b30f458a567a92ef0f02b783eb58c4129596e4958e4cf739eb47329816e",
+          "source_granularity": "registry_workbook"
+        },
+        {
+          "domain": "scene",
+          "source_package": "PKG-SCENES-V1.0",
+          "source_entry": "星骸拾荒者_场景美术设计全集_V1.0/04_清单与说明/91场景完成清单.csv",
+          "source_entry_sha256": "bb97ca16ee759bea6fbf4b0761d3f73016ee20be077f53e3df4f672e8e96b80d",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "prop",
+          "source_package": "PKG-PROPS-V3.0",
+          "source_entry": "星骸拾荒者_道具美术正式包_V3.0/02_核查清单与说明/46件道具正式清单.csv",
+          "source_entry_sha256": "78abadd186c22a4852591ebeff9fb0f370e6fa0fcc92d722da9b0304678dee21",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "mechanism",
+          "source_package": "PKG-MECH-V2.0",
+          "source_entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/05_总清单与封版说明/47项机制可视化正式清单.csv",
+          "source_entry_sha256": "c37ef26a98e11fc6077c7d3df2b65258da3f2ad2f8b18705b7b7eaab24c6bf36",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "ui",
+          "source_package": "PKG-UI-V2.0",
+          "source_entry": "星骸拾荒者_界面美术HOPA正式包_V2.0/05_总清单与封版说明/83项界面美术正式清单.csv",
+          "source_entry_sha256": "f8545e960a5d1c331eb51c3cd428209786846efda6a5e5736736858e53e25970",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "fx",
+          "source_package": "PKG-FX-V2.0",
+          "source_entry": "星骸拾荒者_技能与装备效果HOPA正式包_V2.0/05_总清单与封版说明/41项技能与装备效果正式清单.csv",
+          "source_entry_sha256": "2b425fbc769b19f166c51aec5f83307ac3c2f617a29b23277d22d048b90b0fc0",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "danger",
+          "source_package": "PKG-DANGER-V2.0",
+          "source_entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/05_总清单与封版说明/76项危险视觉正式清单.csv",
+          "source_entry_sha256": "4b7b69038877e02a03bdb6502b92502e1277a81aa2bdef9feb17f5a0ce8d7276",
+          "source_granularity": "formal_catalog_entry"
+        },
+        {
+          "domain": "g01_addition",
+          "source_package": "PKG-G01-V3.0",
+          "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/02_美术资产清单/星骸拾荒者_G01序章美术资产清单_V3.0.xlsx",
+          "source_entry_sha256": "57795a0911b9659f923f6f89915df82373afb5b528bc5769d3aeb4fdff356f18",
+          "source_granularity": "formal_catalog_entry"
+        }
+      ]
     },
     {
       "output_path": "data/source/catalogs/raw/MECH-47_V2.0.csv",

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hidden-objects.schema.json",
+  "title": "HOPA 找物清单",
+  "x-rule-suffix": "HIDDEN-OBJECTS",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": ["找物ID", "场景ID", "找物名称", "目标物品", "数量", "必找规则", "干扰物", "提示方式", "后续用途", "重进状态"],
+    "additionalProperties": false,
+    "properties": {
+      "找物ID": { "type": "string", "pattern": "^HOS-G\\d{2}-\\d{3}$" },
+      "场景ID": { "type": "string", "pattern": "^SCN-G\\d{2}-\\d{2}[A-Z]?$" },
+      "找物名称": { "type": "string" },
+      "目标物品": { "type": "string" },
+      "数量": { "type": ["string", "number"] },
+      "必找规则": { "type": "string" },
+      "干扰物": { "type": "string" },
+      "提示方式": { "type": "string" },
+      "后续用途": { "type": "string" },
+      "重进状态": { "type": "string" }
+    }
+  }
+}
