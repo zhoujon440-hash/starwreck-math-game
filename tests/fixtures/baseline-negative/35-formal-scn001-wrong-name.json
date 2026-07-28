@@ -1,0 +1,1 @@
+{"id":"NEG-35-FORMAL-SCN001-WRONG-NAME","mutation":"formal-scn001-wrong-name","expected_rule":"CAT-ASSET-FORMAL-ROW-CONTENT","expected_context":["SCN-001","name","旧登记表错误场景名","L00 拾光号坠落带","PKG-SCENES-V1.0","91场景完成清单.csv"]}

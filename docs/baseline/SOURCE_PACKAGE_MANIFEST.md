@@ -53,7 +53,9 @@
 | danger | `PKG-DANGER-V2.0` | 76 |
 | g01_addition | `PKG-G01-V3.0` | 33 |
 
-聚合目录的生成方式、脚本、八个输入条目及条目 SHA 登记在 `source_packages/manifests/extracted-files.json`；单项资产的正式包、包内条目和 SHA 登记在资产目录自身。两层来源都由 baseline gate 逐字节验证。
+聚合目录的生成方式、脚本、映射版本、字段权威表、旧登记表角色、八个输入条目及条目 SHA 登记在 `source_packages/manifests/extracted-files.json`；单项资产的正式包、包内条目、正式行定位器和 SHA 登记在资产目录自身。两层来源都由 baseline gate 逐字节验证。
+
+当前映射版本为 `formal-row-authority-v1`。场景、道具、机制、UI、FX、DANGER 与 G01 新增项的名称、状态、范围、类别和版本字段均逐行取自对应正式 CSV/XLSX；人物身份和三视图继续取自人物 V2.1。人物包内的旧项目总登记表对非人物域仅用于 `cross_check_only`，不能覆盖正式域字段。当前 488/488 项均可唯一定位正式行，内容偏差为 0；登记表与正式清单的 267 条历史差异见 `docs/review/ASSET_REGISTRY_VS_FORMAL_CATALOG_DIFF.md`。
 
 ## Legacy 隔离
 

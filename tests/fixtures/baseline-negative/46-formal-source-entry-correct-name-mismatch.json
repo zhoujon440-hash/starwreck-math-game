@@ -1,0 +1,1 @@
+{"id":"NEG-46-FORMAL-SOURCE-ENTRY-CORRECT-NAME-MISMATCH","mutation":"formal-source-entry-correct-name-mismatch","expected_rule":"CAT-ASSET-FORMAL-ROW-CONTENT","expected_context":["DANGER-001","name","来源路径正确但名称错误","裸露电缆放电","76项危险视觉正式清单.csv"]}

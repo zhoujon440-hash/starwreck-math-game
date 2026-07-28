@@ -1,0 +1,1 @@
+{"id":"NEG-39-FORMAL-UI001-WRONG-CONFIRMATION","mutation":"formal-ui001-wrong-confirmation","expected_rule":"CAT-ASSET-FORMAL-ROW-CONTENT","expected_context":["UI-001","confirmation_status","未设计","已确认冻结","PKG-UI-V2.0"]}

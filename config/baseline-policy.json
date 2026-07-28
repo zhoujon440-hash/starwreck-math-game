@@ -9,6 +9,13 @@
   },
   "catalog": {
     "total": 488,
+    "mapping_version": "formal-row-authority-v1",
+    "generated_by": "scripts/import_source_baseline.py#build_catalogs",
+    "registry_reference_role": "cross_check_only",
+    "formal_row_rules": [
+      "CAT-ASSET-FORMAL-ROW-CONTENT",
+      "CAT-ASSET-FORMAL-ROW-UNIQUE"
+    ],
     "domain_counts": {
       "character": 71,
       "scene": 91,

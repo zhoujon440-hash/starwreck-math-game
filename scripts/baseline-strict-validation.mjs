@@ -55,6 +55,142 @@ function unzipEntries(buffer) {
   return entries;
 }
 
+function unzipEntry(buffer, target) {
+  let eocd = -1;
+  for (let offset = buffer.length - 22; offset >= Math.max(0, buffer.length - 65_557); offset -= 1) {
+    if (buffer.readUInt32LE(offset) === 0x06054b50) {
+      eocd = offset;
+      break;
+    }
+  }
+  if (eocd < 0) throw new Error("ZIP end-of-central-directory record not found");
+  const totalEntries = buffer.readUInt16LE(eocd + 10);
+  let offset = buffer.readUInt32LE(eocd + 16);
+  for (let index = 0; index < totalEntries; index += 1) {
+    if (buffer.readUInt32LE(offset) !== 0x02014b50) {
+      throw new Error(`invalid ZIP central-directory entry at ${offset}`);
+    }
+    const method = buffer.readUInt16LE(offset + 10);
+    const compressedSize = buffer.readUInt32LE(offset + 20);
+    const filenameLength = buffer.readUInt16LE(offset + 28);
+    const extraLength = buffer.readUInt16LE(offset + 30);
+    const commentLength = buffer.readUInt16LE(offset + 32);
+    const localOffset = buffer.readUInt32LE(offset + 42);
+    const filename = buffer.subarray(offset + 46, offset + 46 + filenameLength).toString("utf8");
+    if (filename === target) {
+      const localNameLength = buffer.readUInt16LE(localOffset + 26);
+      const localExtraLength = buffer.readUInt16LE(localOffset + 28);
+      const dataOffset = localOffset + 30 + localNameLength + localExtraLength;
+      const compressed = buffer.subarray(dataOffset, dataOffset + compressedSize);
+      if (method === 0) return compressed;
+      if (method === 8) return inflateRawSync(compressed);
+      throw new Error(`unsupported ZIP compression method ${method} for ${filename}`);
+    }
+    offset += 46 + filenameLength + extraLength + commentLength;
+  }
+  return null;
+}
+
+function decodeXml(value) {
+  return String(value ?? "")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&apos;", "'")
+    .replaceAll("&amp;", "&")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([a-f0-9]+);/gi, (_, code) => String.fromCodePoint(Number.parseInt(code, 16)));
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let quoted = false;
+  const source = text.replace(/^\uFEFF/, "");
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    if (quoted) {
+      if (char === '"' && source[index + 1] === '"') {
+        value += '"';
+        index += 1;
+      } else if (char === '"') quoted = false;
+      else value += char;
+    } else if (char === '"') quoted = true;
+    else if (char === ",") {
+      row.push(value);
+      value = "";
+    } else if (char === "\n") {
+      row.push(value.replace(/\r$/, ""));
+      rows.push(row);
+      row = [];
+      value = "";
+    } else value += char;
+  }
+  if (value || row.length) {
+    row.push(value.replace(/\r$/, ""));
+    rows.push(row);
+  }
+  const headers = rows.shift() ?? [];
+  return rows
+    .filter((values) => values.some((item) => item !== ""))
+    .map((values) => Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""])));
+}
+
+function xlsxCellColumn(reference) {
+  const letters = /^([A-Z]+)/.exec(reference)?.[1] ?? "A";
+  let result = 0;
+  for (const letter of letters) result = result * 26 + letter.charCodeAt(0) - 64;
+  return result - 1;
+}
+
+function xlsxTables(buffer) {
+  const entries = unzipEntries(buffer);
+  const sharedXml = entries.get("xl/sharedStrings.xml")?.toString("utf8") ?? "";
+  const sharedStrings = [...sharedXml.matchAll(/<(?:\w+:)?si\b[^>]*>([\s\S]*?)<\/(?:\w+:)?si>/g)].map((match) =>
+    decodeXml([...match[1].matchAll(/<(?:\w+:)?t\b[^>]*>([\s\S]*?)<\/(?:\w+:)?t>/g)].map((part) => part[1]).join("")),
+  );
+  const tables = [];
+  for (const [path, bytes] of entries) {
+    if (!/^xl\/worksheets\/sheet\d+\.xml$/.test(path)) continue;
+    const xml = bytes.toString("utf8");
+    const rows = [];
+    for (const rowMatch of xml.matchAll(/<(?:\w+:)?row\b[^>]*>([\s\S]*?)<\/(?:\w+:)?row>/g)) {
+      const values = [];
+      for (const cellMatch of rowMatch[1].matchAll(/<(?:\w+:)?c\b([^>]*)>([\s\S]*?)<\/(?:\w+:)?c>/g)) {
+        const attrs = cellMatch[1];
+        const body = cellMatch[2];
+        const reference = /\br="([A-Z]+\d+)"/.exec(attrs)?.[1] ?? "A1";
+        const type = /\bt="([^"]+)"/.exec(attrs)?.[1] ?? "";
+        const raw =
+          /<(?:\w+:)?v\b[^>]*>([\s\S]*?)<\/(?:\w+:)?v>/.exec(body)?.[1] ??
+          [...body.matchAll(/<(?:\w+:)?t\b[^>]*>([\s\S]*?)<\/(?:\w+:)?t>/g)].map((part) => part[1]).join("");
+        const value = type === "s" ? sharedStrings[Number(raw)] : decodeXml(raw);
+        values[xlsxCellColumn(reference)] = value;
+      }
+      rows.push(values.map((value) => value ?? ""));
+    }
+    for (let headerIndex = 0; headerIndex < rows.length; headerIndex += 1) {
+      const headers = rows[headerIndex];
+      if (!headers.includes("资产ID")) continue;
+      const idColumn = headers.indexOf("资产ID");
+      const records = [];
+      for (const values of rows.slice(headerIndex + 1)) {
+        if (!/^[A-Z]+(?:-[A-Z0-9]+)*-\d{3}$/.test(values[idColumn] ?? "")) continue;
+        records.push(
+          Object.fromEntries(
+            headers
+              .map((header, index) => [header, values[index] ?? ""])
+              .filter(([header]) => header),
+          ),
+        );
+      }
+      if (records.length) tables.push({ path, headers, rows: records });
+    }
+  }
+  return tables;
+}
+
 function walk(root, base, output = []) {
   const absoluteBase = join(root, base);
   if (!existsSync(absoluteBase)) return output;
@@ -283,17 +419,127 @@ export function validateStrictCatalogSources(snapshot) {
   const packageById = new Map(
     snapshot.sourceManifest.imported.map((row) => [row.package_id, row]),
   );
-  const archiveCache = new Map();
+  const packageBufferCache = new Map();
+  const entryCache = new Map();
   const entryBytes = (packageId, sourceEntry) => {
     const pkg = packageById.get(packageId);
     if (!pkg) return null;
-    if (!archiveCache.has(packageId)) {
-      archiveCache.set(
-        packageId,
-        unzipEntries(readFileSync(join(snapshot.root, pkg.repository_path))),
-      );
+    const cacheKey = `${packageId}\0${sourceEntry}`;
+    if (!entryCache.has(cacheKey)) {
+      if (!packageBufferCache.has(packageId)) {
+        packageBufferCache.set(packageId, readFileSync(join(snapshot.root, pkg.repository_path)));
+      }
+      entryCache.set(cacheKey, unzipEntry(packageBufferCache.get(packageId), sourceEntry));
     }
-    return archiveCache.get(packageId).get(sourceEntry) ?? null;
+    return entryCache.get(cacheKey) ?? null;
+  };
+  const formalRowsCache = new Map();
+  const domainSpec = {
+    character: {
+      prefix: "CHAR-",
+      expected: (row, asset) => ({
+        formal_row_id: row["资产ID"],
+        name: row["人物名称"],
+        chapter: row["星球编号"],
+        scope: row["星球编号"],
+        type: row["类别"],
+        official_id: row["人物名称"] === "七码" ? "EDU-0077" : null,
+        maturity: "design_and_three_view_complete",
+      }),
+    },
+    scene: {
+      prefix: "SCN-",
+      expected: (row) => ({
+        catalog_id: row["资产ID"], official_id: row["资产ID"], formal_row_id: row["资产ID"],
+        name: row["场景名称"], chapter: row["星球编号"], scope: row["星球/范围"],
+        maturity: row["状态"], priority: row["优先级"], delivery_status: row["交付状态"],
+      }),
+    },
+    prop: {
+      prefix: "PROP-",
+      expected: (row) => ({
+        catalog_id: row["资产ID"], official_id: row["资产ID"], formal_row_id: row["资产ID"],
+        name: row["道具名称"], chapter: row["星球编号"], scope: row["星球"],
+        design_board: row["对应正式板"], maturity: row["状态"], verification_result: row["核查结论"],
+      }),
+    },
+    mechanism: {
+      prefix: "MECH-",
+      expected: (row) => ({
+        catalog_id: row["资产ID"], official_id: row["资产ID"], formal_row_id: row["资产ID"],
+        name: row["机制名称"], mechanism_name: row["机制名称"],
+        chapter: /^(G\d{2})\b/.exec(row["星球"])?.[1] ?? row["星球"],
+        scope: row["星球"], maturity: row["状态"], freeze_version: row["冻结版本"],
+      }),
+    },
+    ui: {
+      prefix: "UI-",
+      expected: (row) => ({
+        catalog_id: row["资产ID"], official_id: row["资产ID"], formal_row_id: row["资产ID"],
+        name: row["界面名称"], chapter: row["范围"], scope: row["星球"],
+        type: row["类别"], category: row["类别"], batch: row["分批"],
+        independent_board_status: row["独立设计板"], confirmation_status: row["确认状态"],
+        maturity: row["确认状态"], freeze_version: row["冻结版本"],
+      }),
+    },
+    fx: {
+      prefix: "FX-",
+      expected: (row) => ({
+        catalog_id: row["资产ID"], official_id: row["资产ID"], formal_row_id: row["资产ID"],
+        name: row["角色/装备"],
+        chapter: /G\d{2}/.exec(row["范围"])?.[0] ?? "GLOBAL",
+        scope: row["范围"], hopa_interaction: row["HOPA交互效果"],
+        maturity: row["状态"], freeze_version: row["冻结版本"],
+      }),
+    },
+    danger: {
+      prefix: "DANGER-",
+      expected: (row) => ({
+        catalog_id: row["资产ID"], official_id: row["资产ID"], formal_row_id: row["资产ID"],
+        name: row["危险名称"], chapter: row["星球"], scope: row["星球"], type: row["类型"],
+        application_scene: row["应用场景"], batch: row["分批"],
+        independent_board_status: row["独立设计板"], confirmation_status: row["确认状态"],
+        maturity: row["确认状态"], freeze_version: row["冻结版本"],
+      }),
+    },
+    g01_addition: {
+      prefix: null,
+      expected: (row) => ({
+        catalog_id: row["资产ID"], official_id: row["资产ID"], formal_row_id: row["资产ID"],
+        name: row["名称"], chapter: "G01", scope: "G01序章", type: row["类别"],
+        delivery_form: row["交付形态"], freeze_requirement: row["冻结要求"], maturity: row["状态"],
+      }),
+    },
+  };
+  const formalReferenceFor = (asset) => ({
+    packageId: asset.source_package,
+    sourceEntry: asset.formal_row_entry ?? asset.source_entry,
+  });
+  const formalRowsFor = (asset) => {
+    const reference = formalReferenceFor(asset);
+    const cacheKey = `${asset.domain}\0${reference.packageId}\0${reference.sourceEntry}`;
+    if (!formalRowsCache.has(cacheKey)) {
+      const bytes = entryBytes(reference.packageId, reference.sourceEntry);
+      if (!bytes) {
+        formalRowsCache.set(cacheKey, []);
+      } else {
+        const lowerEntry = reference.sourceEntry.toLowerCase();
+        const rows = lowerEntry.endsWith(".csv")
+          ? parseCsv(bytes.toString("utf8"))
+          : lowerEntry.endsWith(".xlsx")
+            ? xlsxTables(bytes).flatMap((table) => table.rows)
+            : [];
+        const prefix = domainSpec[asset.domain]?.prefix;
+        const filtered = prefix
+          ? rows.filter((row) => String(row["资产ID"] ?? "").startsWith(prefix))
+          : rows;
+        const synthetic = (snapshot.syntheticFormalRows ?? [])
+          .filter((item) => item.domain === asset.domain)
+          .map((item) => item.row);
+        formalRowsCache.set(cacheKey, filtered.concat(synthetic));
+      }
+    }
+    return formalRowsCache.get(cacheKey);
   };
   const problems = [];
   const required = [
@@ -406,18 +652,135 @@ export function validateStrictCatalogSources(snapshot) {
       return (
         row.extraction !== "multi_source_derived_catalog" ||
         row.generated_by !== "scripts/import_source_baseline.py#build_catalogs" ||
+        row.mapping_version !== "formal-row-authority-v1" ||
+        row.registry_reference_role !== "cross_check_only" ||
+        !row.field_authority_map ||
         JSON.stringify(packages) !== JSON.stringify(expectedPackageSet)
       );
     });
   add(
-    derivedProblems.length === 0,
+    derivedProblems.length === 0 &&
+      snapshot.catalog.generated_by === "scripts/import_source_baseline.py#build_catalogs" &&
+      snapshot.catalog.mapping_version === "formal-row-authority-v1" &&
+      snapshot.catalog.registry_reference_role === "cross_check_only" &&
+      Object.keys(snapshot.catalog.field_authority_map ?? {}).length === 8 &&
+      snapshot.policy.catalog.mapping_version === "formal-row-authority-v1" &&
+      snapshot.policy.catalog.registry_reference_role === "cross_check_only" &&
+      snapshot.policy.catalog.generated_by === "scripts/import_source_baseline.py#build_catalogs",
     "CAT-ASSET-DERIVED-CATALOG-PROVENANCE",
     "source_packages/manifests/extracted-files.json",
     derivedProblems,
     [],
     "scripts/import_source_baseline.py#build_catalogs",
     "deterministic multi-source derivation",
-    "Declare all three aggregate outputs as multi_source_derived_catalog with the exact eight formal inputs and generation script.",
+    "Declare all aggregate outputs with the exact eight formal inputs, explicit field authority map, mapping version, cross-check-only registry role, and generation script.",
+  );
+
+  const contentMismatches = [];
+  const uniqueProblems = [];
+  const assetsByDomain = new Map();
+  for (const asset of snapshot.catalog.assets) {
+    if (!assetsByDomain.has(asset.domain)) assetsByDomain.set(asset.domain, []);
+    assetsByDomain.get(asset.domain).push(asset);
+  }
+  for (const [domain, domainAssets] of assetsByDomain) {
+    const spec = domainSpec[domain];
+    if (!spec) {
+      uniqueProblems.push({ domain, problem: "unknown_domain", catalog_count: domainAssets.length });
+      continue;
+    }
+    const sample = domainAssets[0];
+    const rows = formalRowsFor(sample);
+    const rowsById = new Map();
+    for (const row of rows) {
+      const rowId = row["资产ID"];
+      if (!rowsById.has(rowId)) rowsById.set(rowId, []);
+      rowsById.get(rowId).push(row);
+    }
+    const assetsByFormalId = new Map();
+    for (const asset of domainAssets) {
+      const locator = asset.formal_row_id;
+      if (!assetsByFormalId.has(locator)) assetsByFormalId.set(locator, []);
+      assetsByFormalId.get(locator).push(asset);
+      const matchingRows = rowsById.get(locator) ?? [];
+      if (matchingRows.length !== 1) continue;
+      const expectedFields = spec.expected(matchingRows[0], asset);
+      const authority = snapshot.catalog.field_authority_map?.[domain] ?? {};
+      const authorityBytes = authority.source_package && authority.source_entry
+        ? entryBytes(authority.source_package, authority.source_entry)
+        : null;
+      expectedFields.source_package = authority.source_package ?? expectedPackages[domain];
+      if (domain === "character") {
+        expectedFields.formal_row_entry = authority.source_entry;
+        expectedFields.formal_row_sha256 = authorityBytes ? sha256Buffer(authorityBytes) : null;
+      } else {
+        expectedFields.source_entry = authority.source_entry;
+        expectedFields.source_sha256 = authorityBytes ? sha256Buffer(authorityBytes) : null;
+      }
+      for (const [field, expectedValue] of Object.entries(expectedFields)) {
+        if (asset[field] !== expectedValue) {
+          contentMismatches.push({
+            catalog_id: asset.catalog_id,
+            formal_row_id: locator,
+            field,
+            actual: asset[field] ?? null,
+            expected: expectedValue ?? null,
+            source_package: asset.source_package,
+            source_entry: asset.formal_row_entry ?? asset.source_entry,
+            action: "Regenerate this field from the unique formal source row; registry fields are cross-check only.",
+          });
+        }
+      }
+    }
+    for (const [formalId, matchingRows] of rowsById) {
+      const matchingAssets = assetsByFormalId.get(formalId) ?? [];
+      if (matchingRows.length !== 1 || matchingAssets.length !== 1) {
+        uniqueProblems.push({
+          catalog_id: matchingAssets[0]?.catalog_id ?? null,
+          formal_row_id: formalId,
+          domain,
+          formal_row_count: matchingRows.length,
+          catalog_row_count: matchingAssets.length,
+          source_package: sample.source_package,
+          source_entry: sample.formal_row_entry ?? sample.source_entry,
+          action: "Keep exactly one formal row and exactly one catalog locator for this ID.",
+        });
+      }
+    }
+    for (const [formalId, matchingAssets] of assetsByFormalId) {
+      if (!rowsById.has(formalId)) {
+        uniqueProblems.push({
+          catalog_id: matchingAssets[0]?.catalog_id ?? null,
+          formal_row_id: formalId ?? null,
+          domain,
+          formal_row_count: 0,
+          catalog_row_count: matchingAssets.length,
+          source_package: sample.source_package,
+          source_entry: sample.formal_row_entry ?? sample.source_entry,
+          action: "Remove the unknown catalog row or restore its exact formal row locator.",
+        });
+      }
+    }
+  }
+  add(
+    contentMismatches.length === 0,
+    "CAT-ASSET-FORMAL-ROW-CONTENT",
+    "data/source/catalogs/asset-catalog-488.json#/assets",
+    { mismatch_count: contentMismatches.length, mismatches: contentMismatches },
+    { mismatch_count: 0, mismatches: [] },
+    "eight formal art packages and their CSV/XLSX catalogs",
+    "formal-row-authority-v1",
+    "Regenerate every semantic field from its unique formal row using the explicit domain field map.",
+  );
+  add(
+    uniqueProblems.length === 0 && snapshot.catalog.assets.length === 488,
+    "CAT-ASSET-FORMAL-ROW-UNIQUE",
+    "formal source rows <-> data/source/catalogs/asset-catalog-488.json",
+    { asset_count: snapshot.catalog.assets.length, problem_count: uniqueProblems.length, problems: uniqueProblems },
+    { asset_count: 488, problem_count: 0, problems: [] },
+    "eight formal art packages and their CSV/XLSX catalogs",
+    "formal-row-authority-v1",
+    "Restore a one-to-one mapping between all 488 catalog entries and unique formal source rows.",
   );
   return { issues, ruleCount };
 }
@@ -844,6 +1207,53 @@ export function applyStrictFixture(snapshot, mutation) {
         path: "docs/plan/current-import.md",
         content: "V2.1可直接导入当前引擎运行。",
       });
+      break;
+    case "formal-scn001-wrong-name":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "SCN-001").name = "旧登记表错误场景名";
+      break;
+    case "formal-scn001-registry-status":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "SCN-001").maturity = "概念草案";
+      break;
+    case "formal-mech001-id-as-name":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "MECH-001").name = "MECH-001";
+      break;
+    case "formal-mech001-registry-status":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "MECH-001").maturity = "规则已冻结/视觉未设计";
+      break;
+    case "formal-ui001-wrong-confirmation":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "UI-001").confirmation_status = "未设计";
+      break;
+    case "formal-prop001-wrong-name":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "PROP-001").name = "错误道具名称";
+      break;
+    case "formal-asset-wrong-scope":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "FX-001").scope = "错误范围";
+      break;
+    case "formal-field-from-registry":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "UI-001").maturity = "未设计";
+      break;
+    case "formal-row-duplicate-id":
+      snapshot.syntheticFormalRows = [{
+        domain: "scene",
+        row: { "资产ID": "SCN-001" },
+      }];
+      break;
+    case "formal-catalog-missing-item":
+      snapshot.catalog.assets = snapshot.catalog.assets.filter((asset) => asset.catalog_id !== "PROP-046");
+      break;
+    case "formal-catalog-extra-unknown-id": {
+      const source = snapshot.catalog.assets.find((asset) => asset.catalog_id === "SCN-001");
+      snapshot.catalog.assets.push({
+        ...source,
+        id: "SCN-999",
+        catalog_id: "SCN-999",
+        official_id: "SCN-999",
+        formal_row_id: "SCN-999",
+      });
+      break;
+    }
+    case "formal-source-entry-correct-name-mismatch":
+      snapshot.catalog.assets.find((asset) => asset.catalog_id === "DANGER-001").name = "来源路径正确但名称错误";
       break;
     case "hint-missing-second": {
       const rows = snapshot.chapters.G02.modules["三级提示"];

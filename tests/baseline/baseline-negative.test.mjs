@@ -9,8 +9,8 @@ const fixtures = readdirSync(fixtureRoot)
   .filter((name) => name.endsWith(".json"))
   .sort();
 
-test("all thirty-four required destructive fixtures exist", () => {
-  assert.equal(fixtures.length, 34);
+test("all forty-six required destructive fixtures exist", () => {
+  assert.equal(fixtures.length, 46);
 });
 
 for (const filename of fixtures) {

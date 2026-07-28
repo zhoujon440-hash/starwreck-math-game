@@ -1,0 +1,1 @@
+{"id":"NEG-44-FORMAL-CATALOG-MISSING-ITEM","mutation":"formal-catalog-missing-item","expected_rule":"CAT-ASSET-FORMAL-ROW-UNIQUE","expected_context":["PROP-046","formal_row_count\":1","catalog_row_count\":0","PKG-PROPS-V3.0"]}
