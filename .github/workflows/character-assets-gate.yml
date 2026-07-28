@@ -1,0 +1,50 @@
+name: Character Assets Gate
+
+on:
+  push:
+    branches:
+      - codex/runtime-character-assets-v1
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  character-assets-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:sources
+      - run: npm run validate:baseline
+      - run: npm run test:baseline
+      - run: npm run validate:characters
+      - run: npm run test:characters
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Upload character visual acceptance pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: character-visual-acceptance-${{ github.run_number }}
+          path: |
+            docs/review/character-assets/xingyu_5_states.png
+            docs/review/character-assets/qima_9_states.png
+            docs/review/character-assets/xingyu_master_comparison.png
+            docs/review/character-assets/qima_master_comparison.png
+            docs/review/character-assets/transparent_edge_dark.png
+            docs/review/character-assets/transparent_edge_light.png
+            test-results/character-assets/character_preview_1366x768.png
+            test-results/character-assets/character_preview_1920x1080.png
+            docs/review/CHARACTER_RUNTIME_ASSET_ACCEPTANCE.md
+            docs/characters/CHARACTER_ASSET_PROVENANCE.json
+          if-no-files-found: error
+          retention-days: 30

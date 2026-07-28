@@ -12,7 +12,9 @@
     "test:e2e": "playwright test",
     "validate:sources": "node scripts/validate-source-import.mjs",
     "validate:baseline": "node scripts/validate-baseline.mjs",
+    "validate:characters": "node scripts/validate-character-assets.mjs",
     "test:baseline": "node --test tests/baseline/*.test.mjs",
+    "test:characters": "node --test tests/characters/*.test.mjs",
     "check": "npm run validate:sources && npm run validate:baseline && npm run test:baseline && npm run test && npm run build"
   },
   "dependencies": {
