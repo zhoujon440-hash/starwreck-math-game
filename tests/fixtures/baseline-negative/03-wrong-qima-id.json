@@ -1,0 +1,1 @@
+{"id":"NEG-03-WRONG-QIMA-ID","mutation":"wrong-qima-official-id","expected_rule":"CAT-CHAR-NO-FAKE-OFFICIAL-ID"}

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "master-data.schema.json",
+  "title": "HOPA MasterData",
+  "x-rule-suffix": "MASTERDATA",
+  "type": "object",
+  "required": ["chapter", "version", "protagonist", "modules"],
+  "additionalProperties": false,
+  "properties": {
+    "chapter": { "type": "string", "pattern": "^G(?:0[1-9]|1[0-3])$" },
+    "name": { "type": "string" },
+    "chapter_name": { "type": "string" },
+    "version": { "type": "string" },
+    "protagonist": { "type": "string" },
+    "source_script": { "type": "string" },
+    "source_workbook": { "type": "string" },
+    "source_package_id": { "type": "string" },
+    "extraction": { "type": "string" },
+    "modules": {
+      "type": "object",
+      "required": ["场景流程", "热点清单", "找物清单", "背包道具流转", "对话脚本", "场景状态机", "三级提示", "存档与恢复", "程序变量", "资产映射"],
+      "additionalProperties": false,
+      "properties": {
+        "场景流程": { "type": "array" },
+        "热点清单": { "type": "array" },
+        "找物清单": { "type": "array" },
+        "背包道具流转": { "type": "array" },
+        "对话脚本": { "type": "array" },
+        "场景状态机": { "type": "array" },
+        "三级提示": { "type": "array" },
+        "存档与恢复": { "type": "array" },
+        "程序变量": { "type": "array" },
+        "资产映射": { "type": "array" }
+      }
+    }
+  }
+}

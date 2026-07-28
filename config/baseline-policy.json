@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "runtime_technology": "HTML5/PWA + Vite + TypeScript",
+  "authority": {
+    "confirmed_baseline": "docs/baseline/08_CONFIRMED_BASELINE_V2.md",
+    "g01_g02_boundary": "docs/baseline/source_text/g01/G02_OPENING_BOUNDARY_V2.2.md",
+    "g01_source": "PKG-G01-V3.0",
+    "g02_data_source": "PKG-G02-G13-DATA-V2.1"
+  },
+  "catalog": {
+    "total": 488,
+    "domain_counts": {
+      "character": 71,
+      "scene": 91,
+      "prop": 46,
+      "mechanism": 47,
+      "ui": 83,
+      "fx": 41,
+      "danger": 76,
+      "g01_addition": 33
+    },
+    "formal_sequences": {
+      "prop": { "prefix": "PROP", "count": 46 },
+      "fx": { "prefix": "FX", "count": 41 },
+      "mechanism": { "prefix": "MECH", "count": 47 },
+      "danger": { "prefix": "DANGER", "count": 76 },
+      "ui": { "prefix": "UI", "count": 83 }
+    }
+  },
+  "story": {
+    "g01_scene_count": 8,
+    "main_planets": ["G02", "G03", "G04", "G05", "G06", "G07", "G08", "G09", "G10", "G11", "G12", "G13"],
+    "g02_effective_opening": "旧屏幕谷外缘交接",
+    "g02_source_row_status": "superseded_by_G02_opening_boundary_V2.2",
+    "g01_world_star_core_count": 0
+  },
+  "forbidden": {
+    "current_execution_patterns": [
+      "\\bcombat\\b",
+      "\\benemyAI\\b",
+      "\\bBoss\\b",
+      "\\bskill[ _-]?tree\\b",
+      "\\bfree[ _-]?roam(?:ing)?\\b",
+      "血条",
+      "伤害系统",
+      "攻击系统",
+      "敌人AI",
+      "技能树",
+      "自由实时3D"
+    ]
+  }
+}

@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "validate:sources": "node scripts/validate-source-import.mjs",
-    "check": "npm run validate:sources && npm run test && npm run build"
+    "validate:baseline": "node scripts/validate-baseline.mjs",
+    "test:baseline": "node --test tests/baseline/*.test.mjs",
+    "check": "npm run validate:sources && npm run validate:baseline && npm run test:baseline && npm run test && npm run build"
   },
   "dependencies": {
     "vite-plugin-pwa": "^1.0.1"
