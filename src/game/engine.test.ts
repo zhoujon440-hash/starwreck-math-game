@@ -119,11 +119,11 @@ describe('GameEngine', () => {
     }
 
     const restored = new GameEngine(G01, new LocalSaveRepository('G01', storage))
-    expect(restored.snapshot.schemaVersion).toBe(1)
+    expect(restored.snapshot.schemaVersion).toBe(2)
     expect(restored.snapshot.sceneState).toBe('S3')
     expect(restored.snapshot.foundItemIds).toContain('ITM-G01-002')
     expect(restored.snapshot.inventoryItemIds).toContain('ITM-G01-002')
-    expect([...values.values()].some((value) => value.includes('"schemaVersion":1'))).toBe(true)
+    expect([...values.values()].some((value) => value.includes('"schemaVersion":2'))).toBe(true)
   })
 
   it('forces a non-zero star-core count from an older G01 save back to zero', () => {

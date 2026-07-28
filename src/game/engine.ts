@@ -15,16 +15,38 @@ const now = () => new Date().toISOString()
 const clone = (session: GameSession): GameSession => structuredClone(session)
 
 const createSession = (chapter: ChapterDefinition): GameSession => ({
-  schemaVersion: 1,
+  schemaVersion: 2,
   chapterId: chapter.id,
+  currentSceneId: 'SCN-G01-00',
   sceneState: chapter.initialState,
+  sceneStates: { 'SCN-G01-00': chapter.initialState },
   foundItemIds: [],
   inventoryItemIds: [],
   usedItemIds: [],
+  completedHotspotIds: [],
   completedPuzzleIds: [],
+  hosProgress: {},
+  puzzleProgress: {},
   hintCount: 0,
   hintLevels: {},
-  flags: { world_star_core_count: 0 },
+  flags: {
+    g01_chapter_complete: false,
+    g01_handoff_to_g02: false,
+    g01_qima_online: false,
+    world_star_core_count: 0,
+  },
+  dialogue: {
+    currentDialogueId: null,
+    active: false,
+    readDialogueIds: [],
+  },
+  dialogueHistory: [],
+  characterStates: {
+    'CHAR-XINGYU': 'normal',
+    'CHAR-QIMA': 'offline',
+  },
+  unlockedCharacterIds: [],
+  characterDiscoveries: {},
   transitionLog: [],
   updatedAt: now(),
 })
@@ -64,6 +86,14 @@ export class GameEngine {
     return () => this.#listeners.delete(listener)
   }
 
+  updateStory(updater: (draft: GameSession) => void): void {
+    const next = this.#nextSession()
+    updater(next)
+    next.flags.world_star_core_count = 0
+    next.sceneStates[next.currentSceneId] = next.sceneState
+    this.#commit(next)
+  }
+
   activeHotspots(): HotspotDefinition[] {
     return this.chapter.hotspots.filter((hotspot) =>
       hotspot.activeStates.includes(this.#session.sceneState),
@@ -90,6 +120,9 @@ export class GameEngine {
 
     const next = this.#nextSession()
     next.foundItemIds.push(itemId)
+    if (!next.completedHotspotIds.includes(hotspot.id)) {
+      next.completedHotspotIds.push(hotspot.id)
+    }
     if (item.collectToInventory !== false) next.inventoryItemIds.push(itemId)
 
     const remaining = this.activeHotspots().filter(
@@ -129,6 +162,9 @@ export class GameEngine {
       next.inventoryItemIds = next.inventoryItemIds.filter((id) => id !== itemId)
     }
     if (!next.usedItemIds.includes(itemId)) next.usedItemIds.push(itemId)
+    if (!next.completedHotspotIds.includes(target.id)) {
+      next.completedHotspotIds.push(target.id)
+    }
 
     const transitioned = this.#applyTransition(next, `use:${itemId}:${targetId}`)
     if (!transitioned) {
@@ -232,6 +268,7 @@ export class GameEngine {
 
     const from = next.sceneState
     next.sceneState = transition.to
+    next.sceneStates[next.currentSceneId] = transition.to
     next.transitionLog = [
       ...next.transitionLog.slice(-19),
       { from, to: transition.to, event, at: now() },
@@ -240,6 +277,7 @@ export class GameEngine {
   }
 
   #commit(next: GameSession): void {
+    next.flags.world_star_core_count = 0
     this.#session = next
     this.saves.save(this.#session)
     if (this.chapter.states[this.#session.sceneState].safeCheckpoint) {

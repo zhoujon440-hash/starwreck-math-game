@@ -15,7 +15,7 @@ export interface SaveRepository {
 }
 
 const clone = (session: GameSession): GameSession => structuredClone(session)
-export const SAVE_SCHEMA_VERSION = 1
+export const SAVE_SCHEMA_VERSION = 2
 
 type LegacySession = Partial<GameSession> & { version?: number }
 
@@ -24,24 +24,45 @@ const parseSession = (value: string | null): GameSession | null => {
 
   try {
     const parsed = JSON.parse(value) as LegacySession
-    if (parsed.schemaVersion !== SAVE_SCHEMA_VERSION && parsed.version !== 1) return null
+    if (![1, SAVE_SCHEMA_VERSION].includes(parsed.schemaVersion ?? parsed.version ?? -1)) return null
     if (typeof parsed.chapterId !== 'string') return null
     if (typeof parsed.sceneState !== 'string' || typeof parsed.updatedAt !== 'string') return null
     if (!Array.isArray(parsed.inventoryItemIds) || !Array.isArray(parsed.foundItemIds)) return null
     return {
       schemaVersion: SAVE_SCHEMA_VERSION,
       chapterId: parsed.chapterId,
+      currentSceneId: parsed.currentSceneId ?? 'SCN-G01-00',
       sceneState: parsed.sceneState,
+      sceneStates: parsed.sceneStates ?? {
+        [parsed.currentSceneId ?? 'SCN-G01-00']: parsed.sceneState,
+      },
       foundItemIds: parsed.foundItemIds,
       inventoryItemIds: parsed.inventoryItemIds,
       usedItemIds: parsed.usedItemIds ?? [],
+      completedHotspotIds: parsed.completedHotspotIds ?? [],
       completedPuzzleIds: parsed.completedPuzzleIds ?? [],
+      hosProgress: parsed.hosProgress ?? {},
+      puzzleProgress: parsed.puzzleProgress ?? {},
       hintCount: parsed.hintCount ?? 0,
       hintLevels: parsed.hintLevels ?? {},
       flags: {
         ...(parsed.flags ?? {}),
+        g01_chapter_complete: false,
+        g01_handoff_to_g02: false,
         world_star_core_count: 0,
       },
+      dialogue: parsed.dialogue ?? {
+        currentDialogueId: null,
+        active: false,
+        readDialogueIds: [],
+      },
+      dialogueHistory: parsed.dialogueHistory ?? [],
+      characterStates: parsed.characterStates ?? {
+        'CHAR-XINGYU': 'normal',
+        'CHAR-QIMA': 'offline',
+      },
+      unlockedCharacterIds: parsed.unlockedCharacterIds ?? [],
+      characterDiscoveries: parsed.characterDiscoveries ?? {},
       transitionLog: parsed.transitionLog ?? [],
       updatedAt: parsed.updatedAt,
     }

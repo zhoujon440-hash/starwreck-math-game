@@ -87,16 +87,30 @@ export type TransitionRecord = {
 }
 
 export type GameSession = {
-  schemaVersion: 1
+  schemaVersion: 2
   chapterId: string
+  currentSceneId: string
   sceneState: SceneStateId
+  sceneStates: Record<string, SceneStateId>
   foundItemIds: string[]
   inventoryItemIds: string[]
   usedItemIds: string[]
+  completedHotspotIds: string[]
   completedPuzzleIds: string[]
+  hosProgress: Record<string, string[]>
+  puzzleProgress: Record<string, boolean | number | string>
   hintCount: number
   hintLevels: Record<string, number>
   flags: Record<string, boolean | number | string>
+  dialogue: {
+    currentDialogueId: string | null
+    active: boolean
+    readDialogueIds: string[]
+  }
+  dialogueHistory: import('../types/dialogue').DialogueHistoryEntry[]
+  characterStates: Record<string, string>
+  unlockedCharacterIds: string[]
+  characterDiscoveries: Record<string, string[]>
   transitionLog: TransitionRecord[]
   updatedAt: string
 }

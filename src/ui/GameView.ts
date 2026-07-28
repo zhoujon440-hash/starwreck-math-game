@@ -2,6 +2,11 @@ import { InventoryDragCoordinator } from '../game/drag'
 import type { GameEngine } from '../game/engine'
 import { sceneStateOrder } from '../game/engine'
 import { DEBUG_UI } from '../config'
+import { CharacterPortrait } from '../components/characters/CharacterPortrait'
+import { characterData } from '../data/characters'
+import { G01_DIALOGUE } from '../data/dialogue/g01'
+import { DialogueDataLoader } from '../services/DialogueDataLoader'
+import { DialogueRunner } from '../services/DialogueRunner'
 import type {
   ActionResult,
   GameSession,
@@ -37,19 +42,10 @@ const itemById = (items: ItemDefinition[], itemId: string): ItemDefinition | und
 
 const PLAYER_SCENE_TITLE = '拾光号熄灯'
 
-const dialogueForState = (state: GameSession['sceneState']) => {
-  if (state === 'S0') return { speaker: '星宇', avatar: '星', line: '七码？回答。' }
-  if (state === 'S1') {
-    return { speaker: '系统', avatar: '系', line: '导航核心离线。维修舱进入应急照明模式。' }
-  }
-  if (state === 'S5') {
-    return { speaker: '星宇', avatar: '星', line: '灯亮了。现在去找七码。' }
-  }
-  return null
-}
-
 export class GameView {
   readonly #drag: InventoryDragCoordinator
+  readonly #dialogueRunner: DialogueRunner
+  readonly #portrait = new CharacterPortrait()
   #session: GameSession
   #selectedItemId: string | null = null
   #cabinetOpen = false
@@ -57,6 +53,8 @@ export class GameView {
   #completionPanelDismissed = false
   #hintedHotspotId: string | null = null
   #hintAvailableAt = 0
+  #historyOpen = false
+  #profileOpen = false
   #toast = ''
   #toastTimer: number | undefined
   #hintTimer: number | undefined
@@ -67,6 +65,10 @@ export class GameView {
     private readonly engine: GameEngine,
   ) {
     this.#session = engine.snapshot
+    this.#dialogueRunner = new DialogueRunner(
+      new DialogueDataLoader(G01_DIALOGUE),
+      engine,
+    )
     this.#drag = new InventoryDragCoordinator(root, (itemId, targetId) => {
       this.#useItem(itemId, targetId)
     })
@@ -77,7 +79,13 @@ export class GameView {
     this.#unsubscribe = this.engine.subscribe((session) => {
       this.#session = session
       if (session.sceneState !== 'S2') this.#cabinetOpen = false
-      if (session.sceneState !== 'S0') this.#introDismissed = true
+      if (
+        session.sceneState !== 'S0' ||
+        session.dialogue.active ||
+        session.dialogue.readDialogueIds.length > 0
+      ) {
+        this.#introDismissed = true
+      }
       if (session.sceneState !== 'S5') this.#completionPanelDismissed = false
       this.#render()
     })
@@ -105,7 +113,7 @@ export class GameView {
         !this.#session.foundItemIds.includes(hotspot.itemId),
     )
     const hintCoolingDown = Date.now() < this.#hintAvailableAt
-    const dialogue = dialogueForState(this.#session.sceneState)
+    const dialogue = this.#dialogueRunner.current
     const cabinetVisualState = ['S0', 'S1'].includes(this.#session.sceneState) ? 'closed' : 'open'
 
     this.root.innerHTML = `
@@ -142,6 +150,10 @@ export class GameView {
             <i aria-hidden="true"></i>
             <span>${DEBUG_UI ? `已自动保存 · schema v${this.#session.schemaVersion}` : '已自动保存'}</span>
           </div>
+          <nav class="story-tools" aria-label="剧情工具">
+            <button data-action="open-history">对话历史</button>
+            <button data-action="open-profile">角色档案</button>
+          </nav>
         </header>
 
         <section class="scene-frame" aria-label="${escapeHtml(this.engine.chapter.sceneTitle)}">
@@ -168,11 +180,20 @@ export class GameView {
           ${
             dialogue
               ? `
-                <aside class="dialogue-card" aria-label="${escapeHtml(dialogue.speaker)}的对白">
-                  <div class="dialogue-avatar" aria-hidden="true">${dialogue.avatar}</div>
-                  <div>
-                    <span>${escapeHtml(dialogue.speaker)}</span>
-                    <p>${escapeHtml(dialogue.line)}</p>
+                <aside
+                  class="dialogue-card dialogue-performance"
+                  aria-label="${escapeHtml(this.#dialogueSpeakerName(dialogue.speaker_id))}的对白"
+                  data-dialogue-id="${dialogue.dialogue_id}"
+                >
+                  <div class="dialogue-portrait-wrap">
+                    ${this.#dialoguePortraitTemplate(dialogue.speaker_id, dialogue.portrait_state)}
+                  </div>
+                  <div class="dialogue-copy">
+                    <span>${escapeHtml(this.#dialogueSpeakerName(dialogue.speaker_id))}</span>
+                    <p>${escapeHtml(dialogue.text)}</p>
+                    <button class="dialogue-next" data-action="advance-dialogue">
+                      ${dialogue.next_dialogue_id ? '下一句' : '继续探索'}
+                    </button>
                   </div>
                 </aside>
               `
@@ -185,8 +206,7 @@ export class GameView {
                 <section class="story-panel intro-panel" aria-labelledby="intro-title">
                   <span class="eyebrow">${DEBUG_UI ? 'G01 · SCN-G01-00' : '序章 · 坠落之前'}</span>
                   <h1 id="intro-title">拾光号熄灯</h1>
-                  <blockquote>“七码？回答。”</blockquote>
-                  <p>导航核心离线。维修舱进入应急照明模式。星宇必须先在黑暗中找到光源。</p>
+                  <p>拾光号失去主照明，搭档信号也已中断。星宇必须先在黑暗中找到光源。</p>
                   <button class="primary-action" data-action="dismiss-intro">开始搜寻</button>
                 </section>
               `
@@ -262,6 +282,8 @@ export class GameView {
         </section>
 
         ${this.#cabinetOpen ? this.#cabinetTemplate() : ''}
+        ${this.#historyOpen ? this.#historyTemplate() : ''}
+        ${this.#profileOpen ? this.#profileTemplate() : ''}
 
         <div class="toast ${this.#toast ? 'is-visible' : ''}" role="status" aria-live="polite">
           ${escapeHtml(this.#toast)}
@@ -484,13 +506,42 @@ export class GameView {
     switch (action) {
       case 'dismiss-intro':
         this.#introDismissed = true
-        this.#render()
+        if (!this.#session.dialogue.readDialogueIds.includes('DLG-G01-0001')) {
+          this.#dialogueRunner.start('DLG-G01-0001')
+        } else {
+          this.#render()
+        }
         break
       case 'find-item': {
         const itemId = actionElement.dataset.itemId
-        if (itemId) this.#handleResult(this.engine.findItem(itemId))
+        if (itemId) {
+          const result = this.engine.findItem(itemId)
+          this.#handleResult(result)
+          if (result.ok && itemId === 'ITM-G01-001') {
+            this.#dialogueRunner.startTrigger('SCN-G01-00', '取得手灯')
+          }
+        }
         break
       }
+      case 'advance-dialogue':
+        this.#dialogueRunner.advance()
+        break
+      case 'open-history':
+        this.#historyOpen = true
+        this.#render()
+        break
+      case 'close-history':
+        this.#historyOpen = false
+        this.#render()
+        break
+      case 'open-profile':
+        this.#profileOpen = true
+        this.#render()
+        break
+      case 'close-profile':
+        this.#profileOpen = false
+        this.#render()
+        break
       case 'select-item': {
         const itemId = actionElement.dataset.inventoryItem
         if (!itemId) break
@@ -592,5 +643,124 @@ export class GameView {
       this.#toast = ''
       this.#render()
     }, 2_800)
+  }
+
+  #dialogueSpeakerName(speakerId: string): string {
+    return speakerId === 'SYSTEM' ? '拾光号系统' : characterData.get(speakerId).name
+  }
+
+  #dialoguePortraitTemplate(speakerId: string, portraitState: string): string {
+    if (speakerId === 'SYSTEM') {
+      return '<div class="system-portrait" aria-label="拾光号系统"><i></i><i></i><i></i></div>'
+    }
+    return this.#portrait.render(speakerId, portraitState, 'dialogue-portrait')
+  }
+
+  #historyTemplate(): string {
+    return `
+      <div class="modal-backdrop" data-action="close-history"></div>
+      <section class="story-modal history-modal" role="dialog" aria-modal="true" aria-labelledby="history-title">
+        <header>
+          <div>
+            <span class="eyebrow">序章记录</span>
+            <h2 id="history-title">对话历史</h2>
+          </div>
+          <button class="icon-button" data-action="close-history" aria-label="关闭对话历史">×</button>
+        </header>
+        <ol class="dialogue-history-list">
+          ${
+            this.#session.dialogueHistory.length
+              ? this.#session.dialogueHistory
+                  .map(
+                    (entry) => `
+                      <li data-history-dialogue-id="${entry.dialogueId}">
+                        <div class="history-portrait">
+                          ${this.#dialoguePortraitTemplate(entry.speakerId, entry.portraitState)}
+                        </div>
+                        <div>
+                          <span>${escapeHtml(this.#dialogueSpeakerName(entry.speakerId))}</span>
+                          <p>${escapeHtml(entry.text)}</p>
+                          <small>序章 · 对话 ${entry.sequence}</small>
+                        </div>
+                      </li>
+                    `,
+                  )
+                  .join('')
+              : '<li class="history-empty">尚未记录对白。</li>'
+          }
+        </ol>
+      </section>
+    `
+  }
+
+  #profileTemplate(): string {
+    const unlocked = this.#session.unlockedCharacterIds
+      .map((characterId) => characterData.get(characterId))
+    return `
+      <div class="modal-backdrop" data-action="close-profile"></div>
+      <section class="story-modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+        <header>
+          <div>
+            <span class="eyebrow">拾光号档案</span>
+            <h2 id="profile-title">角色档案</h2>
+          </div>
+          <button class="icon-button" data-action="close-profile" aria-label="关闭角色档案">×</button>
+        </header>
+        <div class="profile-grid">
+          ${
+            unlocked.length
+              ? unlocked
+                  .map((character) => {
+                    const state =
+                      this.#session.characterStates[character.character_id] ??
+                      character.default_state
+                    const discoveries = [
+                      ...character.discoveries,
+                      ...(this.#session.characterDiscoveries[character.character_id] ?? []),
+                    ]
+                    return `
+                      <article class="character-profile" data-character-id="${character.character_id}">
+                        <div class="profile-portrait">
+                          ${this.#portrait.render(character.character_id, state, 'archive-portrait')}
+                        </div>
+                        <div>
+                          <span>${escapeHtml(character.official_id ?? '拾光号成员')}</span>
+                          <h3>${escapeHtml(character.name)}</h3>
+                          <p>${escapeHtml(character.introduction)}</p>
+                          <dl>
+                            <div><dt>当前状态</dt><dd>${escapeHtml(this.#characterStateLabel(state))}</dd></div>
+                            <div><dt>与星宇关系</dt><dd>${escapeHtml(character.relationship_status)}</dd></div>
+                          </dl>
+                          <h4>已发现信息</h4>
+                          <ul>${discoveries.map((fact) => `<li>${escapeHtml(fact)}</li>`).join('')}</ul>
+                        </div>
+                      </article>
+                    `
+                  })
+                  .join('')
+              : '<p class="profile-empty">在剧情中正式遇见角色后，档案会在这里解锁。</p>'
+          }
+        </div>
+      </section>
+    `
+  }
+
+  #characterStateLabel(state: string): string {
+    const labels: Record<string, string> = {
+      normal: '正常',
+      alert: '警觉',
+      thinking: '思考',
+      nervous: '紧张',
+      determined: '坚定',
+      offline: '离线',
+      damaged: '受损',
+      booting: '启动中',
+      question: '疑问',
+      warning: '警示',
+      proud: '确认记录',
+      awkward: '迟疑',
+      scanning: '扫描中',
+    }
+    return labels[state] ?? '状态未知'
   }
 }

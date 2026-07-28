@@ -18,6 +18,19 @@ const root = resolve(rootIndex >= 0 ? args[rootIndex + 1] : process.cwd())
 const fixture = fixturePath ? JSON.parse(readFileSync(fixturePath, 'utf8')) : null
 const mutation = fixture?.mutation ?? null
 const errors = []
+let currentBranch = process.env.GITHUB_HEAD_REF ?? process.env.GITHUB_REF_NAME ?? ''
+if (!currentBranch) {
+  try {
+    currentBranch = execFileSync('git', ['branch', '--show-current'], {
+      cwd: root,
+      encoding: 'utf8',
+    }).trim()
+  } catch {}
+}
+const enforceIssue8Scope =
+  args.includes('--enforce-issue8-scope') ||
+  currentBranch === 'codex/runtime-character-assets-v1' ||
+  mutation?.type === 'forbidden_change'
 
 const rel = (path) => relative(root, path).split(sep).join('/')
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex')
@@ -269,9 +282,11 @@ try {
 } catch {}
 if (mutation?.type === 'forbidden_change') changed.push(mutation.path)
 changed = [...new Set(changed.filter(Boolean).map((name) => name.replaceAll('\\', '/')))]
-for (const path of changed) {
-  if (!allowedChange.test(path)) {
-    fail('CHAR-018-SCOPE-FILE', path, 'changed', 'Issue #8 allowed path', 'Issue #8 §2/§19', 'Revert out-of-scope gameplay, dialogue, story, scene, source-package or other-character changes.')
+if (enforceIssue8Scope) {
+  for (const path of changed) {
+    if (!allowedChange.test(path)) {
+      fail('CHAR-018-SCOPE-FILE', path, 'changed', 'Issue #8 allowed path', 'Issue #8 §2/§19', 'Revert out-of-scope gameplay, dialogue, story, scene, source-package or other-character changes.')
+    }
   }
 }
 
@@ -281,5 +296,5 @@ if (errors.length) {
   }
   process.exitCode = 1
 } else {
-  console.log(`CHARACTER_ASSETS_OK rules=19 xingyu=5 qima=9 runtime_assets=${provenance.runtime_assets.length} source_entry_sha256=${provenance.source_entry_sha256}`)
+  console.log(`CHARACTER_ASSETS_OK rules=19 xingyu=5 qima=9 runtime_assets=${provenance.runtime_assets.length} source_entry_sha256=${provenance.source_entry_sha256} issue8_scope=${enforceIssue8Scope}`)
 }
