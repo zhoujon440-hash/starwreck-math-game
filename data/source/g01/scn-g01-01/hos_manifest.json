@@ -1,0 +1,258 @@
+{
+  "schema_version": 1,
+  "hos_id": "HOS-G01-002",
+  "scene_id": "SCN-G01-01",
+  "source": "project_owner_authorized_runtime_production",
+  "background_asset": {
+    "path": "public/assets/g01/scn-g01-01/background/HOS-G01-002_navigation_parts_pile.webp",
+    "sha256": "1b5087011edcab7fed32b1f6e0563b77068c008ae39b09ff2220b358407a3906"
+  },
+  "foreground_occlusion_asset": {
+    "path": "public/assets/g01/scn-g01-01/background/HOS-G01-002_foreground_occlusion.png",
+    "sha256": "6ad451bf6ac2acd069f70fb5eca7b9284eda6629736f68da446410754bcd1818"
+  },
+  "targets": [
+    {
+      "asset_id": "PROP-G01-004",
+      "official_id": "PROP-G01-004",
+      "item_id": "ITM-G01-004",
+      "name": "七码芯片",
+      "type": "target",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "scene_asset": "public/assets/g01/scn-g01-01/items/PROP-G01-004_qima_chip_scene.png",
+      "scene_sha256": "2678df73fa128d1f046dc3e2eabd9f466e91f98c271ea01a82a8b0bf6fbb95f8",
+      "inventory_asset": "public/assets/g01/scn-g01-01/items/PROP-G01-004_qima_chip_inventory.png",
+      "inventory_sha256": "7c348ef46e82078dd7d3e6ffc16eac8ca9d497608371646be8af383a12a06c95",
+      "position": {
+        "x": 17,
+        "y": 17,
+        "width": 16,
+        "height": 19
+      },
+      "state": "available",
+      "collectible": true,
+      "wrong_use_consumes": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    },
+    {
+      "asset_id": "PROP-G01-005",
+      "official_id": "PROP-G01-005",
+      "item_id": "ITM-G01-005",
+      "name": "接线片",
+      "type": "target",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "scene_asset": "public/assets/g01/scn-g01-01/items/PROP-G01-005_contact_plate_scene.png",
+      "scene_sha256": "52aa8fead2161eb130bbf59d843dffb4a86d3c66d0b84242746fb207c75a0c33",
+      "inventory_asset": "public/assets/g01/scn-g01-01/items/PROP-G01-005_contact_plate_inventory.png",
+      "inventory_sha256": "f617c5c6e7c39f8a63a837ec918f8b5d013a9d015f11e6c3f33339a0c148f7a6",
+      "position": {
+        "x": 57,
+        "y": 25,
+        "width": 15,
+        "height": 16
+      },
+      "state": "available",
+      "collectible": true,
+      "wrong_use_consumes": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    },
+    {
+      "asset_id": "RUNTIME-G01-FUSE",
+      "official_id": null,
+      "item_id": "ITM-G01-006",
+      "name": "保险丝",
+      "type": "target",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "scene_asset": "public/assets/g01/scn-g01-01/items/RUNTIME-G01-FUSE_scene.png",
+      "scene_sha256": "97cef2ba09b6fb0f4a56ee045f1e3347c6cd1d7de6db52655ae08ae0843681dd",
+      "inventory_asset": "public/assets/g01/scn-g01-01/items/RUNTIME-G01-FUSE_inventory.png",
+      "inventory_sha256": "ec7fff95801bb8e7c73ac1c6da3aa4fefce32bd6c753f135d7ad7d9eb530049f",
+      "position": {
+        "x": 32,
+        "y": 64,
+        "width": 11,
+        "height": 15
+      },
+      "state": "available",
+      "collectible": true,
+      "wrong_use_consumes": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    },
+    {
+      "asset_id": "RUNTIME-G01-FIXED-BUCKLE",
+      "official_id": null,
+      "item_id": "RUNTIME-ITM-G01-FIXED-BUCKLE",
+      "name": "固定扣",
+      "type": "target",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "scene_asset": "public/assets/g01/scn-g01-01/items/RUNTIME-G01-FIXED-BUCKLE_scene.png",
+      "scene_sha256": "00db4775f3736e61cda23362f6b13680eb5f90e4ced635a57dc1e796f23bc5aa",
+      "inventory_asset": "public/assets/g01/scn-g01-01/items/RUNTIME-G01-FIXED-BUCKLE_inventory.png",
+      "inventory_sha256": "86785695c72d00b63628f43315a7faf0696355ebd7ed2f2ca7085db4272f3abb",
+      "position": {
+        "x": 68,
+        "y": 62,
+        "width": 14,
+        "height": 17
+      },
+      "state": "available",
+      "collectible": true,
+      "wrong_use_consumes": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    }
+  ],
+  "distractors": [
+    {
+      "asset_id": "RUNTIME-HOS-G01-002-D01",
+      "official_id": null,
+      "name": "空芯片壳",
+      "type": "distractor",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "runtime_path": "public/assets/g01/scn-g01-01/hos/RUNTIME-HOS-G01-002-D01_empty_chip_shell.png",
+      "sha256": "8b5547c263bb293e3a7f69aeae5f7b4e34a6de72a8d83bb51aff888ddd558a38",
+      "position": {
+        "x": 7,
+        "y": 49,
+        "width": 12,
+        "height": 14
+      },
+      "state": "persistent",
+      "collectible": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    },
+    {
+      "asset_id": "RUNTIME-HOS-G01-002-D02",
+      "official_id": null,
+      "name": "断线片",
+      "type": "distractor",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "runtime_path": "public/assets/g01/scn-g01-01/hos/RUNTIME-HOS-G01-002-D02_broken_contact_strip.png",
+      "sha256": "4e09b2d1ce8d8df6fa391bf2cada898bb5cb046f2131fc39c0163a574fbdc2a9",
+      "position": {
+        "x": 42,
+        "y": 10,
+        "width": 13,
+        "height": 15
+      },
+      "state": "persistent",
+      "collectible": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    },
+    {
+      "asset_id": "RUNTIME-HOS-G01-002-D03",
+      "official_id": null,
+      "name": "废旧接头",
+      "type": "distractor",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "runtime_path": "public/assets/g01/scn-g01-01/hos/RUNTIME-HOS-G01-002-D03_old_connector.png",
+      "sha256": "475db9df37d1872c6ff4406055ed656cfaa19f96fc6201dc9e0797f1b2868ed4",
+      "position": {
+        "x": 82,
+        "y": 13,
+        "width": 12,
+        "height": 16
+      },
+      "state": "persistent",
+      "collectible": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    },
+    {
+      "asset_id": "RUNTIME-HOS-G01-002-D04",
+      "official_id": null,
+      "name": "相似保险片",
+      "type": "distractor",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "runtime_path": "public/assets/g01/scn-g01-01/hos/RUNTIME-HOS-G01-002-D04_similar_fuse_plate.png",
+      "sha256": "be69b1290d7432cc4bc019b421cc6bf6c15a164344f86efeb3f65954f2b680a4",
+      "position": {
+        "x": 9,
+        "y": 76,
+        "width": 14,
+        "height": 13
+      },
+      "state": "persistent",
+      "collectible": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    },
+    {
+      "asset_id": "RUNTIME-HOS-G01-002-D05",
+      "official_id": null,
+      "name": "弯曲金属扣",
+      "type": "distractor",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "runtime_path": "public/assets/g01/scn-g01-01/hos/RUNTIME-HOS-G01-002-D05_bent_metal_clip.png",
+      "sha256": "dbee6843d758a856c17fe1e2dc7e4d3fe3d5b3e4579218ff9a14ccd8934386ed",
+      "position": {
+        "x": 49,
+        "y": 75,
+        "width": 13,
+        "height": 13
+      },
+      "state": "persistent",
+      "collectible": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    },
+    {
+      "asset_id": "RUNTIME-HOS-G01-002-D06",
+      "official_id": null,
+      "name": "导航零件",
+      "type": "distractor",
+      "source": "project_owner_authorized_runtime_production",
+      "source_package": "PKG-G01-V3.0",
+      "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+      "source_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc",
+      "runtime_path": "public/assets/g01/scn-g01-01/hos/RUNTIME-HOS-G01-002-D06_navigation_part.png",
+      "sha256": "f020a86e4c0ea53cd6d893f81627ba3b386021a46d471ced661b80eac9718eef",
+      "position": {
+        "x": 81,
+        "y": 78,
+        "width": 13,
+        "height": 13
+      },
+      "state": "persistent",
+      "collectible": false,
+      "runtime_asset": true,
+      "acceptance_status": "pending_review"
+    }
+  ],
+  "state": "not_started",
+  "runtime_asset": true,
+  "acceptance_status": "pending_review",
+  "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/3#issuecomment-5105774977"
+}

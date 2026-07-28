@@ -11,14 +11,13 @@ const fixtureRoot = resolve(
   'tests/fixtures/baseline-negative/character-story',
 )
 
-test('all non-art Character Story rules pass against the current branch', () => {
-  const result = spawnSync(
-    process.execPath,
-    [validator, '--allow-source-gap'],
-    { cwd: root, encoding: 'utf8' },
-  )
+test('all Character Story rules, including formal runtime art, pass', () => {
+  const result = spawnSync(process.execPath, [validator], {
+    cwd: root,
+    encoding: 'utf8',
+  })
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`)
-  assert.match(result.stdout, /CHARACTER_STORY_RULES_OK rules=36/)
+  assert.match(result.stdout, /CHARACTER_STORY_RULES_OK rules=49/)
 })
 
 for (const fixture of readdirSync(fixtureRoot)

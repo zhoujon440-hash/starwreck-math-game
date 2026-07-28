@@ -1,6 +1,7 @@
 import { InventoryDragCoordinator } from '../game/drag'
 import type { GameEngine } from '../game/engine'
 import { sceneStateOrder } from '../game/engine'
+import hosManifest from '../../data/source/g01/scn-g01-01/hos_manifest.json'
 import { DEBUG_UI } from '../config'
 import { CharacterPortrait } from '../components/characters/CharacterPortrait'
 import { characterData } from '../data/characters'
@@ -55,9 +56,12 @@ export class GameView {
   #hintAvailableAt = 0
   #historyOpen = false
   #profileOpen = false
+  #puzzleOpen = false
   #toast = ''
   #toastTimer: number | undefined
   #hintTimer: number | undefined
+  #bootTimer: number | undefined
+  #recoveryDialogueTimer: number | undefined
   #unsubscribe: (() => void) | undefined
 
   constructor(
@@ -79,6 +83,7 @@ export class GameView {
     this.#unsubscribe = this.engine.subscribe((session) => {
       this.#session = session
       if (session.sceneState !== 'S2') this.#cabinetOpen = false
+      if (session.sceneState !== 'S3') this.#puzzleOpen = false
       if (
         session.sceneState !== 'S0' ||
         session.dialogue.active ||
@@ -86,7 +91,9 @@ export class GameView {
       ) {
         this.#introDismissed = true
       }
-      if (session.sceneState !== 'S5') this.#completionPanelDismissed = false
+      if (session.currentSceneId === 'SCN-G01-00' && session.sceneState !== 'S5') {
+        this.#completionPanelDismissed = false
+      }
       this.#render()
     })
   }
@@ -97,14 +104,18 @@ export class GameView {
     this.root.removeEventListener('click', this.#handleClick)
     if (this.#toastTimer) window.clearTimeout(this.#toastTimer)
     if (this.#hintTimer) window.clearTimeout(this.#hintTimer)
+    if (this.#bootTimer) window.clearTimeout(this.#bootTimer)
+    if (this.#recoveryDialogueTimer) window.clearTimeout(this.#recoveryDialogueTimer)
   }
 
   #render(): void {
-    const state = this.engine.chapter.states[this.#session.sceneState]
+    const scene = this.engine.currentSceneDefinition
+    const isScn01 = scene.id === 'SCN-G01-01'
+    const state = scene.states[this.#session.sceneState]
     const activeHotspots = this.engine.activeHotspots()
     const sceneHotspots = activeHotspots.filter((hotspot) => hotspot.scope !== 'zoom')
     const inventoryItems = this.#session.inventoryItemIds
-      .map((itemId) => itemById(this.engine.chapter.items, itemId))
+      .map((itemId) => itemById(this.engine.allItems, itemId))
       .filter((item): item is ItemDefinition => Boolean(item))
     const remainingCurrentItems = activeHotspots.filter(
       (hotspot) =>
@@ -114,12 +125,18 @@ export class GameView {
     )
     const hintCoolingDown = Date.now() < this.#hintAvailableAt
     const dialogue = this.#dialogueRunner.current
-    const cabinetVisualState = ['S0', 'S1'].includes(this.#session.sceneState) ? 'closed' : 'open'
+    const cabinetVisualState =
+      !isScn01 && ['S0', 'S1'].includes(this.#session.sceneState) ? 'closed' : 'open'
+    const sceneArt =
+      !isScn01 && ['S0', 'S1'].includes(this.#session.sceneState)
+        ? '/assets/g01-cockpit-cabinet-closed-v2.png'
+        : scene.art
 
     this.root.innerHTML = `
       <main
-        class="game-shell state-${this.#session.sceneState}"
+        class="game-shell state-${this.#session.sceneState} ${isScn01 ? 'scene-scn-g01-01' : 'scene-scn-g01-00'}"
         data-debug-ui="${DEBUG_UI}"
+        data-scene-id="${scene.id}"
         data-cabinet-visual-state="${cabinetVisualState}"
       >
         <header class="topbar">
@@ -156,11 +173,17 @@ export class GameView {
           </nav>
         </header>
 
-        <section class="scene-frame" aria-label="${escapeHtml(this.engine.chapter.sceneTitle)}">
+        <section class="scene-frame" aria-label="${escapeHtml(scene.title)}">
           <div class="scene-canvas" data-scene-canvas>
-            <div class="scene-art" role="img" aria-label="断电后的拾光号领航舱，窗外漂浮着飞船残骸"></div>
+            <div
+              class="scene-art"
+              style="background-image:url('${sceneArt}')"
+              role="img"
+              aria-label="${escapeHtml(isScn01 ? '受损的拾光号导航核心舱，七码维修托架位于右侧' : '断电后的拾光号领航舱，窗外漂浮着飞船残骸')}"
+            ></div>
             <div class="state-layer distribution-box-layer" aria-hidden="true"></div>
             <div class="state-layer lighting-layer" aria-hidden="true"></div>
+            ${isScn01 ? this.#scn01SceneLayersTemplate() : ''}
             <div class="scene-treatment" aria-hidden="true"></div>
             <div class="foreground-layer" aria-hidden="true"></div>
             ${this.#collectibleLayersTemplate('scene')}
@@ -172,7 +195,7 @@ export class GameView {
           </div>
 
           <aside class="objective-card">
-            <span>当前目标 · ${DEBUG_UI ? escapeHtml(this.engine.chapter.sceneTitle) : PLAYER_SCENE_TITLE}</span>
+            <span>当前目标 · ${DEBUG_UI ? escapeHtml(scene.id) : escapeHtml(isScn01 ? scene.playerTitle : PLAYER_SCENE_TITLE)}</span>
             <strong>${escapeHtml(state.objective)}</strong>
             <p>${escapeHtml(state.narrative)}</p>
           </aside>
@@ -201,7 +224,7 @@ export class GameView {
           }
 
           ${
-            this.#session.sceneState === 'S0' && !this.#introDismissed
+            !isScn01 && this.#session.sceneState === 'S0' && !this.#introDismissed
               ? `
                 <section class="story-panel intro-panel" aria-labelledby="intro-title">
                   <span class="eyebrow">${DEBUG_UI ? 'G01 · SCN-G01-00' : '序章 · 坠落之前'}</span>
@@ -214,7 +237,9 @@ export class GameView {
           }
 
           ${
-            this.#session.sceneState === 'S5' && !this.#completionPanelDismissed
+            !isScn01 &&
+            this.#session.sceneState === 'S5' &&
+            !this.#completionPanelDismissed
               ? `
                 <section class="story-panel complete-panel" aria-labelledby="light-title">
                   <span class="eyebrow">${DEBUG_UI ? '安全节点 S5' : '舱灯重启'}</span>
@@ -232,7 +257,7 @@ export class GameView {
           }
 
           ${
-            this.#session.sceneState === 'S6'
+            !isScn01 && this.#session.sceneState === 'S6'
               ? `
                 <section class="story-panel complete-panel" aria-labelledby="complete-title">
                   <span class="eyebrow">${DEBUG_UI ? 'S6 · SCN-G01-00' : '船尾信号回波'}</span>
@@ -243,7 +268,40 @@ export class GameView {
                     <span><b>${this.#session.hintCount}</b> 使用提示</span>
                     <span><b>1</b> 恢复舱段</span>
                   </div>
-                  <button class="secondary-action" data-action="restart">重新检查领航舱</button>
+                  <button class="secondary-action" data-action="enter-scn01">进入导航核心舱</button>
+                </section>
+              `
+              : ''
+          }
+
+          ${
+            isScn01 && this.#session.sceneState === 'S5'
+              ? `
+                <section class="boot-sequence" aria-label="七码启动中" data-boot-sequence="non-skippable">
+                  <div class="boot-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                  <span>正在恢复导航核心</span>
+                  <strong>七码启动校验不可跳过</strong>
+                  <div class="boot-progress" aria-hidden="true"><i></i></div>
+                </section>
+              `
+              : ''
+          }
+
+          ${
+            isScn01 &&
+            this.#session.sceneState === 'S6' &&
+            !dialogue &&
+            this.#session.dialogue.readDialogueIds.includes('DLG-G01-0006')
+              ? `
+                <section class="story-panel complete-panel scn01-complete" aria-labelledby="scn01-complete-title">
+                  <span class="eyebrow">${DEBUG_UI ? 'S6 · SCN-G01-01' : '导航搭档恢复'}</span>
+                  <h2 id="scn01-complete-title">七码已重新上线</h2>
+                  <p>第一段修复完成。下一舱段只保留剧情边界，本次试玩不会进入。</p>
+                  <div class="completion-stats">
+                    <span><b>4</b> 找回组件</span>
+                    <span><b>4</b> 完成修复</span>
+                    <span><b>0</b> 序章星核</span>
+                  </div>
                 </section>
               `
               : ''
@@ -253,7 +311,7 @@ export class GameView {
             ${
               remainingCurrentItems.length
                 ? `<span>当前待发现</span><strong>${remainingCurrentItems.length}</strong>`
-                : `<span>领航舱状态</span><strong>${escapeHtml(state.title)}</strong>`
+                : `<span>${isScn01 ? '导航核心状态' : '领航舱状态'}</span><strong>${escapeHtml(state.title)}</strong>`
             }
           </div>
 
@@ -281,7 +339,8 @@ export class GameView {
           </footer>
         </section>
 
-        ${this.#cabinetOpen ? this.#cabinetTemplate() : ''}
+        ${this.#cabinetOpen ? (isScn01 ? this.#qimaHosTemplate() : this.#cabinetTemplate()) : ''}
+        ${this.#puzzleOpen ? this.#chipPuzzleTemplate() : ''}
         ${this.#historyOpen ? this.#historyTemplate() : ''}
         ${this.#profileOpen ? this.#profileTemplate() : ''}
 
@@ -296,6 +355,21 @@ export class GameView {
         </div>
       </main>
     `
+    if (isScn01 && this.#session.sceneState === 'S5') {
+      this.#scheduleBootSequence()
+    } else if (this.#bootTimer) {
+      window.clearTimeout(this.#bootTimer)
+      this.#bootTimer = undefined
+    }
+    if (
+      isScn01 &&
+      this.#session.sceneState === 'S6' &&
+      this.#session.characterStates['CHAR-QIMA'] === 'normal' &&
+      !this.#session.dialogue.active &&
+      !this.#session.dialogue.readDialogueIds.includes('DLG-G01-0004')
+    ) {
+      this.#scheduleRecoveryDialogue()
+    }
   }
 
   #hotspotTemplate(hotspot: HotspotDefinition): string {
@@ -332,6 +406,7 @@ export class GameView {
         data-action="${action}"
         data-hotspot-id="${hotspot.id}"
         ${hotspot.itemId ? `data-item-id="${hotspot.itemId}"` : ''}
+        ${hotspot.zoomId ? `data-zoom-id="${hotspot.zoomId}"` : ''}
         ${hotspot.kind === 'use-target' ? `data-drop-target="${hotspot.id}"` : ''}
         aria-label="${escapeHtml(hotspot.ariaLabel)}"
       ><span class="sr-only">${escapeHtml(hotspot.ariaLabel)}</span></button>
@@ -339,7 +414,7 @@ export class GameView {
   }
 
   #collectibleLayersTemplate(scope: 'scene' | 'zoom'): string {
-    return this.engine.chapter.items
+    return this.engine.currentSceneDefinition.items
       .filter(
         (item) =>
           item.collectibleLayer?.scope === scope &&
@@ -364,6 +439,7 @@ export class GameView {
   }
 
   #sceneUtilityTargetsTemplate(): string {
+    if (this.#session.currentSceneId !== 'SCN-G01-00') return ''
     const state = this.#session.sceneState
     const cabinetHotspot = this.engine.chapter.hotspots.find(
       (hotspot) => hotspot.id === 'HS-G01-0003',
@@ -430,7 +506,12 @@ export class GameView {
 
   #cabinetTemplate(): string {
     const cabinetItems = this.engine.chapter.items.filter((item) =>
-      ['ITM-G01-002', 'ITM-G01-003', 'ITM-G01-004', 'ITM-G01-005'].includes(item.id),
+      [
+        'ITM-G01-002',
+        'ITM-G01-003',
+        'RUNTIME-ITM-G01-SCN00-GLOVE',
+        'RUNTIME-ITM-G01-SCN00-LABEL',
+      ].includes(item.id),
     )
     const zoomHotspots = this.engine
       .activeHotspots()
@@ -498,6 +579,207 @@ export class GameView {
     `
   }
 
+  #scn01SceneLayersTemplate(): string {
+    const qimaState =
+      this.#session.characterStates['CHAR-QIMA'] ??
+      (this.#session.sceneState === 'S0' ? 'offline' : 'damaged')
+    const installedLayers = [
+      {
+        hotspotId: 'HS-G01-0007-CONTACT',
+        path: '/assets/g01/scn-g01-01/states/SCN-G01-01_contact_plate_installed.png',
+      },
+      {
+        hotspotId: 'HS-G01-0007-FUSE',
+        path: '/assets/g01/scn-g01-01/states/SCN-G01-01_fuse_installed.png',
+      },
+      {
+        hotspotId: 'HS-G01-0008',
+        path: '/assets/g01/scn-g01-01/states/SCN-G01-01_chip_installed.png',
+      },
+      {
+        hotspotId: 'RUNTIME-HS-G01-0008-BUCKLE',
+        path: '/assets/g01/scn-g01-01/states/SCN-G01-01_buckle_locked.png',
+      },
+    ]
+    const effect =
+      qimaState === 'booting'
+        ? '/assets/g01/scn-g01-01/states/SCN-G01-01_qima_booting_effect.png'
+        : qimaState === 'normal' ||
+            qimaState === 'question' ||
+            qimaState === 'proud'
+          ? '/assets/g01/scn-g01-01/states/SCN-G01-01_qima_normal_effect.png'
+          : null
+
+    return `
+      <div class="qima-cradle-character" data-qima-state="${escapeHtml(qimaState)}">
+        ${this.#portrait.render('CHAR-QIMA', qimaState, 'qima-scene-portrait')}
+        ${effect ? `<img class="qima-scene-effect" src="${effect}" alt="" aria-hidden="true">` : ''}
+      </div>
+      ${installedLayers
+        .filter((layer) => this.#session.completedHotspotIds.includes(layer.hotspotId))
+        .map(
+          (layer) =>
+            `<img class="scn01-installed-layer" src="${layer.path}" alt="" aria-hidden="true">`,
+        )
+        .join('')}
+    `
+  }
+
+  #qimaHosTemplate(): string {
+    const targets = hosManifest.targets
+    const foundCount = targets.filter((target) =>
+      this.#session.foundItemIds.includes(target.item_id),
+    ).length
+    const background = `/${hosManifest.background_asset.path.replace(/^public\//, '')}`
+    const foreground = `/${hosManifest.foreground_occlusion_asset.path.replace(/^public\//, '')}`
+
+    return `
+      <div class="modal-backdrop" data-action="close-cabinet"></div>
+      <section class="zoom-modal qima-hos-modal" role="dialog" aria-modal="true" aria-labelledby="qima-hos-title">
+        <header>
+          <div>
+            <span class="eyebrow">${DEBUG_UI ? 'HOS-G01-002 · 局部放大' : '导航零件堆 · 局部放大'}</span>
+            <h2 id="qima-hos-title">找回七码的维修组件</h2>
+          </div>
+          <div class="zoom-progress">${foundCount} / ${targets.length}</div>
+          <button class="icon-button" data-action="close-cabinet" aria-label="关闭导航零件堆特写">×</button>
+        </header>
+        <div class="qima-hos-content">
+          <div
+            class="qima-hos-art"
+            style="background-image:url('${background}')"
+            role="img"
+            aria-label="线缆、工具袋和导航零件混杂的工作台"
+          >
+            ${this.#collectibleLayersTemplate('zoom')}
+            ${hosManifest.distractors
+              .map((distractor) => {
+                const path = `/${distractor.runtime_path.replace(/^public\//, '')}`
+                return `
+                  <img
+                    class="hos-distractor-object"
+                    src="${path}"
+                    style="${areaStyle(distractor.position, 0)}"
+                    alt=""
+                    aria-hidden="true"
+                  >
+                  <button
+                    class="scene-hotspot hos-distractor-hotspot"
+                    style="${hotspotStyle({ area: distractor.position } as HotspotDefinition)}"
+                    data-action="hos-distractor"
+                    aria-label="检查${escapeHtml(distractor.name)}"
+                  ><span class="sr-only">${escapeHtml(distractor.name)}</span></button>
+                `
+              })
+              .join('')}
+            ${this.engine
+              .activeHotspots()
+              .filter(
+                (hotspot) =>
+                  hotspot.scope === 'zoom' &&
+                  hotspot.itemId &&
+                  !this.#session.foundItemIds.includes(hotspot.itemId),
+              )
+              .map((hotspot) => this.#hotspotTemplate(hotspot))
+              .join('')}
+            <img class="hos-raster-occlusion" src="${foreground}" alt="" aria-hidden="true">
+          </div>
+          <aside class="hos-list qima-hos-list">
+            <span>${DEBUG_UI ? '目标物数据来自 data/source/g01' : '维修组件'}</span>
+            <h3>观察形状与材质</h3>
+            <ul>
+              ${targets
+                .map(
+                  (target) => `
+                    <li class="${this.#session.foundItemIds.includes(target.item_id) ? 'is-found' : ''}">
+                      <i aria-hidden="true"></i>
+                      ${escapeHtml(target.name)}
+                      <small>关键</small>
+                    </li>
+                  `,
+                )
+                .join('')}
+            </ul>
+            <p>干扰物会保留在零件堆中。找到的组件会独立消失并进入背包。</p>
+          </aside>
+        </div>
+      </section>
+    `
+  }
+
+  #chipPuzzleTemplate(): string {
+    const rotation = Number(this.#session.puzzleProgress.chip_rotation ?? 90)
+    const chip = this.engine.allItems.find((item) => item.id === 'ITM-G01-004')
+    return `
+      <div class="modal-backdrop"></div>
+      <section class="zoom-modal chip-puzzle-modal" role="dialog" aria-modal="true" aria-labelledby="chip-puzzle-title">
+        <header>
+          <div>
+            <span class="eyebrow">${DEBUG_UI ? 'PUZ-G01-CHIP-ORIENTATION' : '芯片局部检查'}</span>
+            <h2 id="chip-puzzle-title">校正触点方向</h2>
+          </div>
+          <button class="icon-button" data-action="close-puzzle" aria-label="关闭芯片检查">×</button>
+        </header>
+        <div class="chip-puzzle-stage">
+          <div class="chip-socket" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <img
+            src="${chip?.inventoryIcon ?? ''}"
+            alt="七码芯片"
+            style="transform:rotate(${rotation}deg)"
+            data-chip-rotation="${rotation}"
+          >
+        </div>
+        <div class="chip-puzzle-controls">
+          <p>观察芯片下方触点，让它与插槽的四个导向角一致。</p>
+          <button class="secondary-action" data-action="rotate-chip">旋转 90°</button>
+          <button class="primary-action" data-action="confirm-chip">确认方向</button>
+        </div>
+      </section>
+    `
+  }
+
+  #scheduleBootSequence(): void {
+    if (this.#bootTimer) return
+    this.#bootTimer = window.setTimeout(() => {
+      this.#bootTimer = undefined
+      if (
+        this.#session.currentSceneId !== 'SCN-G01-01' ||
+        this.#session.sceneState !== 'S5'
+      ) {
+        return
+      }
+      const result = this.engine.completePuzzle('PUZ-G01-QIMA-BOOT')
+      if (!result.ok) {
+        this.#handleResult(result)
+        return
+      }
+      this.engine.updateStory((draft) => {
+        draft.characterStates['CHAR-QIMA'] = 'normal'
+        draft.flags.g01_scn01_complete = true
+        draft.flags.g01_qima_online = true
+        draft.flags.world_star_core_count = 0
+        draft.characterDiscoveries['CHAR-QIMA'] = [
+          '在导航核心舱完成离线、受损、启动中到正常的恢复',
+          '启动记录显示离线四分十二秒',
+        ]
+      })
+    }, 3_200)
+  }
+
+  #scheduleRecoveryDialogue(): void {
+    if (this.#recoveryDialogueTimer) return
+    this.#recoveryDialogueTimer = window.setTimeout(() => {
+      this.#recoveryDialogueTimer = undefined
+      if (
+        this.#session.currentSceneId === 'SCN-G01-01' &&
+        this.#session.sceneState === 'S6' &&
+        !this.#session.dialogue.readDialogueIds.includes('DLG-G01-0004')
+      ) {
+        this.#dialogueRunner.start('DLG-G01-0004')
+      }
+    }, 700)
+  }
+
   #handleClick = (event: MouseEvent): void => {
     const actionElement = (event.target as HTMLElement).closest<HTMLElement>('[data-action]')
     const action = actionElement?.dataset.action
@@ -525,6 +807,12 @@ export class GameView {
       }
       case 'advance-dialogue':
         this.#dialogueRunner.advance()
+        break
+      case 'enter-scn01':
+        this.#selectedItemId = null
+        this.#cabinetOpen = false
+        this.#puzzleOpen = false
+        this.#handleResult(this.engine.enterScene('SCN-G01-01'))
         break
       case 'open-history':
         this.#historyOpen = true
@@ -556,13 +844,38 @@ export class GameView {
         break
       }
       case 'open-cabinet':
-        this.#cabinetOpen = true
+        if (actionElement.dataset.zoomId === 'PUZ-G01-CHIP-ORIENTATION') {
+          this.#puzzleOpen = true
+        } else {
+          this.#cabinetOpen = true
+        }
         this.#render()
         break
       case 'close-cabinet':
         this.#cabinetOpen = false
         this.#render()
         break
+      case 'close-puzzle':
+        this.#puzzleOpen = false
+        this.#render()
+        break
+      case 'rotate-chip': {
+        const rotation = (Number(this.#session.puzzleProgress.chip_rotation ?? 90) + 90) % 360
+        this.engine.updateStory((draft) => {
+          draft.puzzleProgress.chip_rotation = rotation
+        })
+        break
+      }
+      case 'confirm-chip': {
+        const rotation = Number(this.#session.puzzleProgress.chip_rotation ?? 90)
+        if (rotation !== 180) {
+          this.#showToast('触点方向还没有对齐。旋转芯片后再观察导向角。')
+          break
+        }
+        this.#puzzleOpen = false
+        this.#handleResult(this.engine.completePuzzle('PUZ-G01-CHIP-ORIENTATION'))
+        break
+      }
       case 'dismiss-complete':
         this.#completionPanelDismissed = true
         this.#render()
@@ -570,9 +883,24 @@ export class GameView {
       case 'cabinet-distractor':
         this.#showToast('这是干扰物，不需要收进背包。')
         break
+      case 'hos-distractor':
+        this.#showToast('这件零件与七码的接口不匹配，留在原处。')
+        break
       case 'inspect': {
         const hotspotId = actionElement.dataset.hotspotId
-        if (hotspotId) this.#handleResult(this.engine.inspect(hotspotId))
+        if (hotspotId) {
+          const result = this.engine.inspect(hotspotId)
+          this.#handleResult(result)
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-01' &&
+            hotspotId === 'HS-G01-0005'
+          ) {
+            this.engine.updateStory((draft) => {
+              draft.characterStates['CHAR-QIMA'] = 'damaged'
+            })
+          }
+        }
         break
       }
       case 'hint':
@@ -581,6 +909,7 @@ export class GameView {
       case 'restart':
         this.#selectedItemId = null
         this.#cabinetOpen = false
+        this.#puzzleOpen = false
         this.#introDismissed = false
         this.#completionPanelDismissed = false
         this.engine.reset()
@@ -593,7 +922,18 @@ export class GameView {
 
   #useItem(itemId: string, targetId: string): void {
     const result = this.engine.useItem(itemId, targetId)
-    if (result.ok) this.#selectedItemId = null
+    if (result.ok) {
+      this.#selectedItemId = null
+      if (
+        this.#session.currentSceneId === 'SCN-G01-01' &&
+        this.#session.sceneState === 'S5'
+      ) {
+        this.engine.updateStory((draft) => {
+          draft.characterStates['CHAR-QIMA'] = 'booting'
+          draft.puzzleProgress.qima_boot_sequence = 'running'
+        })
+      }
+    }
     this.#handleResult(result)
   }
 
@@ -611,6 +951,29 @@ export class GameView {
     this.#render()
     this.#showToast(this.#hintCopy(result))
 
+    if (result.level === 3 && this.#session.currentSceneId === 'SCN-G01-01') {
+      if (result.hotspot.kind === 'hidden-item' && result.hotspot.itemId) {
+        window.setTimeout(() => this.#handleResult(this.engine.findItem(result.hotspot.itemId!)), 450)
+      } else if (
+        result.hotspot.kind === 'use-target' &&
+        result.hotspot.requiredItemId
+      ) {
+        window.setTimeout(
+          () =>
+            this.#useItem(
+              result.hotspot.requiredItemId!,
+              result.hotspot.id,
+            ),
+          450,
+        )
+      } else if (result.hotspot.zoomId === 'PUZ-G01-CHIP-ORIENTATION') {
+        this.#puzzleOpen = true
+        this.engine.updateStory((draft) => {
+          draft.puzzleProgress.chip_rotation = 180
+        })
+      }
+    }
+
     if (this.#hintTimer) window.clearTimeout(this.#hintTimer)
     this.#hintTimer = window.setTimeout(() => {
       this.#hintedHotspotId = null
@@ -625,7 +988,14 @@ export class GameView {
       hotspot.area.x < 34 ? '左侧' : hotspot.area.x > 66 ? '右侧' : '中央区域'
     const vertical =
       hotspot.area.y < 34 ? '上方' : hotspot.area.y > 66 ? '下方' : '中部'
-    const areaName = hotspot.scope === 'zoom' ? '维修柜' : '领航舱'
+    const areaName =
+      this.#session.currentSceneId === 'SCN-G01-01'
+        ? hotspot.scope === 'zoom'
+          ? '导航零件堆'
+          : '导航核心舱'
+        : hotspot.scope === 'zoom'
+          ? '维修柜'
+          : '领航舱'
     if (level === 1) return `一级提示：留意${areaName}的${horizontal}。`
     if (level === 2) return `二级提示：目标位于${areaName}${horizontal}${vertical}。`
     return `三级提示：传感器正在短暂扫描——${hotspot.ariaLabel}。`

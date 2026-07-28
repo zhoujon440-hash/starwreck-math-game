@@ -71,6 +71,10 @@ export class DialogueRunner {
     }
     draft.dialogueHistory = this.#history.append(draft.dialogueHistory, node)
     Object.assign(draft.flags, node.writes_variables)
+    if (node.updates_scene_state) {
+      draft.sceneState = node.updates_scene_state
+      draft.sceneStates[draft.currentSceneId] = node.updates_scene_state
+    }
     if (node.grants_item && !draft.inventoryItemIds.includes(node.grants_item)) {
       draft.inventoryItemIds.push(node.grants_item)
     }

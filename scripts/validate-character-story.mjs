@@ -24,6 +24,46 @@ const check = (condition, rule, path, actual, expected, source, fix) => {
   else fail(rule, path, actual, expected, source, fix)
 }
 const read = (path) => readFileSync(resolve(root, path), 'utf8')
+const imageMetadata = (path) => {
+  const bytes = readFileSync(path)
+  if (bytes.subarray(1, 4).toString('ascii') === 'PNG') {
+    return {
+      format: 'png',
+      width: bytes.readUInt32BE(16),
+      height: bytes.readUInt32BE(20),
+      hasAlpha: [4, 6].includes(bytes[25]) || bytes.includes(Buffer.from('tRNS')),
+    }
+  }
+  if (
+    bytes.subarray(0, 4).toString('ascii') === 'RIFF' &&
+    bytes.subarray(8, 12).toString('ascii') === 'WEBP'
+  ) {
+    let offset = 12
+    while (offset + 8 <= bytes.length) {
+      const type = bytes.subarray(offset, offset + 4).toString('ascii')
+      const size = bytes.readUInt32LE(offset + 4)
+      const data = offset + 8
+      if (type === 'VP8X') {
+        return {
+          format: 'webp',
+          width: 1 + bytes.readUIntLE(data + 4, 3),
+          height: 1 + bytes.readUIntLE(data + 7, 3),
+          hasAlpha: Boolean(bytes[data] & 0x10),
+        }
+      }
+      if (type === 'VP8 ') {
+        return {
+          format: 'webp',
+          width: bytes.readUInt16LE(data + 6) & 0x3fff,
+          height: bytes.readUInt16LE(data + 8) & 0x3fff,
+          hasAlpha: false,
+        }
+      }
+      offset = data + size + (size % 2)
+    }
+  }
+  return { format: 'unknown', width: 0, height: 0, hasAlpha: false }
+}
 const zipEntry = (zip, wanted) => {
   const eocd = zip.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]))
   if (eocd < 0) return null
@@ -75,6 +115,17 @@ const fixtureDiagnostics = {
   changed_character_png: ['CS-009-CHARACTER-HASH', 'public/assets/characters/qima/qima_normal.png', 'modified SHA-256', 'approved SHA-256', 'CHARACTER_ASSET_PROVENANCE.json', 'Restore the approved PNG byte-for-byte.'],
   scn02_content: ['CS-036-SCOPE', 'src/scenes/g01/scn02.ts', 'runtime scene content', 'boundary reference only', 'Issue #3 §2/§10', 'Remove all SCN-G01-02 content.'],
   changed_g02_boundary: ['CS-036-SCOPE', 'docs/baseline/06_G01_G02_BOUNDARY.md', 'modified handoff', 'frozen V2.2 boundary', 'Issue #3 §1/§24', 'Restore the approved boundary document.'],
+  missing_scene_asset: ['CS-ART-001-SCENE', 'public/assets/g01/scn-g01-01/background/SCENE-G01-002_navigation_core_cabin.webp', 'missing', '3840x2160 runtime scene', 'scene_manifest.json', 'Restore the recorded scene asset.'],
+  missing_item_asset: ['CS-ART-002-ITEMS', 'public/assets/g01/scn-g01-01/items/PROP-G01-004_qima_chip_scene.png', 'missing', 'all target scene and inventory layers', 'hos_manifest.json', 'Restore the independent target layer.'],
+  asset_without_alpha: ['CS-ART-003-ALPHA', 'public/assets/g01/scn-g01-01/items/PROP-G01-005_contact_plate_scene.png', 'opaque RGB', 'PNG with real alpha', 'Issue #3 owner authorization', 'Rebuild the transparent object layer.'],
+  scene_low_resolution: ['CS-ART-004-RESOLUTION', 'data/source/g01/scn-g01-01/scene_manifest.json', '1920x1080', 'at least 2560x1440', 'Issue #3 comment 5105774977', 'Rebuild the high-resolution scene.'],
+  duplicate_runtime_hash: ['CS-ART-005-UNIQUE-HASH', 'docs/art/G01_SCN01_RUNTIME_ASSET_PROVENANCE.json', 'duplicate SHA-256', 'one hash per distinct runtime layer', 'Issue #3 art acceptance', 'Restore the correct independent layer bytes.'],
+  provenance_disguised_as_extracted: ['CS-ART-006-PROVENANCE', 'docs/art/G01_SCN01_RUNTIME_ASSET_PROVENANCE.json', 'extracted_original', 'project_owner_authorized_runtime_production', 'Issue #3 comment 5105774977', 'Describe generated or repainted work honestly.'],
+  overview_board_as_runtime: ['CS-ART-007-NO-BOARD', 'data/source/g01/scn-g01-01/scene_manifest.json', '概念设计总览.png', 'runtime production scene path', 'PKG-G01-V3.0', 'Do not use an overview board at runtime.'],
+  pr5_runtime_art: ['CS-ART-008-NO-PR5', 'docs/art/G01_SCN01_RUNTIME_ASSET_PROVENANCE.json', 'pull/5 asset', 'no PR #5 assets', 'PR #5 close decision', 'Remove the unapproved PR #5 asset.'],
+  third_party_runtime_art: ['CS-ART-009-NO-THIRD-PARTY', 'docs/art/G01_SCN01_RUNTIME_ASSET_PROVENANCE.json', 'third-party download', 'formal source plus owner-authorized production only', 'Issue #3 comment 5105774977', 'Remove third-party art.'],
+  missing_state_layer: ['CS-ART-010-STATES', 'public/assets/g01/scn-g01-01/states', 'missing booting effect', 'six independent repair/effect layers', 'Issue #3 art acceptance', 'Restore the missing state layer.'],
+  css_placeholder_art: ['CS-ART-011-NO-PLACEHOLDER', 'src/ui/GameView.ts', 'CSS/SVG placeholder object', 'raster runtime assets', 'Issue #3 owner authorization', 'Use the registered raster asset instead.'],
 }
 
 if (fixturePath) {
@@ -138,7 +189,20 @@ if (fixturePath) {
   check(JSON.stringify(contract.states) === JSON.stringify(['S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6']), 'CS-032-SCENE-STATES', rel(policyPath), contract.states, ['S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6'], '场景状态机.json', 'Restore S0 through S6.')
   check(JSON.stringify(contract.qima_required_transition) === JSON.stringify(['offline', 'damaged', 'booting', 'normal']) && contract.booting_skippable === false, 'CS-033-QIMA-CHAIN', rel(policyPath), contract.qima_required_transition, ['offline', 'damaged', 'booting', 'normal'], 'CHAR-002_QIMA.md', 'Restore the non-skippable boot sequence.')
   check(JSON.stringify(contract.hints.map((hint) => hint.level)) === JSON.stringify([1, 2, 3]) && contract.hints[2].effect === '完成一步' && contract.hints.every((hint) => hint.completes_all === false) && formalHints.filter((row) => row['场景ID'] === 'SCN-G01-01').length === 3, 'CS-034-HINTS', rel(policyPath), contract.hints, 'levels 1/2/3, final completes one step', '三级提示.json', 'Restore the exact three-level contract.')
-  check(contract.critical_items.length === 3 && contract.critical_items.every((item) => item.wrong_use_consumes === false) && contract.critical_items.every((item) => formalInventory.some((row) => row['道具ID'] === item.item_id)), 'CS-035-CRITICAL-ITEM', rel(policyPath), contract.critical_items, 'three non-consuming wrong-use contracts', '背包道具流转.json', 'Restore every key-item contract.')
+  check(
+    contract.critical_items.length === 4 &&
+      contract.critical_items.every((item) => item.wrong_use_consumes === false) &&
+      contract.critical_items.slice(0, 3).every((item) =>
+        formalInventory.some((row) => row['道具ID'] === item.item_id),
+      ) &&
+      contract.critical_items[3]?.authorization === 'Issue #3 comment 5105774977',
+    'CS-035-CRITICAL-ITEM',
+    rel(policyPath),
+    contract.critical_items,
+    'four non-consuming wrong-use contracts with formal or explicit authorization',
+    '背包道具流转.json + Issue #3 comment 5105774977',
+    'Restore every key-item contract.',
+  )
   check(contract.completion_boundary === 'SCN-G01-02' && contract.completion_boundary_only === true && !existsSync(resolve(root, 'src/scenes/g01/scn02.ts')), 'CS-036-SCOPE', rel(policyPath), { boundary: contract.completion_boundary, boundaryOnly: contract.completion_boundary_only }, { boundary: 'SCN-G01-02', boundaryOnly: true }, 'Issue #3 §2/§10', 'Keep the next scene as a boundary reference only.')
 
   const packagePath = resolve(root, policy.formal_source.package_path)
@@ -165,24 +229,220 @@ if (fixturePath) {
         )
       }
     }
-    const missingRuntime = policy.runtime_asset_requirements.filter(
-      (asset) => !asset.runtime_path || !existsSync(resolve(root, asset.runtime_path)),
+    const artProvenance = JSON.parse(read(policy.runtime_art_provenance))
+    const sceneManifest = JSON.parse(read(policy.scene_manifest))
+    const hosManifest = JSON.parse(read(policy.hos_manifest))
+    const requiredPaths = policy.runtime_asset_requirements.flatMap((asset) =>
+      Array.isArray(asset.runtime_path) ? asset.runtime_path : [asset.runtime_path],
     )
-    if (missingRuntime.length && !allowSourceGap) {
-      fail(
-        'CS-BLOCK-001-FORMAL-ART',
-        'config/character-story-policy.json',
-        missingRuntime.map((asset) => ({
-          asset_id: asset.asset_id,
-          name: asset.name,
-          runtime_path: asset.runtime_path,
-          status: asset.status,
-        })),
-        'formal runtime scene and independent HOPA object layers',
-        'PKG-G01-V3.0 art entries + Issue #3 §13/§26',
-        'Provide the missing formal SCENE-G01-002 and PROP-G01-004/005 runtime-capable art; do not generate or fake replacements.',
-      )
-    }
+    const runtimeEntries = Object.entries(artProvenance.runtime_sha256)
+    const runtimePaths = runtimeEntries.map(([path]) => path)
+    const runtimeHashes = runtimeEntries.map(([, hash]) => hash)
+    const targetPaths = hosManifest.targets.flatMap((target) => [
+      [target.scene_asset, target.scene_sha256],
+      [target.inventory_asset, target.inventory_sha256],
+    ])
+    const distractorPaths = hosManifest.distractors.map((item) => [
+      item.runtime_path,
+      item.sha256,
+    ])
+    const statePaths = artProvenance.state_layers.map((item) => [
+      item.runtime_path,
+      item.sha256,
+    ])
+    const allObjectPaths = [...targetPaths, ...distractorPaths]
+    const scenePath = resolve(root, sceneManifest.runtime_path)
+    const sceneMeta = imageMetadata(scenePath)
+
+    check(
+      requiredPaths.every(
+        (path) => typeof path === 'string' && existsSync(resolve(root, path)),
+      ) &&
+        policy.runtime_asset_requirements.every(
+          (asset) =>
+            asset.status === 'project_owner_authorized_runtime_production',
+        ) &&
+        !allowSourceGap,
+      'CS-BLOCK-001-FORMAL-ART',
+      'config/character-story-policy.json',
+      {
+        runtime_assets: requiredPaths.length,
+        statuses: policy.runtime_asset_requirements.map((asset) => asset.status),
+        source_gap_override: allowSourceGap,
+      },
+      'all formal runtime assets present, authorized, and no bypass flag',
+      'Issue #3 comment 5105774977',
+      'Restore missing art or remove the prohibited source-gap override.',
+    )
+    check(
+      sceneManifest.scene_id === 'SCN-G01-01' &&
+        sceneManifest.asset_id === 'SCENE-G01-002' &&
+        existsSync(scenePath) &&
+        sha256(readFileSync(scenePath)) === sceneManifest.sha256,
+      'CS-ART-001-SCENE',
+      policy.scene_manifest,
+      sceneManifest,
+      'verified SCENE-G01-002 runtime file and SHA',
+      'scene_manifest.json',
+      'Restore the recorded scene asset.',
+    )
+    check(
+      hosManifest.targets.length === 4 &&
+        hosManifest.distractors.length >= 5 &&
+        allObjectPaths.every(
+          ([path, hash]) =>
+            existsSync(resolve(root, path)) &&
+            sha256(readFileSync(resolve(root, path))) === hash,
+        ),
+      'CS-ART-002-ITEMS',
+      policy.hos_manifest,
+      {
+        targets: hosManifest.targets.length,
+        distractors: hosManifest.distractors.length,
+      },
+      '4 target and at least 5 distractor runtime layers with exact SHA-256',
+      'HOS-G01-002 + Issue #3 comment 5105774977',
+      'Restore every independent HOS object layer.',
+    )
+    check(
+      allObjectPaths.every(([path]) => {
+        const metadata = imageMetadata(resolve(root, path))
+        return metadata.format === 'png' && metadata.hasAlpha
+      }),
+      'CS-ART-003-ALPHA',
+      'public/assets/g01/scn-g01-01',
+      'object image metadata',
+      'all target and distractor layers are alpha PNG',
+      'Issue #3 art acceptance',
+      'Rebuild opaque or non-PNG object layers.',
+    )
+    check(
+      sceneMeta.width >= 2560 &&
+        sceneMeta.height >= 1440 &&
+        Math.abs(sceneMeta.width / sceneMeta.height - 16 / 9) < 0.001 &&
+        sceneManifest.width === sceneMeta.width &&
+        sceneManifest.height === sceneMeta.height,
+      'CS-ART-004-RESOLUTION',
+      sceneManifest.runtime_path,
+      sceneMeta,
+      '16:9 scene at least 2560x1440 with matching manifest dimensions',
+      'Issue #3 comment 5105774977',
+      'Rebuild the scene at the authorized runtime resolution.',
+    )
+    check(
+      runtimeHashes.length === new Set(runtimeHashes).size,
+      'CS-ART-005-UNIQUE-HASH',
+      policy.runtime_art_provenance,
+      { assets: runtimeHashes.length, unique: new Set(runtimeHashes).size },
+      'one unique SHA-256 per distinct runtime layer',
+      'Issue #3 art acceptance',
+      'Restore duplicated or incorrectly registered layer bytes.',
+    )
+    check(
+      artProvenance.production_status ===
+        'project_owner_authorized_runtime_production' &&
+        artProvenance.runtime_production_asset === true &&
+        artProvenance.generated_or_repainted_parts.length >= 3 &&
+        artProvenance.manual_cleanup.length >= 3 &&
+        artProvenance.production_tool.includes('image_gen') &&
+        Object.entries(artProvenance.production_inputs).every(
+          ([path, hash]) =>
+            existsSync(resolve(root, path)) &&
+            sha256(readFileSync(resolve(root, path))) === hash,
+        ) &&
+        artProvenance.authorization === policy.runtime_art_authorization &&
+        artProvenance.acceptance_status === 'pending_review',
+      'CS-ART-006-PROVENANCE',
+      policy.runtime_art_provenance,
+      artProvenance.production_status,
+      'complete owner-authorized production provenance pending review',
+      'Issue #3 comment 5105774977',
+      'Restore honest generated/repainted production metadata.',
+    )
+    check(
+      !runtimePaths.some(
+        (path) =>
+          path.includes('概念设计总览') ||
+          path.includes('/source/') ||
+          path.includes('source_packages/'),
+      ) &&
+        !sceneManifest.runtime_path.includes('概念设计'),
+      'CS-ART-007-NO-BOARD',
+      policy.runtime_art_provenance,
+      runtimePaths,
+      'runtime production files only; no overview boards',
+      'PKG-G01-V3.0',
+      'Remove design-board paths from runtime.',
+    )
+    check(
+      artProvenance.forbidden_sources.pr_5_assets_used === false &&
+        !JSON.stringify(artProvenance).match(/pull\/5|pr-?5/i),
+      'CS-ART-008-NO-PR5',
+      policy.runtime_art_provenance,
+      artProvenance.forbidden_sources,
+      'PR #5 assets unused',
+      'PR #5 close decision',
+      'Remove PR #5 assets and references.',
+    )
+    check(
+      artProvenance.forbidden_sources.third_party_assets_used === false,
+      'CS-ART-009-NO-THIRD-PARTY',
+      policy.runtime_art_provenance,
+      artProvenance.forbidden_sources.third_party_assets_used,
+      false,
+      'Issue #3 comment 5105774977',
+      'Remove third-party art.',
+    )
+    check(
+      statePaths.length >= 6 &&
+        statePaths.every(
+          ([path, hash]) =>
+            existsSync(resolve(root, path)) &&
+            sha256(readFileSync(resolve(root, path))) === hash,
+        ) &&
+        statePaths.some(([path]) => path.includes('booting_effect')) &&
+        statePaths.some(([path]) => path.includes('normal_effect')),
+      'CS-ART-010-STATES',
+      `${policy.runtime_art_provenance}#state_layers`,
+      statePaths.map(([path]) => path),
+      'repair installation plus booting and normal state layers',
+      'Issue #3 art acceptance',
+      'Restore every independent repair/effect state layer.',
+    )
+    check(
+      content.includes('hosManifest') &&
+        content.includes('sceneManifest') &&
+        gameView.includes('hosManifest.foreground_occlusion_asset') &&
+        !gameView.includes('data:image/svg') &&
+        !content.includes('placeholder'),
+      'CS-ART-011-NO-PLACEHOLDER',
+      'src/content/g01.ts + src/ui/GameView.ts',
+      'data-driven raster runtime integration',
+      'no CSS/SVG/text placeholder objects',
+      'Issue #3 comment 5105774977',
+      'Use the registered raster manifests at runtime.',
+    )
+    check(
+      runtimeEntries.length === 23 &&
+        runtimeEntries.every(
+          ([path, hash]) =>
+            existsSync(resolve(root, path)) &&
+            sha256(readFileSync(resolve(root, path))) === hash,
+        ) &&
+        hosManifest.targets.every(
+          (target) =>
+            target.runtime_asset === true &&
+            target.wrong_use_consumes === false &&
+            target.position &&
+            target.state,
+        ),
+      'CS-ART-012-INTEGRITY',
+      policy.runtime_art_provenance,
+      { runtime_assets: runtimeEntries.length, targets: hosManifest.targets.length },
+      '23 exact runtime assets and complete target interaction records',
+      'scene_manifest.json + hos_manifest.json',
+      'Regenerate manifests and hashes from the production script.',
+    )
   }
 }
 

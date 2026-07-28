@@ -47,6 +47,7 @@ export type HotspotDefinition = {
   ariaLabel: string
   area: Rectangle
   activeStates: SceneStateId[]
+  requiredCompletedHotspotIds?: string[]
   itemId?: string
   requiredItemId?: string
   consumeItem?: boolean
@@ -67,6 +68,18 @@ export type StateTransition = {
   to: SceneStateId
 }
 
+export type SceneDefinition = {
+  id: string
+  title: string
+  playerTitle: string
+  art: string
+  initialState: SceneStateId
+  states: Record<SceneStateId, SceneStateDefinition>
+  items: ItemDefinition[]
+  hotspots: HotspotDefinition[]
+  transitions: StateTransition[]
+}
+
 export type ChapterDefinition = {
   id: string
   title: string
@@ -77,6 +90,7 @@ export type ChapterDefinition = {
   items: ItemDefinition[]
   hotspots: HotspotDefinition[]
   transitions: StateTransition[]
+  scenes?: SceneDefinition[]
 }
 
 export type TransitionRecord = {

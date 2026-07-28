@@ -43,6 +43,11 @@
       {
         "item_id": "ITM-G01-006",
         "wrong_use_consumes": false
+      },
+      {
+        "item_id": "RUNTIME-ITM-G01-FIXED-BUCKLE",
+        "wrong_use_consumes": false,
+        "authorization": "Issue #3 comment 5105774977"
       }
     ],
     "hints": [
@@ -80,24 +85,34 @@
       "asset_id": "SCENE-G01-002",
       "name": "导航核心舱",
       "required_layer": "full_scene",
-      "runtime_path": null,
-      "status": "blocked_missing_formal_runtime_art"
+      "runtime_path": "public/assets/g01/scn-g01-01/background/SCENE-G01-002_navigation_core_cabin.webp",
+      "status": "project_owner_authorized_runtime_production"
     },
     {
       "asset_id": "PROP-G01-004",
       "name": "七码芯片",
       "required_layer": "scene_and_inventory",
-      "runtime_path": null,
-      "status": "blocked_missing_formal_runtime_art"
+      "runtime_path": [
+        "public/assets/g01/scn-g01-01/items/PROP-G01-004_qima_chip_scene.png",
+        "public/assets/g01/scn-g01-01/items/PROP-G01-004_qima_chip_inventory.png"
+      ],
+      "status": "project_owner_authorized_runtime_production"
     },
     {
       "asset_id": "PROP-G01-005",
       "name": "接线片",
       "required_layer": "scene_and_inventory",
-      "runtime_path": null,
-      "status": "blocked_missing_formal_runtime_art"
+      "runtime_path": [
+        "public/assets/g01/scn-g01-01/items/PROP-G01-005_contact_plate_scene.png",
+        "public/assets/g01/scn-g01-01/items/PROP-G01-005_contact_plate_inventory.png"
+      ],
+      "status": "project_owner_authorized_runtime_production"
     }
   ],
+  "runtime_art_provenance": "docs/art/G01_SCN01_RUNTIME_ASSET_PROVENANCE.json",
+  "scene_manifest": "data/source/g01/scn-g01-01/scene_manifest.json",
+  "hos_manifest": "data/source/g01/scn-g01-01/hos_manifest.json",
+  "runtime_art_authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/3#issuecomment-5105774977",
   "approved_character_asset_manifest": "docs/characters/CHARACTER_ASSET_PROVENANCE.json",
   "source_dialogue": "data/source/g01/json/对话脚本.json",
   "source_hotspots": "data/source/g01/json/热点清单.json",

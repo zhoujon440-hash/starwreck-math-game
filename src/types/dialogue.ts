@@ -1,4 +1,5 @@
 import type { CharacterId, PortraitState } from './character'
+import type { SceneStateId } from '../game/types'
 
 export type DialogueSpeakerId = CharacterId | 'SYSTEM'
 
@@ -14,7 +15,7 @@ export type DialogueNode = {
   writes_variables: Record<string, boolean | number | string>
   grants_item: string | null
   updates_character_state: Partial<Record<CharacterId, PortraitState>>
-  updates_scene_state: string | null
+  updates_scene_state: SceneStateId | null
   skippable: boolean
   replayable: boolean
   history_visible: boolean

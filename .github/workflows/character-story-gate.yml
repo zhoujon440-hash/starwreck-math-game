@@ -26,14 +26,12 @@ jobs:
       - run: npm run test:baseline
       - run: npm run validate:characters
       - run: npm run test:characters
-      - run: npm run validate:character-story -- --allow-source-gap
+      - run: npm run validate:character-story
       - run: npm run test:character-story
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
-      - name: Enforce formal SCN-G01-01 art readiness
-        run: npm run validate:character-story
       - name: Upload character story evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -44,6 +42,8 @@ jobs:
             test-results/visual-acceptance/**
             docs/story-runtime/G01_CHARACTER_STORY_RUNTIME.md
             docs/review/G01_SCN01_FORMAL_ART_BLOCKER.md
+            docs/art/G01_SCN01_RUNTIME_ASSET_PROVENANCE.json
+            data/source/g01/scn-g01-01/**
             config/character-story-policy.json
           if-no-files-found: error
           retention-days: 30

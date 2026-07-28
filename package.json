@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "build:scn01-art": "python scripts/build_g01_scn01_runtime_art.py",
     "validate:sources": "node scripts/validate-source-import.mjs",
     "validate:baseline": "node scripts/validate-baseline.mjs",
     "validate:characters": "node scripts/validate-character-assets.mjs",

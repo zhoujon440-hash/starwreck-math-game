@@ -5,8 +5,8 @@ import { expect, type Page, test, type TestInfo } from '@playwright/test'
 const cabinetItemHotspots = [
   ['ITM-G01-002', 'HOS-G01-001-01'],
   ['ITM-G01-003', 'HOS-G01-001-02'],
-  ['ITM-G01-004', 'HOS-G01-001-03'],
-  ['ITM-G01-005', 'HOS-G01-001-04'],
+  ['RUNTIME-ITM-G01-SCN00-GLOVE', 'HOS-G01-001-03'],
+  ['RUNTIME-ITM-G01-SCN00-LABEL', 'HOS-G01-001-04'],
 ] as const
 
 const collectBrowserErrors = (page: Page): string[] => {
@@ -80,10 +80,17 @@ const expectCollectibleAligned = async (
     )
     .toBe(true)
 
-  const [collectibleBox, hotspotBox] = await Promise.all([
-    collectible.boundingBox(),
-    hotspot.boundingBox(),
-  ])
+  await expect
+    .poll(async () => {
+      const [collectibleBox, hotspotBox] = await Promise.all([
+        collectible.boundingBox(),
+        hotspot.boundingBox(),
+      ])
+      return Boolean(collectibleBox && hotspotBox)
+    })
+    .toBe(true)
+  const collectibleBox = await collectible.boundingBox()
+  const hotspotBox = await hotspot.boundingBox()
   expect(collectibleBox).not.toBeNull()
   expect(hotspotBox).not.toBeNull()
   if (!collectibleBox || !hotspotBox) return
@@ -255,6 +262,7 @@ const reachS3 = async (page: Page): Promise<void> => {
 test('visual acceptance covers calibrated layers, disappearance and browser reloads', async ({
   page,
 }, testInfo) => {
+  test.setTimeout(60_000)
   const browserErrors = collectBrowserErrors(page)
   await resetAndStart(page)
   await expectSceneCanvasCalibrated(page)

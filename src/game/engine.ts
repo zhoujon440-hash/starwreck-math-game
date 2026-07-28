@@ -5,6 +5,8 @@ import type {
   HintResult,
   GameSession,
   HotspotDefinition,
+  ItemDefinition,
+  SceneDefinition,
   SceneStateId,
 } from './types'
 import type { SaveRepository } from './save'
@@ -62,7 +64,7 @@ export class GameEngine {
     const restored = saves.load()
     this.#session = restored?.chapterId === chapter.id ? restored : createSession(chapter)
 
-    if (!chapter.states[this.#session.sceneState]) {
+    if (!this.currentSceneDefinition.states[this.#session.sceneState]) {
       this.#session = createSession(chapter)
     }
 
@@ -77,7 +79,60 @@ export class GameEngine {
   }
 
   get stateDefinition() {
-    return this.chapter.states[this.#session.sceneState]
+    return this.currentSceneDefinition.states[this.#session.sceneState]
+  }
+
+  get currentSceneDefinition(): SceneDefinition {
+    if (this.#session.currentSceneId === 'SCN-G01-00') {
+      return {
+        id: 'SCN-G01-00',
+        title: this.chapter.sceneTitle,
+        playerTitle: '拾光号熄灯',
+        art: '/assets/g01-cockpit.png',
+        initialState: this.chapter.initialState,
+        states: this.chapter.states,
+        items: this.chapter.items,
+        hotspots: this.chapter.hotspots,
+        transitions: this.chapter.transitions,
+      }
+    }
+    const scene = this.chapter.scenes?.find(
+      (candidate) => candidate.id === this.#session.currentSceneId,
+    )
+    if (!scene) throw new Error(`Unknown scene ${this.#session.currentSceneId}`)
+    return scene
+  }
+
+  get allItems(): ItemDefinition[] {
+    const items = [
+      ...this.chapter.items,
+      ...(this.chapter.scenes ?? []).flatMap((scene) => scene.items),
+    ]
+    return [...new Map(items.map((item) => [item.id, item])).values()]
+  }
+
+  enterScene(sceneId: string): ActionResult {
+    const scene =
+      sceneId === 'SCN-G01-00'
+        ? {
+            id: 'SCN-G01-00',
+            initialState: this.chapter.initialState,
+            states: this.chapter.states,
+          }
+        : this.chapter.scenes?.find((candidate) => candidate.id === sceneId)
+    if (!scene) return { ok: false, message: '目标舱段尚未开放。' }
+
+    const next = this.#nextSession()
+    next.currentSceneId = sceneId
+    next.sceneState = next.sceneStates[sceneId] ?? scene.initialState
+    next.sceneStates[sceneId] = next.sceneState
+    if (sceneId === 'SCN-G01-01') {
+      next.characterStates['CHAR-QIMA'] = 'offline'
+      next.flags.g01_scn01_entered = true
+    }
+    this.#commit(next)
+    this.saves.saveCheckpoint(next)
+    return { ok: true, message: '星宇进入导航核心舱。' }
   }
 
   subscribe(listener: Listener): () => void {
@@ -95,8 +150,12 @@ export class GameEngine {
   }
 
   activeHotspots(): HotspotDefinition[] {
-    return this.chapter.hotspots.filter((hotspot) =>
-      hotspot.activeStates.includes(this.#session.sceneState),
+    return this.currentSceneDefinition.hotspots.filter(
+      (hotspot) =>
+        hotspot.activeStates.includes(this.#session.sceneState) &&
+        (hotspot.requiredCompletedHotspotIds ?? []).every((id) =>
+          this.#session.completedHotspotIds.includes(id),
+        ),
     )
   }
 
@@ -112,7 +171,9 @@ export class GameEngine {
     const hotspot = this.activeHotspots().find(
       (candidate) => candidate.kind === 'hidden-item' && candidate.itemId === itemId,
     )
-    const item = this.chapter.items.find((candidate) => candidate.id === itemId)
+    const item = this.currentSceneDefinition.items.find(
+      (candidate) => candidate.id === itemId,
+    )
 
     if (!hotspot || !item) {
       return { ok: false, message: '这里暂时没有可收集的物品。' }
@@ -120,6 +181,14 @@ export class GameEngine {
 
     const next = this.#nextSession()
     next.foundItemIds.push(itemId)
+    if (hotspot.scope === 'zoom') {
+      const hosId = hotspot.id.startsWith('HOS-G01-002')
+        ? 'HOS-G01-002'
+        : 'HOS-G01-001'
+      next.hosProgress[hosId] = [
+        ...new Set([...(next.hosProgress[hosId] ?? []), itemId]),
+      ]
+    }
     if (!next.completedHotspotIds.includes(hotspot.id)) {
       next.completedHotspotIds.push(hotspot.id)
     }
@@ -261,7 +330,7 @@ export class GameEngine {
   }
 
   #applyTransition(next: GameSession, event: GameEvent): boolean {
-    const transition = this.chapter.transitions.find(
+    const transition = this.currentSceneDefinition.transitions.find(
       (candidate) => candidate.from === next.sceneState && candidate.event === event,
     )
     if (!transition) return false
@@ -280,7 +349,7 @@ export class GameEngine {
     next.flags.world_star_core_count = 0
     this.#session = next
     this.saves.save(this.#session)
-    if (this.chapter.states[this.#session.sceneState].safeCheckpoint) {
+    if (this.currentSceneDefinition.states[this.#session.sceneState].safeCheckpoint) {
       this.saves.saveCheckpoint(this.#session)
     }
     this.#notify()
