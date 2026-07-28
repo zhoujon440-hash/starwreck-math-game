@@ -1,0 +1,5 @@
+{
+  "id": "one chapter loses its star-core transition",
+  "mutation": "star-core-missing-chapter",
+  "expected_rule": "STORY-STAR-CORE-STATE-TRANSITION"
+}

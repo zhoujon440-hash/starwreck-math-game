@@ -1713,15 +1713,6 @@ def build_catalogs(
             "runtime_asset": False,
         },
     )
-    provenance = json.dumps(
-        {
-            "character_master": master_sha,
-            "fx_catalog": fx_sha,
-            "danger_catalog": danger_sha,
-            "g01_catalog": sha256_bytes(g01_data),
-        },
-        sort_keys=True,
-    ).encode()
     for output in (
         catalogs_dir / "characters-71.json",
         catalogs_dir / "characters-71.csv",
@@ -1732,9 +1723,9 @@ def build_catalogs(
         record_extraction(
             records,
             output=output,
-            package_id="P0-A-MULTI-SOURCE",
-            entry="characters+fx+danger+g01 formal catalogs",
-            source_data=provenance,
+            package_id="PKG-CHARACTERS-V2.1",
+            entry=master_entry,
+            source_data=master_data,
             extraction="formal_catalog_normalization",
         )
     return characters, assets

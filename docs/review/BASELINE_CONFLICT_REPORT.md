@@ -7,7 +7,7 @@
 | ID | 冲突 | 权威答案 | 处理 |
 | --- | --- | --- | --- |
 | BC-001 | G02 V2.1 结构化源数据的首行仍是旧开场“垃圾雨之前”；G01 V3.0 包内的 G02 边界 V2.2 已修订开场。 | V2.2 的“旧屏幕谷外缘交接”。 | 保留 V2.1 原始行用于溯源；`config/baseline-policy.json` 仅登记有效执行边界及 `superseded_by_G02_opening_boundary_V2.2` 状态。`STORY-G02-V2.2-AUTHORITY`、`STORY-G02-EFFECTIVE-OPENING` 和 `STORY-G02-NO-REPEATED-PROLOGUE` 联合门禁。 |
-| BC-002 | `docs/baseline/SOURCE_PACKAGE_MANIFEST.md` 的人工摘要仍描述 P0-A 前的缺包状态，而机器清单已经是缺失 0。 | `source_packages/manifests/source-packages.json` 与 `missing-sources.json`。 | 该 Markdown 首段已声明机器清单为事实来源，因此不参与权威事实合并；`validate:sources` 与 `SOURCE-MISSING-ZERO` 对机器清单执行硬门禁。保留为文档同步风险，不允许其覆盖机器清单。 |
+| BC-002 | 人工源包摘要曾滞后于 P0-A 机器清单。 | `source_packages/manifests/source-packages.json`、`sha256sums.txt` 与 `missing-sources.json`。 | 人工摘要已于 2026-07-28 同步为 19 项正式源、缺失 0；机器清单继续是事实源，`SOURCE-SHA-LIST-EXACT-MATCH` 阻止集合、路径或 SHA 漂移。 |
 | BC-003 | 角色源表中的 `CHAR-001—071` 是源资产行号，但不是官方连续角色编号。 | `CAT-CHAR-001—071` 为内部 `catalog_id`；只有七码保留官方 ID `EDU-0077`，其余 `official_id=null`。 | `CAT-CHAR-NO-FAKE-OFFICIAL-ID` 和角色身份规则硬门禁。 |
 | BC-004 | 设计/三视图母版完成状态可能被误读为运行时立绘或场景资产已完成。 | 71/71 设计与三视图完成；运行时人物资产均未制作。 | 设计状态与运行时状态分栏校验；任何母版被标成 `runtime_asset=true` 都失败。 |
 
@@ -17,6 +17,7 @@
 
 ## 已知风险
 
-- `SOURCE_PACKAGE_MANIFEST.md` 是非权威人工摘要，后续可单独同步，但不能替代机器清单。
+- `SOURCE_PACKAGE_MANIFEST.md` 仍是非权威人工摘要；其当前内容已同步，但不能替代机器清单与独立 SHA 清单。
 - G02 V2.1 的旧开场行仍在正式源数据中。任何运行时转换器都必须读取已登记的 V2.2 有效边界，不能直接把旧首行当成当前开场。
-- 禁用词扫描针对当前运行时代码；正式源全文与 legacy 中的历史词汇由来源隔离和替代关系控制，不能直接删除。
+- 禁用词扫描覆盖当前执行代码、配置、Schema、普通测试和当前执行文档；正式源全文、legacy、冲突/替代报告和负向 fixture 中的历史词汇由来源隔离控制，不能静默删除。
+- 危险恢复和关键道具的补充布尔字段属于结构化适配契约，来源登记在 `config/baseline-policy.json`；它们不回写或伪装成正式源数据字段。

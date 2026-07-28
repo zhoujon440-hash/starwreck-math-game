@@ -9,7 +9,9 @@ on:
       - "docs/baseline/**"
       - "docs/story/G01-G13/**"
       - "scripts/import_source_baseline.py"
+      - "scripts/baseline*.mjs"
       - "scripts/validate-source-import.mjs"
+      - "config/baseline-policy.json"
       - "source_packages/**"
       - "package.json"
   push:
@@ -20,7 +22,9 @@ on:
       - "docs/baseline/**"
       - "docs/story/G01-G13/**"
       - "scripts/import_source_baseline.py"
+      - "scripts/baseline*.mjs"
       - "scripts/validate-source-import.mjs"
+      - "config/baseline-policy.json"
       - "source_packages/**"
       - "package.json"
 
@@ -38,4 +42,3 @@ jobs:
         env:
           REQUIRE_LFS_OBJECTS: "1"
         run: npm run validate:sources
-

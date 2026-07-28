@@ -13,7 +13,7 @@ import {
 test("the accepted baseline passes every aggregate rule", () => {
   const result = runAll(loadBaseline());
   assert.deepEqual(result.issues, []);
-  assert.ok(result.ruleCount >= 100);
+  assert.equal(result.ruleCount, 630);
 });
 
 test("catalog, story, schema and technology sections pass independently", () => {

@@ -9,6 +9,11 @@ import {
   statSync,
 } from "node:fs";
 import { resolve } from "node:path";
+import {
+  formatIssue,
+  loadBaseline,
+  validateSourceLayer,
+} from "./baseline-validation-lib.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 
@@ -401,6 +406,14 @@ for (const item of legacy.items.filter((entry) => entry.repository_path)) {
     assert((await sha256(path)) === item.sha256, `legacy SHA mismatch: ${item.name}`);
   }
 }
+
+const strictSourceResult = validateSourceLayer(loadBaseline(root));
+assert(
+  strictSourceResult.issues.length === 0,
+  `strict source cross-validation failed:\n${strictSourceResult.issues
+    .map(formatIssue)
+    .join("\n")}`,
+);
 
 console.log(
   JSON.stringify({

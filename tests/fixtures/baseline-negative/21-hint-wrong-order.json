@@ -1,0 +1,5 @@
+{
+  "id": "hint levels are in the wrong order",
+  "mutation": "hint-wrong-order",
+  "expected_rule": "HOPA-HINT-EXACT-THREE-ORDERED"
+}

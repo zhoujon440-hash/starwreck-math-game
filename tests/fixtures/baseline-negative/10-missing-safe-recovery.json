@@ -1,1 +1,1 @@
-{"id":"NEG-10-MISSING-SAFE-RECOVERY","mutation":"missing-danger-safe-recovery","expected_rule":"HOPA-SCHEMA-SAVE-RECOVERY"}
+{"id":"NEG-10-MISSING-SAFE-RECOVERY","mutation":"missing-danger-safe-recovery","expected_rule":"HOPA-DANGER-SOFT-FAILURE-RECOVERY"}

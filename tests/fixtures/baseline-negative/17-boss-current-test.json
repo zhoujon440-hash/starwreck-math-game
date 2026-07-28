@@ -1,0 +1,5 @@
+{
+  "id": "Boss battle implementation in an ordinary test",
+  "mutation": "boss-current-test",
+  "expected_rule": "TECH-FORBIDDEN-CURRENT-EXECUTION"
+}

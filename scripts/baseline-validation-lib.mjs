@@ -2,6 +2,13 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  applyStrictFixture,
+  validateExpandedForbidden,
+  validateStarCoreContracts,
+  validateStrictHopa,
+  validateStrictSource,
+} from "./baseline-strict-validation.mjs";
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -81,13 +88,6 @@ export function loadBaseline(root = REPO_ROOT) {
   };
 }
 
-function removeAllNonConsumeText(rows) {
-  for (const row of rows) {
-    row["消耗规则"] = "使用即消耗";
-    row["备注"] = String(row["备注"] ?? "").replaceAll("不消耗", "");
-  }
-}
-
 export function applyFixture(snapshot, fixturePath) {
   if (!fixturePath) return snapshot;
   const fixture = JSON.parse(readFileSync(resolve(fixturePath), "utf8"));
@@ -124,10 +124,10 @@ export function applyFixture(snapshot, fixturePath) {
       snapshot.chapters.G01.modules["场景状态机"][0]["状态码"] = "S7";
       break;
     case "critical-item-consumed-on-error":
-      removeAllNonConsumeText(snapshot.chapters.G01.modules["背包道具流转"]);
+      applyStrictFixture(snapshot, fixture.mutation);
       break;
     case "missing-danger-safe-recovery":
-      snapshot.chapters.G01.modules["存档与恢复"][0]["恢复位置"] = "";
+      applyStrictFixture(snapshot, "danger-missing-safe-node");
       break;
     case "design-master-marked-runtime-ready":
       snapshot.catalog.assets[0].runtime_asset = true;
@@ -145,7 +145,9 @@ export function applyFixture(snapshot, fixturePath) {
       snapshot.sourceManifest.imported[0].observed_sha256 = "0".repeat(64);
       break;
     default:
-      throw new Error(`unknown negative fixture mutation: ${fixture.mutation}`);
+      if (!applyStrictFixture(snapshot, fixture.mutation)) {
+        throw new Error(`unknown negative fixture mutation: ${fixture.mutation}`);
+      }
   }
   return snapshot;
 }
@@ -396,13 +398,6 @@ export function validateStory(snapshot) {
     }
   }
 
-  const starCoreChapters = Object.entries(snapshot.chapters)
-    .filter(([chapter]) => chapter !== "G01")
-    .filter(([chapter, master]) => {
-      const story = readFileSync(join(snapshot.root, `docs/story/G01-G13/${chapter}.md`), "utf8");
-      return JSON.stringify(master).includes("星核") || story.includes("星核");
-    }).length;
-  add(starCoreChapters === 12, "STORY-G02-G13-STAR-CORE-COVERAGE", "data/source/g02-g13", starCoreChapters, 12, "docs/story/G01-G13", "V2.0/V2.1", "Restore a traceable star-core objective/award reference for each main planet.");
   return { issues, ruleCount };
 }
 
@@ -474,17 +469,8 @@ export function validateSchemasAndHopa(snapshot) {
     }
     const states = master.modules["场景状态机"];
     add(states.every((row) => /^S[0-6]$/.test(row["状态码"])), "HOPA-STATE-S0-S6", `${chapter}/场景状态机`, [...new Set(states.map((row) => row["状态码"]).filter((value) => !/^S[0-6]$/.test(value)))], [], "docs/baseline/02_HOPA_ARCHITECTURE.md", "confirmed", "Use only the frozen S0-S6 scene-state vocabulary.");
-    const bag = master.modules["背包道具流转"];
-    add(bag.some((row) => `${row["消耗规则"]} ${row["备注"]}`.includes("不消耗")), "HOPA-WRONG-CRITICAL-NOT-CONSUMED", `${chapter}/背包道具流转`, "no non-consumption contract", "at least one explicit wrong-use/non-consumption contract", "docs/baseline/02_HOPA_ARCHITECTURE.md", "confirmed", "Restore the critical-item wrong-use non-consumption rule.");
     const saves = master.modules["存档与恢复"];
     add(saves.every((row) => String(row["恢复位置"] ?? "").trim().length > 0), "HOPA-DANGER-SAFE-RECOVERY", `${chapter}/存档与恢复`, saves.filter((row) => !String(row["恢复位置"] ?? "").trim()).map((row) => row["存档ID"]), [], "docs/baseline/02_HOPA_ARCHITECTURE.md", "confirmed", "Declare a non-empty safe recovery position for each save/recovery record.");
-    const hints = master.modules["三级提示"];
-    const byTask = new Map();
-    for (const row of hints) {
-      const key = `${row["场景ID"]}/${row["机关/任务"]}`;
-      byTask.set(key, [...(byTask.get(key) ?? []), row]);
-    }
-    add([...byTask.values()].every((rows) => rows.length >= 3), "HOPA-HINT-THREE-LEVELS", `${chapter}/三级提示`, [...byTask.entries()].filter(([, rows]) => rows.length < 3).map(([key, rows]) => `${key}:${rows.length}`), [], "docs/baseline/02_HOPA_ARCHITECTURE.md", "confirmed", "Restore direction, area, and one-step hint rows for each task.");
   }
   return { issues, ruleCount };
 }
@@ -547,8 +533,8 @@ export function validateSourceLayer(snapshot) {
   add(missingPaths.length === 0, "SOURCE-REPOSITORY-PATHS", "source_packages/manifests/source-packages.json#/repository_path", missingPaths.map((row) => row.package_id), [], "Issue #6 P0-A", "accepted main", "Restore the LFS-tracked source object at its manifested repository path.");
   const badProvenance = snapshot.extractedFiles.files.filter((row) => !row.source_package || !row.source_entry || !row.source_entry_sha256 || !row.output_path);
   add(badProvenance.length === 0 && snapshot.extractedFiles.count === snapshot.extractedFiles.files.length, "SOURCE-EXTRACTION-PROVENANCE", "source_packages/manifests/extracted-files.json", { missing: badProvenance.length, declared: snapshot.extractedFiles.count, actual: snapshot.extractedFiles.files.length }, { missing: 0, declared: snapshot.extractedFiles.files.length, actual: snapshot.extractedFiles.files.length }, "Issue #6 P0-A", "accepted main", "Regenerate the extraction manifest with full provenance.");
-  add(snapshot.substitutions.rules.length > 0 && snapshot.legacy.items?.length > 0, "SOURCE-SUBSTITUTION-LEGACY", "source_packages/manifests/substitution-map.json + archive/legacy/manifest.json", { substitutions: snapshot.substitutions.rules.length, legacy: snapshot.legacy.items?.length ?? 0 }, "both non-empty", "docs/baseline/01_VERSION_PRIORITY.md", "confirmed", "Restore explicit substitution relationships and legacy isolation records.");
-  return { issues, ruleCount };
+  const strict = validateStrictSource(snapshot);
+  return { issues: issues.concat(strict.issues), ruleCount: ruleCount + strict.ruleCount };
 }
 
 export function runAll(snapshot) {
@@ -556,8 +542,11 @@ export function runAll(snapshot) {
     validateSourceLayer(snapshot),
     validateCatalogs(snapshot),
     validateStory(snapshot),
+    validateStarCoreContracts(snapshot),
     validateSchemasAndHopa(snapshot),
+    validateStrictHopa(snapshot),
     validateForbiddenTerms(snapshot),
+    validateExpandedForbidden(snapshot),
   ];
   return {
     issues: sections.flatMap((section) => section.issues),

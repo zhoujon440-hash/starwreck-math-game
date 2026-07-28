@@ -1,0 +1,5 @@
+{
+  "id": "Unity runtime in current configuration",
+  "mutation": "unity-current-config",
+  "expected_rule": "TECH-FORBIDDEN-CURRENT-EXECUTION"
+}

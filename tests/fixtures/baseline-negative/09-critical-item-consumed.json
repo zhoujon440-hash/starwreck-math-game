@@ -1,1 +1,6 @@
-{"id":"NEG-09-CRITICAL-ITEM-CONSUMED","mutation":"critical-item-consumed-on-error","expected_rule":"HOPA-WRONG-CRITICAL-NOT-CONSUMED"}
+{
+  "id": "NEG-09-CRITICAL-ITEM-CONSUMED",
+  "mutation": "critical-item-consumed-on-error",
+  "expected_rule": "HOPA-CRITICAL-ITEM-WRONG-USE-CONTRACT",
+  "expected_context": ["ITM-G01-002", "SCN-G01-00"]
+}

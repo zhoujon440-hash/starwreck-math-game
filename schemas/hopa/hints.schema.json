@@ -13,7 +13,10 @@
       "提示ID": { "type": "string", "pattern": "^HINT-G\\d{2}-\\d{3}(?:-[123])?$" },
       "场景ID": { "type": "string", "pattern": "^SCN-G\\d{2}-\\d{2}[A-Z]?$" },
       "机关/任务": { "type": "string" },
-      "提示等级": { "type": "string" },
+      "提示等级": {
+        "type": "string",
+        "enum": ["一级", "1级", "方向提示", "二级", "2级", "区域提示", "三级", "3级", "直接辅助"]
+      },
       "提示文本": { "type": "string" },
       "触发条件": { "type": "string" },
       "效果": { "type": "string" }

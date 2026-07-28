@@ -1,0 +1,5 @@
+{
+  "id": "legacy name in current Markdown",
+  "mutation": "legacy-name-current-markdown",
+  "expected_rule": "TECH-FORBIDDEN-CURRENT-EXECUTION"
+}
