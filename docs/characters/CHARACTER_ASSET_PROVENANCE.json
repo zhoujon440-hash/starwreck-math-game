@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "issue": 8,
+  "source_package": "PKG-CHARACTERS-V2.1",
+  "source_package_filename": "星骸拾荒者_人物形象设计全集_V2.1_补齐版.zip",
+  "source_package_version": "V2.1",
+  "source_package_sha256": "a31f21fbe0348be6ff1b9f7b21f53715ccf9dccf59d487cda2296fa4fdd0fceb",
+  "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/01_十二星球人物三视图/G02_锈环星_人物三视图.png",
+  "source_entry_sha256": "c549fe94157daea3606a1b7b32562e28108c9e54f2dac1b156b38c8097c0a0b3",
+  "baseline_documents": [
+    {
+      "path": "docs/baseline/characters/CHAR-001_XINGYU.md",
+      "version": "frozen"
+    },
+    {
+      "path": "docs/baseline/characters/CHAR-002_QIMA.md",
+      "version": "frozen"
+    },
+    {
+      "path": "docs/baseline/source_text/characters/G-CHAR-01_V1.0.md",
+      "version": "V1.0"
+    },
+    {
+      "path": "docs/baseline/source_text/visual/G-S2-CHG-01_V1.0.md",
+      "version": "V1.0"
+    },
+    {
+      "path": "docs/baseline/source_text/visual/G-S2-D01_V1.0.md",
+      "version": "V1.0_non_superseded_rules"
+    },
+    {
+      "path": "docs/baseline/source_text/animation/G-ANIM-01_V1.0.md",
+      "version": "V1.0"
+    }
+  ],
+  "extraction_method": "audited silhouette mask, conservative paper flood removal, premultiplied Lanczos upscale, local state-layer compositing",
+  "manual_cleanup_steps": [
+    "isolated the G02 front-view figures from the formal three-view artboard",
+    "removed paper, titles, guides, grid and neighboring cells with audited masks",
+    "repaired alpha edges without changing body proportions, clothing or equipment",
+    "placed each cutout on a 2048x2048 transparent canvas with safe padding"
+  ],
+  "generated_or_reconstructed_parts": {
+    "xingyu": [
+      "local mouth line variants for alert/thinking/nervous/determined",
+      "electronic-eye cyan glow intensity layer",
+      "sub-degree pose offsets only"
+    ],
+    "qima": [
+      "CRT pixel-expression layers",
+      "small screen crack and sub-degree tilt for damaged",
+      "independent scanning overlay"
+    ]
+  },
+  "generation_service_used": false,
+  "pr5_assets_reused": false,
+  "design_sources": [
+    {
+      "path": "art/source/characters/xingyu/g02_master_panel.png",
+      "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/01_十二星球人物三视图/G02_锈环星_人物三视图.png",
+      "source_sha256": "c549fe94157daea3606a1b7b32562e28108c9e54f2dac1b156b38c8097c0a0b3",
+      "runtime_asset": false
+    },
+    {
+      "path": "art/source/characters/qima/g02_master_panel.png",
+      "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/01_十二星球人物三视图/G02_锈环星_人物三视图.png",
+      "source_sha256": "c549fe94157daea3606a1b7b32562e28108c9e54f2dac1b156b38c8097c0a0b3",
+      "runtime_asset": false
+    }
+  ],
+  "characters": [
+    {
+      "catalog_id": "CAT-CHAR-001",
+      "official_id": null,
+      "character_name": "星宇",
+      "runtime_key": "xingyu",
+      "states": [
+        "normal",
+        "alert",
+        "thinking",
+        "nervous",
+        "determined"
+      ],
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "catalog_id": "CAT-CHAR-002",
+      "official_id": "EDU-0077",
+      "character_name": "七码",
+      "runtime_key": "qima",
+      "states": [
+        "offline",
+        "damaged",
+        "booting",
+        "normal",
+        "question",
+        "warning",
+        "proud",
+        "awkward",
+        "scanning"
+      ],
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    }
+  ],
+  "runtime_assets": [
+    {
+      "character": "xingyu",
+      "state": "normal",
+      "path": "public/assets/characters/xingyu/xingyu_normal.png",
+      "sha256": "045971f487c68e882a2d4b08fea166155ad4f3b66f5f2b0ca770017211d0130c",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "xingyu",
+      "state": "alert",
+      "path": "public/assets/characters/xingyu/xingyu_alert.png",
+      "sha256": "6b702de109468edc800837840010ce5dfc7438960c6af71e3da168572e84206d",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "xingyu",
+      "state": "thinking",
+      "path": "public/assets/characters/xingyu/xingyu_thinking.png",
+      "sha256": "1b132cc336cf07553f26703173f96ef98422c398ab2b81687dad6f919d9d84b2",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "xingyu",
+      "state": "nervous",
+      "path": "public/assets/characters/xingyu/xingyu_nervous.png",
+      "sha256": "b1f1078bbde24316a1c6939dd39737723d092bc6cb24642c36dbdef920e6b4a2",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "xingyu",
+      "state": "determined",
+      "path": "public/assets/characters/xingyu/xingyu_determined.png",
+      "sha256": "ba6a36c2ed06b75589330f20a503b59be208943db0e55137aeda884300d4d78b",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "offline",
+      "path": "public/assets/characters/qima/qima_offline.png",
+      "sha256": "f7f8000f0498ac57c68b2b061a1a7c3716c7d2a5ade8f176216010f4d169186c",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "damaged",
+      "path": "public/assets/characters/qima/qima_damaged.png",
+      "sha256": "e8d4b7e295b931ab375ad2f47d676583034dcca699d1d84f1b3e06f2f34058ed",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "booting",
+      "path": "public/assets/characters/qima/qima_booting.png",
+      "sha256": "aabc5324db0294244dc48dbf63beb72fc631379e563712aad91c15b294cf3163",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "normal",
+      "path": "public/assets/characters/qima/qima_normal.png",
+      "sha256": "689515db49d360acb70c25c349d763c4c3f55ff560c61c7c2c0eae7caee951d2",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "question",
+      "path": "public/assets/characters/qima/qima_question.png",
+      "sha256": "96523461c39214c1fe4c9e21dd961d5ff5faf8f05db6f9009c1e5d18bfffd295",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "warning",
+      "path": "public/assets/characters/qima/qima_warning.png",
+      "sha256": "1409095c3daeaf2d25253a3effdba5c5955569add6bcdf075edfe46505cc547c",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "proud",
+      "path": "public/assets/characters/qima/qima_proud.png",
+      "sha256": "bdaedb4d8f49a033d3270d3b00fd7c7ee5c6cb31d3f3bb0c4ac9cb32ec8edaf6",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "awkward",
+      "path": "public/assets/characters/qima/qima_awkward.png",
+      "sha256": "8eff749225b5d8a086c2a0083dd66cf4557d404d1f4cba3d6094017ea24bf445",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    },
+    {
+      "character": "qima",
+      "state": "scanning",
+      "path": "public/assets/characters/qima/qima_scanning.png",
+      "sha256": "c064eca9adc860e79cba7a2c2bc18c8d6da7490cd63f7c12b5c323726fc64533",
+      "width": 2048,
+      "height": 2048,
+      "mode": "RGBA",
+      "runtime_asset": true,
+      "runtime_status": "produced_pending_review",
+      "acceptance_status": "pending_project_owner_review"
+    }
+  ]
+}

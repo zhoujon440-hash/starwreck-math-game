@@ -1,0 +1,1 @@
+{"mutation":{"type":"forbidden_change","path":"src/game/dialogue/DialogueManager.ts"},"expected_rule":"CHAR-018-SCOPE-FILE"}

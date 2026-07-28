@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>角色运行时资产视觉验收</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, "Microsoft YaHei", sans-serif; background:#11191c; color:#eee7d5 }
+      * { box-sizing:border-box }
+      body { margin:0; background:radial-gradient(circle at 50% 0,#26383a 0,#11191c 48%); }
+      header { position:sticky; top:0; z-index:5; display:flex; justify-content:space-between; gap:20px; padding:18px 4vw; background:#0c1315e8; border-bottom:1px solid #5de1d855 }
+      h1,h2,p { margin:0 } h1 { font-size:clamp(20px,2.5vw,34px) } h2 { margin-bottom:18px; color:#73e6dc }
+      .tag { align-self:center; padding:8px 14px; border:1px solid #e79a45; color:#ffc173; border-radius:999px; font-size:13px }
+      main { width:min(1500px,94vw); margin:auto; padding:32px 0 70px }
+      section { margin:24px 0; padding:24px; background:#172225e8; border:1px solid #395255; border-radius:20px }
+      .state-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px }
+      figure { margin:0; min-width:0; padding:12px; background:#0c1416; border-radius:14px; border:1px solid #314649 }
+      figure img { display:block; width:100%; height:260px; object-fit:contain }
+      figcaption { padding-top:8px; color:#c7d2ce; text-align:center; font-size:13px }
+      .master { display:grid; grid-template-columns:1.2fr .8fr; gap:18px }
+      .master img { width:100%; height:470px; object-fit:contain; background:#e8dcc4 }
+      .edge { display:grid; grid-template-columns:1fr 1fr; gap:18px }
+      .edge-card { display:flex; gap:4%; align-items:end; min-height:500px; padding:30px; border-radius:14px }
+      .edge-card.dark { background:#071014 } .edge-card.light { background:#eee8d9 }
+      .edge-card img { width:48%; max-height:440px; object-fit:contain }
+      .scale-row { display:flex; gap:18px; overflow:auto; align-items:end; min-height:440px }
+      .scale-row img { width:240px; object-fit:contain; border-bottom:1px solid #60797a }
+      .scale-row img[data-scale="50"] { width:120px }.scale-row img[data-scale="75"] { width:180px }
+      .scale-row img[data-scale="150"] { width:360px }
+      .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-top:18px }
+      .facts div { padding:14px; background:#0d1618; border-left:3px solid #d78339 }
+      code { color:#87eee5; overflow-wrap:anywhere }
+      body.capture-preview header, body.capture-preview .full-only { display:none }
+      body.capture-preview main { width:100vw; height:100vh; padding:0; display:grid; place-items:center }
+      body.capture-preview .preview-only { display:block; width:94vw; height:92vh; margin:0; padding:3vh 4vw; overflow:hidden }
+      body.capture-preview .preview-only > .tag { float:right; margin-top:-42px }
+      body.capture-preview .preview-stage { display:grid; grid-template-columns:1fr 1fr; height:calc(100% - 85px); gap:5vw }
+      body.capture-preview .preview-stage article { display:grid; grid-template-rows:auto 1fr; min-height:0 }
+      body.capture-preview .preview-stage img { width:100%; height:100%; min-height:0; object-fit:contain }
+      .preview-only { display:none }
+      @media (max-width:760px) { .master,.edge { grid-template-columns:1fr } figure img { height:210px } }
+    </style>
+    <script>if(new URLSearchParams(location.search).get("capture")==="preview") document.addEventListener("DOMContentLoaded",()=>document.body.classList.add("capture-preview"))</script>
+  </head>
+  <body>
+    <header><h1>星宇 / 七码运行时角色资产验收</h1><span class="tag">非最终剧情UI</span></header>
+    <main>
+      <section class="preview-only" data-character-preview>
+        <h2>冻结母版提取 · 双角色运行时预览</h2>
+        <span class="tag">非最终剧情UI</span>
+        <div class="preview-stage">
+          <article><h3>星宇 · normal</h3><img src="/assets/characters/xingyu/xingyu_normal.png" alt="星宇正常状态" /></article>
+          <article><h3>七码 · EDU-0077 · normal</h3><img src="/assets/characters/qima/qima_normal.png" alt="七码正常状态" /></article>
+        </div>
+      </section>
+      <div class="full-only">
+        <section>
+          <h2>星宇 · 5 状态</h2>
+          <div class="state-grid" id="xingyu"></div>
+        </section>
+        <section>
+          <h2>七码 · EDU-0077 · 9 状态</h2>
+          <div class="state-grid" id="qima"></div>
+        </section>
+        <section>
+          <h2>母版与 normal 并排</h2>
+          <div class="master">
+            <img src="/acceptance/character-assets/xingyu_master_panel.png" alt="G02正式人物母版星宇区域" />
+            <img src="/assets/characters/xingyu/xingyu_normal.png" alt="星宇透明normal状态" />
+            <img src="/acceptance/character-assets/qima_master_panel.png" alt="G02正式人物母版七码区域" />
+            <img src="/assets/characters/qima/qima_normal.png" alt="七码透明normal状态" />
+          </div>
+        </section>
+        <section>
+          <h2>透明边缘 · 深色 / 浅色</h2>
+          <div class="edge">
+            <div class="edge-card dark"><img src="/assets/characters/xingyu/xingyu_normal.png" alt="" /><img src="/assets/characters/qima/qima_normal.png" alt="" /></div>
+            <div class="edge-card light"><img src="/assets/characters/xingyu/xingyu_normal.png" alt="" /><img src="/assets/characters/qima/qima_normal.png" alt="" /></div>
+          </div>
+        </section>
+        <section>
+          <h2>50% / 75% / 100% / 150% 缩放</h2>
+          <div class="scale-row"><img data-scale="50" src="/assets/characters/xingyu/xingyu_normal.png" alt="50%" /><img data-scale="75" src="/assets/characters/xingyu/xingyu_normal.png" alt="75%" /><img data-scale="100" src="/assets/characters/xingyu/xingyu_normal.png" alt="100%" /><img data-scale="150" src="/assets/characters/xingyu/xingyu_normal.png" alt="150%" /></div>
+        </section>
+        <section>
+          <h2>身份锁定与来源</h2>
+          <div class="facts">
+            <div>星宇：纽扣眼、青蓝电子镜片眼、灰白毛毡、氧化橙围领、修复者装备。</div>
+            <div>七码：EDU-0077、旧CRT、双天线、短机械臂、轮足、青绿像素屏。</div>
+            <div>来源：<code>PKG-CHARACTERS-V2.1</code><br />条目 SHA：<code>c549fe94157daea3606a1b7b32562e28108c9e54f2dac1b156b38c8097c0a0b3</code></div>
+            <div>未使用生成式图像服务；未复用 PR #5；未启动 Issue #3。</div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script>
+      const groups={xingyu:["normal","alert","thinking","nervous","determined"],qima:["offline","damaged","booting","normal","question","warning","proud","awkward","scanning"]};
+      for(const [name,states] of Object.entries(groups)){const root=document.getElementById(name);for(const state of states){const f=document.createElement("figure");f.innerHTML=`<img src="/assets/characters/${name}/${name}_${state}.png" alt="${name} ${state}"><figcaption>${state}</figcaption>`;root.append(f)}}
+    </script>
+  </body>
+</html>

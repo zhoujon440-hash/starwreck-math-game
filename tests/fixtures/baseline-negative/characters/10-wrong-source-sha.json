@@ -1,0 +1,1 @@
+{"mutation":{"type":"bad_source_sha","value":"0000000000000000000000000000000000000000000000000000000000000000"},"expected_rule":"CHAR-010-SOURCE-SHA"}

@@ -1,0 +1,30 @@
+{
+  "source_package": "PKG-CHARACTERS-V2.1",
+  "source_entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/01_十二星球人物三视图/G02_锈环星_人物三视图.png",
+  "source_sha256": "c549fe94157daea3606a1b7b32562e28108c9e54f2dac1b156b38c8097c0a0b3",
+  "package_sha256": "a31f21fbe0348be6ff1b9f7b21f53715ccf9dccf59d487cda2296fa4fdd0fceb",
+  "method": "audited silhouette mask + conservative paper flood removal + premultiplied Lanczos upscale",
+  "canvas": [
+    2048,
+    2048
+  ],
+  "generation_service_used": false,
+  "xingyu_mapping": {
+    "crop_x": 95,
+    "crop_y": 125,
+    "trim_x": 4,
+    "trim_y": 10,
+    "scale": 7.04,
+    "offset_x": 601,
+    "offset_y": 144
+  },
+  "qima_mapping": {
+    "crop_x": 495,
+    "crop_y": 145,
+    "trim_x": 4,
+    "trim_y": 5,
+    "scale": 9.180327868852459,
+    "offset_x": 542,
+    "offset_y": 184
+  }
+}
