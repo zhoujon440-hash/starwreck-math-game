@@ -47,6 +47,7 @@ export type HotspotDefinition = {
   ariaLabel: string
   area: Rectangle
   activeStates: SceneStateId[]
+  requiredCompletedHotspotIds?: string[]
   itemId?: string
   requiredItemId?: string
   consumeItem?: boolean
@@ -67,6 +68,18 @@ export type StateTransition = {
   to: SceneStateId
 }
 
+export type SceneDefinition = {
+  id: string
+  title: string
+  playerTitle: string
+  art: string
+  initialState: SceneStateId
+  states: Record<SceneStateId, SceneStateDefinition>
+  items: ItemDefinition[]
+  hotspots: HotspotDefinition[]
+  transitions: StateTransition[]
+}
+
 export type ChapterDefinition = {
   id: string
   title: string
@@ -77,6 +90,7 @@ export type ChapterDefinition = {
   items: ItemDefinition[]
   hotspots: HotspotDefinition[]
   transitions: StateTransition[]
+  scenes?: SceneDefinition[]
 }
 
 export type TransitionRecord = {
@@ -87,16 +101,30 @@ export type TransitionRecord = {
 }
 
 export type GameSession = {
-  schemaVersion: 1
+  schemaVersion: 2
   chapterId: string
+  currentSceneId: string
   sceneState: SceneStateId
+  sceneStates: Record<string, SceneStateId>
   foundItemIds: string[]
   inventoryItemIds: string[]
   usedItemIds: string[]
+  completedHotspotIds: string[]
   completedPuzzleIds: string[]
+  hosProgress: Record<string, string[]>
+  puzzleProgress: Record<string, boolean | number | string>
   hintCount: number
   hintLevels: Record<string, number>
   flags: Record<string, boolean | number | string>
+  dialogue: {
+    currentDialogueId: string | null
+    active: boolean
+    readDialogueIds: string[]
+  }
+  dialogueHistory: import('../types/dialogue').DialogueHistoryEntry[]
+  characterStates: Record<string, string>
+  unlockedCharacterIds: string[]
+  characterDiscoveries: Record<string, string[]>
   transitionLog: TransitionRecord[]
   updatedAt: string
 }

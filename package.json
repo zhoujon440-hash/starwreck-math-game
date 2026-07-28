@@ -10,11 +10,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "build:scn01-art": "python scripts/build_g01_scn01_runtime_art.py",
     "validate:sources": "node scripts/validate-source-import.mjs",
     "validate:baseline": "node scripts/validate-baseline.mjs",
     "validate:characters": "node scripts/validate-character-assets.mjs",
+    "validate:character-story": "node scripts/validate-character-story.mjs",
     "test:baseline": "node --test tests/baseline/*.test.mjs",
     "test:characters": "node --test tests/characters/*.test.mjs",
+    "test:character-story": "vitest run tests/character-story/character-data.test.ts tests/character-story/dialogue.test.ts && node --test tests/character-story/character-story-negative.test.mjs",
     "check": "npm run validate:sources && npm run validate:baseline && npm run test:baseline && npm run test && npm run build"
   },
   "dependencies": {

@@ -83,7 +83,12 @@ describe('GameEngine', () => {
     expect(engine.snapshot.inventoryItemIds).toContain('ITM-G01-001')
     expect(engine.snapshot.sceneState).toBe('S2')
 
-    for (const itemId of ['ITM-G01-002', 'ITM-G01-003', 'ITM-G01-004', 'ITM-G01-005']) {
+    for (const itemId of [
+      'ITM-G01-002',
+      'ITM-G01-003',
+      'RUNTIME-ITM-G01-SCN00-GLOVE',
+      'RUNTIME-ITM-G01-SCN00-LABEL',
+    ]) {
       expect(engine.findItem(itemId).ok).toBe(true)
     }
 
@@ -114,16 +119,78 @@ describe('GameEngine', () => {
 
     engine.findItem('ITM-G01-001')
     engine.useItem('ITM-G01-001', 'HS-G01-0002')
-    for (const itemId of ['ITM-G01-002', 'ITM-G01-003', 'ITM-G01-004', 'ITM-G01-005']) {
+    for (const itemId of [
+      'ITM-G01-002',
+      'ITM-G01-003',
+      'RUNTIME-ITM-G01-SCN00-GLOVE',
+      'RUNTIME-ITM-G01-SCN00-LABEL',
+    ]) {
       engine.findItem(itemId)
     }
 
     const restored = new GameEngine(G01, new LocalSaveRepository('G01', storage))
-    expect(restored.snapshot.schemaVersion).toBe(1)
+    expect(restored.snapshot.schemaVersion).toBe(2)
     expect(restored.snapshot.sceneState).toBe('S3')
     expect(restored.snapshot.foundItemIds).toContain('ITM-G01-002')
     expect(restored.snapshot.inventoryItemIds).toContain('ITM-G01-002')
-    expect([...values.values()].some((value) => value.includes('"schemaVersion":1'))).toBe(true)
+    expect([...values.values()].some((value) => value.includes('"schemaVersion":2'))).toBe(true)
+  })
+
+  it('completes SCN-G01-01 without skipping Qima states or consuming a wrong item', () => {
+    const engine = new GameEngine(G01, new MemorySaveRepository())
+    expect(engine.enterScene('SCN-G01-01').ok).toBe(true)
+    expect(engine.snapshot.currentSceneId).toBe('SCN-G01-01')
+    expect(engine.snapshot.characterStates['CHAR-QIMA']).toBe('offline')
+
+    expect(engine.inspect('RUNTIME-HS-G01-01-ENTRY').ok).toBe(true)
+    expect(engine.snapshot.sceneState).toBe('S1')
+    expect(engine.inspect('HS-G01-0005').ok).toBe(true)
+    engine.updateStory((draft) => {
+      draft.characterStates['CHAR-QIMA'] = 'damaged'
+    })
+    expect(engine.snapshot.sceneState).toBe('S2')
+
+    for (const itemId of [
+      'ITM-G01-004',
+      'ITM-G01-005',
+      'ITM-G01-006',
+      'RUNTIME-ITM-G01-FIXED-BUCKLE',
+    ]) {
+      expect(engine.findItem(itemId).ok).toBe(true)
+    }
+    expect(engine.snapshot.sceneState).toBe('S3')
+    expect(engine.completePuzzle('PUZ-G01-CHIP-ORIENTATION').ok).toBe(true)
+    expect(engine.snapshot.sceneState).toBe('S4')
+
+    const beforeWrongUse = engine.snapshot
+    expect(engine.useItem('ITM-G01-004', 'HS-G01-0007-CONTACT').ok).toBe(false)
+    expect(engine.snapshot.inventoryItemIds).toContain('ITM-G01-004')
+    expect(engine.snapshot.completedHotspotIds).toEqual(
+      beforeWrongUse.completedHotspotIds,
+    )
+    expect(engine.snapshot.sceneState).toBe('S4')
+
+    expect(engine.useItem('ITM-G01-005', 'HS-G01-0007-CONTACT').ok).toBe(true)
+    expect(engine.useItem('ITM-G01-006', 'HS-G01-0007-FUSE').ok).toBe(true)
+    expect(engine.useItem('ITM-G01-004', 'HS-G01-0008').ok).toBe(true)
+    expect(
+      engine.useItem(
+        'RUNTIME-ITM-G01-FIXED-BUCKLE',
+        'RUNTIME-HS-G01-0008-BUCKLE',
+      ).ok,
+    ).toBe(true)
+    expect(engine.snapshot.sceneState).toBe('S5')
+
+    engine.updateStory((draft) => {
+      draft.characterStates['CHAR-QIMA'] = 'booting'
+    })
+    expect(engine.completePuzzle('PUZ-G01-QIMA-BOOT').ok).toBe(true)
+    engine.updateStory((draft) => {
+      draft.characterStates['CHAR-QIMA'] = 'normal'
+    })
+    expect(engine.snapshot.sceneState).toBe('S6')
+    expect(engine.snapshot.characterStates['CHAR-QIMA']).toBe('normal')
+    expect(engine.snapshot.flags.world_star_core_count).toBe(0)
   })
 
   it('forces a non-zero star-core count from an older G01 save back to zero', () => {

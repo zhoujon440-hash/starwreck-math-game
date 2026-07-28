@@ -28,7 +28,8 @@
 
 ## 当前可玩范围
 
-本轮已完成 `SCN-G01-00《拾光号熄灯》`：
+本轮可从 `SCN-G01-00《拾光号熄灯》` 连续游玩到
+`SCN-G01-01《找回七码》`：
 
 1. 在断电领航舱中找到应急手灯；
 2. 用手灯调查熔断配电盒；
@@ -36,9 +37,13 @@
 4. 将临时保险丝放入背包；
 5. 选择或拖拽保险丝到应急照明槽；
 6. 合上保护开关，恢复照明并到达 S5；
-7. 进入 S6 下一场景交接点，但不提前制作后续场景。
+7. 进入导航核心舱，确认七码离线并受损；
+8. 在 `HOS-G01-002` 找回四件维修组件；
+9. 校正芯片方向，按顺序拖拽组件完成托架修复；
+10. 观看不可跳过的 booting，完成七码首次正式对白；
+11. 查看七码档案和完整对话历史，并从本地存档恢复完成态。
 
-PWA 支持离线缓存和本地自动存档。关键道具错误使用不消耗，提示分为方向、区域、短暂高亮三级。
+PWA 支持离线缓存和本地自动存档。关键道具错误使用不消耗，提示分为方向、区域、完成一步三级。SCN-G01-02 只保留边界，不开发内容。
 
 PR #2 第二轮视觉整改后，维修柜关闭/打开使用两套正式手绘状态图；应急手灯和柜内目标物均缩放并融入环境杂物，拾取与读档后从独立图层消失。场景继续使用统一 `1672 × 941` 设计坐标。正式 UI 默认隐藏内部状态、schema 与开发验收信息；CI 会上传双分辨率全链路截图及仅供验收的固定设施热点校准图。
 
@@ -53,6 +58,8 @@ npm run dev
 
 ```bash
 npm run check
+npm run validate:character-story
+npm run test:character-story
 npm run test:e2e
 ```
 
@@ -62,4 +69,6 @@ npm run test:e2e
 - `docs/implementation/NEXT.md`
 - `docs/screenshots/SCN-G01-00-1920x1080.png`
 - `docs/screenshots/SCN-G01-00-1366x768.png`
+- `docs/story-runtime/G01_CHARACTER_STORY_RUNTIME.md`
+- `docs/art/G01_SCN01_RUNTIME_ASSET_PROVENANCE.json`
 - `art/README.md`

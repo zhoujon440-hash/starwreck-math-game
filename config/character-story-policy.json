@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "issue": 3,
+  "branch": "codex/g01-character-story-v2",
+  "runtime_technology": "HTML5/PWA + Vite + TypeScript",
+  "characters": {
+    "xingyu": {
+      "character_id": "CHAR-XINGYU",
+      "states": ["normal", "alert", "thinking", "nervous", "determined"]
+    },
+    "qima": {
+      "character_id": "CHAR-QIMA",
+      "official_id": "EDU-0077",
+      "states": [
+        "offline",
+        "damaged",
+        "booting",
+        "normal",
+        "question",
+        "warning",
+        "proud",
+        "awkward",
+        "scanning"
+      ]
+    }
+  },
+  "scn_g01_01_contract": {
+    "scene_id": "SCN-G01-01",
+    "states": ["S0", "S1", "S2", "S3", "S4", "S5", "S6"],
+    "qima_required_transition": ["offline", "damaged", "booting", "normal"],
+    "booting_skippable": false,
+    "hidden_object_id": "HOS-G01-002",
+    "hidden_object_targets": ["七码芯片", "接线片", "保险丝", "固定扣"],
+    "critical_items": [
+      {
+        "item_id": "ITM-G01-004",
+        "wrong_use_consumes": false
+      },
+      {
+        "item_id": "ITM-G01-005",
+        "wrong_use_consumes": false
+      },
+      {
+        "item_id": "ITM-G01-006",
+        "wrong_use_consumes": false
+      },
+      {
+        "item_id": "RUNTIME-ITM-G01-FIXED-BUCKLE",
+        "wrong_use_consumes": false,
+        "authorization": "Issue #3 comment 5105774977"
+      }
+    ],
+    "hints": [
+      {
+        "level": 1,
+        "effect": "方向提示",
+        "completes_all": false
+      },
+      {
+        "level": 2,
+        "effect": "显示槽位",
+        "completes_all": false
+      },
+      {
+        "level": 3,
+        "effect": "完成一步",
+        "completes_all": false
+      }
+    ],
+    "completion_boundary": "SCN-G01-02",
+    "completion_boundary_only": true,
+    "world_star_core_count": 0
+  },
+  "formal_source": {
+    "package_id": "PKG-G01-V3.0",
+    "package_path": "source_packages/originals-or-release-links/星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0.zip",
+    "package_sha256": "85a20020d471e6dc77454b90e9d7792216db2555aef4e44fa729862ae9ddc043",
+    "scene_board_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章场景概念设计总览.png",
+    "scene_board_sha256": "38f2b34be1a8403b2e972251d724c881a65e97c0fa026bde02a89190f1bb96d7",
+    "prop_board_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章道具与效果设计总览.png",
+    "prop_board_sha256": "8de48f4153e721fd865dc404e874ea4a9e838614e0ceb97d9c6cc1474996d8bc"
+  },
+  "runtime_asset_requirements": [
+    {
+      "asset_id": "SCENE-G01-002",
+      "name": "导航核心舱",
+      "required_layer": "full_scene",
+      "runtime_path": "public/assets/g01/scn-g01-01/background/SCENE-G01-002_navigation_core_cabin.webp",
+      "status": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "PROP-G01-004",
+      "name": "七码芯片",
+      "required_layer": "scene_and_inventory",
+      "runtime_path": [
+        "public/assets/g01/scn-g01-01/items/PROP-G01-004_qima_chip_scene.png",
+        "public/assets/g01/scn-g01-01/items/PROP-G01-004_qima_chip_inventory.png"
+      ],
+      "status": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "PROP-G01-005",
+      "name": "接线片",
+      "required_layer": "scene_and_inventory",
+      "runtime_path": [
+        "public/assets/g01/scn-g01-01/items/PROP-G01-005_contact_plate_scene.png",
+        "public/assets/g01/scn-g01-01/items/PROP-G01-005_contact_plate_inventory.png"
+      ],
+      "status": "project_owner_authorized_runtime_production"
+    }
+  ],
+  "runtime_art_provenance": "docs/art/G01_SCN01_RUNTIME_ASSET_PROVENANCE.json",
+  "scene_manifest": "data/source/g01/scn-g01-01/scene_manifest.json",
+  "hos_manifest": "data/source/g01/scn-g01-01/hos_manifest.json",
+  "runtime_art_authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/3#issuecomment-5105774977",
+  "approved_character_asset_manifest": "docs/characters/CHARACTER_ASSET_PROVENANCE.json",
+  "source_dialogue": "data/source/g01/json/对话脚本.json",
+  "source_hotspots": "data/source/g01/json/热点清单.json",
+  "source_inventory": "data/source/g01/json/背包道具流转.json",
+  "source_hints": "data/source/g01/json/三级提示.json"
+}

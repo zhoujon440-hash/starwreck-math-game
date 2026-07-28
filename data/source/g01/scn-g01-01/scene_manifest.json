@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "scene_id": "SCN-G01-01",
+  "asset_id": "SCENE-G01-002",
+  "name": "导航核心舱",
+  "source": "project_owner_authorized_runtime_production",
+  "design_source": [
+    "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章场景概念设计总览.png",
+    "public/assets/g01-cockpit.png"
+  ],
+  "version": "1.0.0-review",
+  "runtime_path": "public/assets/g01/scn-g01-01/background/SCENE-G01-002_navigation_core_cabin.webp",
+  "sha256": "ada681006aa88f58c836acf2e9fa6a9f97e22c1f4db35818291f0a2d1f597597",
+  "width": 3840,
+  "height": 2160,
+  "runtime_asset": true,
+  "acceptance_status": "pending_review",
+  "source_package": "PKG-G01-V3.0",
+  "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0.zip",
+  "source_package_sha256": "85a20020d471e6dc77454b90e9d7792216db2555aef4e44fa729862ae9ddc043",
+  "source_entry": "星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0/02_G01美术资产/01_概念设计板/G01序章场景概念设计总览.png",
+  "source_sha256": "38f2b34be1a8403b2e972251d724c881a65e97c0fa026bde02a89190f1bb96d7",
+  "runtime_production_asset": true,
+  "generated_or_repainted_parts": [
+    "navigation core cabin background",
+    "Qima repair cradle and repair landmarks",
+    "navigation parts workbench and power area"
+  ],
+  "manual_cleanup": [
+    "16:9 runtime sizing",
+    "contrast normalization",
+    "HOS crop and raster foreground occlusion preparation"
+  ],
+  "production_tool": "OpenAI built-in image_gen (gpt-image-2) + imagegen chroma-key helper + Pillow 12.3.0 deterministic runtime preparation",
+  "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/3#issuecomment-5105774977"
+}
