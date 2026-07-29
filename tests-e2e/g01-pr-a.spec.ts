@@ -477,10 +477,8 @@ test('SCN-G01-03 preserves real HOS and repair progress across soft failure and 
     '漏气调查、测压读数与正确修复步骤',
   )
   await capture(page, testInfo, '18b-scn03-s6-after-refresh.png')
-  await expect(page.locator('[data-next-boundary="scn-g01-04"]')).toContainText(
-    '没有加载运行时内容',
-  )
-  await capture(page, testInfo, '19-scn04-boundary-only.png')
+  await expect(page.getByRole('button', { name: '前往导航星图室' })).toBeVisible()
+  await capture(page, testInfo, '19-scn04-entry-open.png')
 
   const save = await saveSnapshot(page)
   expect(save.flags.g01_cargo_sealed).toBe(true)
