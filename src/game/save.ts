@@ -36,6 +36,8 @@ const parseSession = (value: string | null): GameSession | null => {
       sceneStates: parsed.sceneStates ?? {
         [parsed.currentSceneId ?? 'SCN-G01-00']: parsed.sceneState,
       },
+      activeRuntimeNodeId: parsed.activeRuntimeNodeId ?? null,
+      safeRecovery: parsed.safeRecovery ?? null,
       foundItemIds: parsed.foundItemIds,
       inventoryItemIds: parsed.inventoryItemIds,
       usedItemIds: parsed.usedItemIds ?? [],

@@ -1,10 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "scope": [
     "SCN-G01-02",
     "SCN-G01-03"
   ],
-  "authority": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5114041966",
+  "authority": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5115004680",
   "formal_sources": {
     "chapter_entry": "docs/story/G01-G13/G01.md",
     "master_data": "data/source/g01/json/G01_MasterData.json",
@@ -37,6 +37,21 @@
       "field": "复压钥 official item ID",
       "formal_value": null,
       "adaptation": "Use RUNTIME-ITM-G01-REPRESS-KEY with official_id=null; preserve HOS-G01-003 formal target name."
+    },
+    {
+      "scene_id": "SCN-G01-02",
+      "field": "HS-G01-0012 hotspot semantics versus SCN-G01-03 route",
+      "formal_value": {
+        "hotspot_id": "HS-G01-0012",
+        "name": "星图室门",
+        "success_result": "开放星图室路径"
+      },
+      "conflicting_source": {
+        "path": "data/source/g01/json/场景流程.json",
+        "value": "SCN-G01-02 next scene is SCN-G01-03"
+      },
+      "adaptation": "Reserve HS-G01-0012 for its formal star-map-room meaning and do not instantiate it as a cargo door. Use RUNTIME-HS-G01-02-CARGO-ENTRY only for the PR-A transition to SCN-G01-03. Formal source files remain unchanged.",
+      "review_authority": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5115004680"
     }
   ],
   "scenes": [
@@ -53,7 +68,8 @@
         "RUNTIME-CLUE-G01-02",
         "RUNTIME-PUZ-G01-TASK-DEPENDENCY",
         "RUNTIME-ITM-G01-MAINTENANCE-SHEET",
-        "RUNTIME-ITM-G01-STAR-MAP-KEY"
+        "RUNTIME-ITM-G01-STAR-MAP-KEY",
+        "RUNTIME-HS-G01-02-CARGO-ENTRY"
       ],
       "state_contract": {
         "S0": "enter command console",
@@ -120,6 +136,11 @@
         "flags.g01_scn03_evidence_pressure_reading",
         "flags.g01_scn03_soft_failure_count",
         "flags.g01_scn03_safe_recovery_active",
+        "activeRuntimeNodeId",
+        "safeRecovery.nodeId",
+        "safeRecovery.preFailureState",
+        "safeRecovery.reason",
+        "safeRecovery.enteredAt",
         "flags.g01_scn03_danger_started_at",
         "flags.g01_cargo_sealed",
         "dialogueHistory"
@@ -127,6 +148,17 @@
       "danger_contract": {
         "danger_id": "DANGER-G01-002",
         "safe_recovery_node": "SCN-G01-03:cargo-safety-door",
+        "persistent_runtime_node_field": "activeRuntimeNodeId",
+        "pre_failure_state_field": "safeRecovery.preFailureState",
+        "failure_phases": [
+          "S1",
+          "S2",
+          "S3",
+          "S4"
+        ],
+        "soft_failure_creates_evidence": false,
+        "leak_evidence_source": "inspect:HS-G01-0013",
+        "pressure_evidence_source": "puzzle:RUNTIME-PUZ-G01-PRESSURE-CALIBRATION",
         "retain_key_items": true,
         "retain_evidence": true,
         "retain_completed_correct_steps": true,

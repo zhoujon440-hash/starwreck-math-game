@@ -135,7 +135,18 @@ export class GameView {
     const isScn01 = scene.id === 'SCN-G01-01'
     const isScn02 = scene.id === 'SCN-G01-02'
     const isScn03 = scene.id === 'SCN-G01-03'
-    const state = scene.states[this.#session.sceneState]
+    const isCargoRecovery =
+      isScn03 &&
+      this.#session.activeRuntimeNodeId === 'SCN-G01-03:cargo-safety-door' &&
+      Boolean(this.#session.safeRecovery)
+    const state = isCargoRecovery
+      ? {
+          id: this.#session.sceneState,
+          title: '货舱安全门',
+          objective: '确认保留内容，并从失败前进度继续',
+          narrative: '内门已经关闭，当前位于独立保存的安全恢复节点。',
+        }
+      : scene.states[this.#session.sceneState]
     const activeHotspots = this.engine.activeHotspots()
     const sceneHotspots = activeHotspots.filter((hotspot) => hotspot.scope !== 'zoom')
     const inventoryItems = this.#session.inventoryItemIds
@@ -158,9 +169,10 @@ export class GameView {
 
     this.root.innerHTML = `
       <main
-        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()}"
+        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery ? 'is-cargo-safe-recovery' : ''}"
         data-debug-ui="${DEBUG_UI}"
         data-scene-id="${scene.id}"
+        data-runtime-node-id="${escapeHtml(this.#session.activeRuntimeNodeId ?? 'scene-active')}"
         data-cabinet-visual-state="${cabinetVisualState}"
       >
         <header class="topbar">
@@ -216,7 +228,7 @@ export class GameView {
             <div class="state-layer distribution-box-layer" aria-hidden="true"></div>
             <div class="state-layer lighting-layer" aria-hidden="true"></div>
             ${isScn01 ? this.#scn01SceneLayersTemplate() : ''}
-            ${isScn02 || isScn03 ? this.#prASceneLayersTemplate() : ''}
+            ${isScn02 || (isScn03 && !isCargoRecovery) ? this.#prASceneLayersTemplate() : ''}
             <div class="scene-treatment" aria-hidden="true"></div>
             <div class="foreground-layer" aria-hidden="true"></div>
             ${this.#collectibleLayersTemplate('scene')}
@@ -366,6 +378,8 @@ export class GameView {
                   <span class="eyebrow">${DEBUG_UI ? 'S6 · SCN-G01-03' : '首项任务完成'}</span>
                   <h2 id="scn03-complete-title">货舱压力恢复</h2>
                   <p>裂口、测压证据与修复步骤已写入任务日志。后续舱段暂不开放。</p>
+                  <p data-evidence-summary="leak,pressure,repair">已恢复记录：漏气调查、测压读数与正确修复步骤。</p>
+                  <p data-next-boundary="scn-g01-04">下一场景边界“星图缺口”已记录，但没有加载运行时内容。</p>
                   <div class="completion-stats">
                     <span><b>4</b> 维修物</span>
                     <span><b>${Number(this.#session.flags.g01_scn03_soft_failure_count ?? 0)}</b> 安全回退</span>
@@ -377,8 +391,8 @@ export class GameView {
           }
 
           ${
-            isScn03 && this.#session.flags.g01_scn03_safe_recovery_active === true
-              ? this.#cargoRecoveryTemplate()
+            isCargoRecovery
+              ? this.#cargoRecoveryTemplate(sceneArt)
               : ''
           }
 
@@ -391,7 +405,9 @@ export class GameView {
           </div>
 
           ${
-            isScn03 && ['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState)
+            isScn03 &&
+            !isCargoRecovery &&
+            ['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState)
               ? `
                 <div class="cargo-danger-status" aria-live="polite">
                   <span>货舱氧压安全窗</span>
@@ -459,7 +475,7 @@ export class GameView {
     if (
       isScn03 &&
       ['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState) &&
-      this.#session.flags.g01_scn03_safe_recovery_active !== true
+      this.#session.activeRuntimeNodeId !== 'SCN-G01-03:cargo-safety-door'
     ) {
       this.#scheduleCargoDanger()
     } else if (this.#cargoDangerTimer) {
@@ -537,8 +553,8 @@ export class GameView {
   #sceneUtilityTargetsTemplate(): string {
     if (
       this.#session.currentSceneId === 'SCN-G01-03' &&
-      this.#session.sceneState === 'S4' &&
-      this.#session.flags.g01_scn03_safe_recovery_active !== true
+      ['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState) &&
+      this.#session.activeRuntimeNodeId !== 'SCN-G01-03:cargo-safety-door'
     ) {
       return `
         <button
@@ -957,20 +973,40 @@ export class GameView {
     `
   }
 
-  #cargoRecoveryTemplate(): string {
+  #cargoRecoveryTemplate(sceneArt: string): string {
+    const recovery = this.#session.safeRecovery
+    if (!recovery) return ''
     const patchKept = this.#session.completedHotspotIds.includes('HS-G01-0015-PATCH')
+    const leakEvidence =
+      this.#session.flags.g01_scn03_evidence_leak_confirmed === true
+        ? '已取得并保留'
+        : '尚未取得'
+    const pressureEvidence =
+      this.#session.flags.g01_scn03_evidence_pressure_reading === true
+        ? '已取得并保留'
+        : '尚未取得'
     return `
-      <section class="cargo-recovery-panel" role="dialog" aria-modal="true" aria-labelledby="cargo-recovery-title">
-        <span class="eyebrow">安全节点恢复</span>
-        <h2 id="cargo-recovery-title">已退回货舱安全门</h2>
-        <p>氧压临界警报已关闭内门。所有关键物、测压证据和正确修复步骤均已保留。</p>
-        <ul>
-          <li>关键物：保留</li>
-          <li>测压证据：保留</li>
-          <li>金属补片：${patchKept ? '已安装并保留' : '仍在背包'}</li>
-          <li>场景重置：未发生</li>
-        </ul>
-        <button class="primary-action" data-action="resume-cargo">从保留进度继续</button>
+      <section
+        class="cargo-safe-recovery-node"
+        data-safe-recovery-node="SCN-G01-03:cargo-safety-door"
+        data-pre-failure-state="${recovery.preFailureState}"
+        style="--safe-node-art:url('${sceneArt}')"
+        aria-labelledby="cargo-recovery-title"
+      >
+        <div class="cargo-recovery-panel">
+          <span class="eyebrow">安全恢复节点 · 失败前 ${recovery.preFailureState}</span>
+          <h2 id="cargo-recovery-title">已退回货舱安全门</h2>
+          <p>氧压临界警报已关闭内门。这里只显示真实取得的证据；关键物与正确修复步骤按失败前快照保留。</p>
+          <ul>
+            <li>关键物：${this.#session.inventoryItemIds.length} 件保留</li>
+            <li>漏气证据：${leakEvidence}</li>
+            <li>测压证据：${pressureEvidence}</li>
+            <li>金属补片：${patchKept ? '已安装并保留' : '未安装'}</li>
+            <li>恢复目标：${recovery.preFailureState}</li>
+            <li>场景重置：未发生</li>
+          </ul>
+          <button class="primary-action" data-action="resume-cargo">从 ${recovery.preFailureState} 保留进度继续</button>
+        </div>
       </section>
     `
   }
@@ -1150,7 +1186,7 @@ export class GameView {
       if (
         this.#session.currentSceneId !== 'SCN-G01-03' ||
         !['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState) ||
-        this.#session.flags.g01_scn03_safe_recovery_active === true
+        this.#session.activeRuntimeNodeId === 'SCN-G01-03:cargo-safety-door'
       ) {
         return
       }
@@ -1389,10 +1425,6 @@ export class GameView {
         })
         if (nextStep === 3) {
           this.#puzzleOpen = false
-          this.engine.updateStory((draft) => {
-            draft.flags.g01_scn03_evidence_pressure_reading = true
-            draft.puzzleProgress.pressure_reading = 'safe-window-90s'
-          })
           this.#handleResult(
             this.engine.completePuzzle(
               'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION',
@@ -1419,7 +1451,7 @@ export class GameView {
         if (hotspotId) {
           if (
             this.#session.currentSceneId === 'SCN-G01-02' &&
-            hotspotId === 'HS-G01-0012'
+            hotspotId === 'RUNTIME-HS-G01-02-CARGO-ENTRY'
           ) {
             this.#handleResult(this.engine.enterScene('SCN-G01-03'))
             this.#dialogueRunner.startTrigger('SCN-G01-03', '进入货舱')
@@ -1460,11 +1492,6 @@ export class GameView {
             this.#session.currentSceneId === 'SCN-G01-03' &&
             hotspotId === 'HS-G01-0013'
           ) {
-            this.engine.updateStory((draft) => {
-              draft.flags.g01_scn03_evidence_leak_confirmed = true
-              draft.flags.g01_scn03_danger_started_at =
-                new Date().toISOString()
-            })
             this.#dialogueRunner.startTrigger('SCN-G01-03', '进入货舱')
           }
         }
