@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "scope": [
+    "SCN-G01-02",
+    "SCN-G01-03"
+  ],
+  "authority": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5114041966",
+  "formal_sources": {
+    "chapter_entry": "docs/story/G01-G13/G01.md",
+    "master_data": "data/source/g01/json/G01_MasterData.json",
+    "scene_flow": "data/source/g01/json/场景流程.json",
+    "hotspots": "data/source/g01/json/热点清单.json",
+    "hidden_object": "data/source/g01/json/找物清单.json",
+    "inventory": "data/source/g01/json/背包道具流转.json",
+    "dialogue": "data/source/g01/json/对话脚本.json",
+    "state_machine": "data/source/g01/json/场景状态机.json",
+    "hints": "data/source/g01/json/三级提示.json",
+    "save_restore": "data/source/g01/json/存档与恢复.json",
+    "variables": "data/source/g01/json/程序变量.json",
+    "asset_map": "data/source/g01/json/资产映射.json"
+  },
+  "formal_gaps": [
+    {
+      "scene_id": "SCN-G01-02",
+      "field": "hos_id",
+      "formal_value": null,
+      "adaptation": "Use integrated clue search grounded in HS-G01-0009 through HS-G01-0012 and the formal key-prop names; do not invent a formal HOS ID."
+    },
+    {
+      "scene_id": "SCN-G01-02",
+      "field": "hint_rows",
+      "formal_value": [],
+      "adaptation": "Runtime-only three-level hints are recorded below and are not written back to formal source data."
+    },
+    {
+      "scene_id": "SCN-G01-03",
+      "field": "复压钥 official item ID",
+      "formal_value": null,
+      "adaptation": "Use RUNTIME-ITM-G01-REPRESS-KEY with official_id=null; preserve HOS-G01-003 formal target name."
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "SCN-G01-02",
+      "title": "船上第一张任务单",
+      "formal_hotspot_ids": [
+        "HS-G01-0009",
+        "HS-G01-0010",
+        "HS-G01-0011",
+        "HS-G01-0012"
+      ],
+      "runtime_adapter_ids": [
+        "RUNTIME-CLUE-G01-02",
+        "RUNTIME-PUZ-G01-TASK-DEPENDENCY",
+        "RUNTIME-ITM-G01-MAINTENANCE-SHEET",
+        "RUNTIME-ITM-G01-STAR-MAP-KEY"
+      ],
+      "state_contract": {
+        "S0": "enter command console",
+        "S1": "inspect task screen and search two physical clues",
+        "S2": "inspect ship map close-up",
+        "S3": "solve maintenance dependency order",
+        "S4": "apply star-map key to map console",
+        "S5": "drag maintenance sheet into archive slot",
+        "S6": "task chain saved; SCN-G01-03 route opens"
+      },
+      "save_anchor": "AUTO-G01-003",
+      "save_fields": [
+        "currentSceneId",
+        "sceneStates.SCN-G01-02",
+        "foundItemIds",
+        "inventoryItemIds",
+        "usedItemIds",
+        "completedHotspotIds",
+        "completedPuzzleIds",
+        "puzzleProgress.task_dependency_step",
+        "puzzleProgress.task_dependency_order",
+        "flags.g01_task_log_unlocked",
+        "flags.g01_map_unlocked",
+        "dialogueHistory"
+      ]
+    },
+    {
+      "scene_id": "SCN-G01-03",
+      "title": "漏气的货舱",
+      "formal_hotspot_ids": [
+        "HS-G01-0013",
+        "HS-G01-0014",
+        "HS-G01-0015",
+        "HS-G01-0016"
+      ],
+      "formal_hos_id": "HOS-G01-003",
+      "runtime_adapter_ids": [
+        "RUNTIME-HS-G01-03-EMERGENCY-BOX",
+        "RUNTIME-PUZ-G01-PRESSURE-CALIBRATION",
+        "RUNTIME-ITM-G01-REPRESS-KEY"
+      ],
+      "state_contract": {
+        "S0": "enter at safe cargo door",
+        "S1": "confirm leak and complete HOS-G01-003",
+        "S2": "install pressure gauge",
+        "S3": "calibrate gauge and store pressure evidence",
+        "S4": "install metal patch then sealing tape",
+        "S5": "operate repressurization valve",
+        "S6": "cargo pressure stable; SCN-G01-04 is boundary only"
+      },
+      "save_anchor": "AUTO-G01-004",
+      "save_fields": [
+        "currentSceneId",
+        "sceneStates.SCN-G01-03",
+        "hosProgress.HOS-G01-003",
+        "foundItemIds",
+        "inventoryItemIds",
+        "usedItemIds",
+        "completedHotspotIds",
+        "completedPuzzleIds",
+        "puzzleProgress.pressure_calibration_step",
+        "puzzleProgress.pressure_reading",
+        "flags.g01_scn03_evidence_leak_confirmed",
+        "flags.g01_scn03_evidence_pressure_reading",
+        "flags.g01_scn03_soft_failure_count",
+        "flags.g01_scn03_safe_recovery_active",
+        "flags.g01_scn03_danger_started_at",
+        "flags.g01_cargo_sealed",
+        "dialogueHistory"
+      ],
+      "danger_contract": {
+        "danger_id": "DANGER-G01-002",
+        "safe_recovery_node": "SCN-G01-03:cargo-safety-door",
+        "retain_key_items": true,
+        "retain_evidence": true,
+        "retain_completed_correct_steps": true,
+        "retain_confirmed_mechanism_progress": true,
+        "duplicate_grants_forbidden": true,
+        "whole_scene_reset_forbidden": true,
+        "retry_available": true
+      }
+    }
+  ],
+  "critical_item_contracts": [
+    {
+      "scene_id": "SCN-G01-02",
+      "item_id": "RUNTIME-ITM-G01-MAINTENANCE-SHEET",
+      "official_id": null,
+      "correct_target": "HS-G01-0011",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-02",
+      "item_id": "RUNTIME-ITM-G01-STAR-MAP-KEY",
+      "official_id": null,
+      "correct_target": "RUNTIME-HS-G01-02-MAP-KEY",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-03",
+      "item_id": "ITM-G01-007",
+      "official_id": "ITM-G01-007",
+      "correct_target": "HS-G01-0015-TAPE",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-03",
+      "item_id": "ITM-G01-008",
+      "official_id": "ITM-G01-008",
+      "correct_target": "HS-G01-0015-PATCH",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-03",
+      "item_id": "ITM-G01-009",
+      "official_id": "ITM-G01-009",
+      "correct_target": "HS-G01-0014",
+      "wrong_use_consumes": false,
+      "correct_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-03",
+      "item_id": "RUNTIME-ITM-G01-REPRESS-KEY",
+      "official_id": null,
+      "correct_target": "HS-G01-0016",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    }
+  ],
+  "hint_contracts": [
+    {
+      "scene_id": "SCN-G01-02",
+      "task_id": "RUNTIME-CLUE-G01-02",
+      "source": "runtime_adapter_for_formal_gap",
+      "levels": [
+        {
+          "level": 1,
+          "semantics": "direction"
+        },
+        {
+          "level": 2,
+          "semantics": "area"
+        },
+        {
+          "level": 3,
+          "semantics": "complete_one_step"
+        }
+      ]
+    },
+    {
+      "scene_id": "SCN-G01-02",
+      "task_id": "RUNTIME-PUZ-G01-TASK-DEPENDENCY",
+      "source": "DLG-G01-0007,DLG-G01-0008",
+      "levels": [
+        {
+          "level": 1,
+          "semantics": "direction"
+        },
+        {
+          "level": 2,
+          "semantics": "area"
+        },
+        {
+          "level": 3,
+          "semantics": "complete_one_step"
+        }
+      ]
+    },
+    {
+      "scene_id": "SCN-G01-03",
+      "task_id": "HOS-G01-003",
+      "source": "HINT-G01-003-1,HINT-G01-003-2,HINT-G01-003-3",
+      "levels": [
+        {
+          "level": 1,
+          "semantics": "direction"
+        },
+        {
+          "level": 2,
+          "semantics": "area"
+        },
+        {
+          "level": 3,
+          "semantics": "complete_one_step"
+        }
+      ]
+    },
+    {
+      "scene_id": "SCN-G01-03",
+      "task_id": "RUNTIME-PUZ-G01-PRESSURE-CALIBRATION",
+      "source": "HS-G01-0014,DLG-G01-0010",
+      "levels": [
+        {
+          "level": 1,
+          "semantics": "direction"
+        },
+        {
+          "level": 2,
+          "semantics": "area"
+        },
+        {
+          "level": 3,
+          "semantics": "complete_one_step"
+        }
+      ]
+    }
+  ],
+  "frozen_invariants": {
+    "protagonist": "星宇",
+    "world_star_core_count": 0,
+    "g01_chapter_complete": false,
+    "g01_handoff_to_g02": false,
+    "scn_g01_04_runtime_implemented": false,
+    "g02_gameplay_implemented": false
+  }
+}

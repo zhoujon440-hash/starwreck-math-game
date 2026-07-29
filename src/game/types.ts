@@ -52,6 +52,7 @@ export type HotspotDefinition = {
   requiredItemId?: string
   consumeItem?: boolean
   zoomId?: string
+  hosId?: string
   scope?: 'scene' | 'zoom'
 }
 

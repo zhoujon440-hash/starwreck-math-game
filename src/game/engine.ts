@@ -129,10 +129,25 @@ export class GameEngine {
     if (sceneId === 'SCN-G01-01') {
       next.characterStates['CHAR-QIMA'] = 'offline'
       next.flags.g01_scn01_entered = true
+    } else if (sceneId === 'SCN-G01-02') {
+      next.flags.g01_task_log_unlocked = false
+      next.flags.g01_map_unlocked = false
+      next.flags.g01_scn02_entered = true
+    } else if (sceneId === 'SCN-G01-03') {
+      next.flags.g01_scn03_entered = true
+      next.flags.g01_scn03_safe_recovery_active = false
+      next.flags.g01_scn03_evidence_leak_confirmed = true
+      next.flags.g01_scn03_danger_started_at = now()
     }
     this.#commit(next)
     this.saves.saveCheckpoint(next)
-    return { ok: true, message: '星宇进入导航核心舱。' }
+    const messages: Record<string, string> = {
+      'SCN-G01-00': '星宇返回领航舱。',
+      'SCN-G01-01': '星宇进入导航核心舱。',
+      'SCN-G01-02': '星宇和七码来到中控任务台。',
+      'SCN-G01-03': '星宇从安全舱门进入漏气货舱。',
+    }
+    return { ok: true, message: messages[sceneId] ?? '已进入目标舱段。' }
   }
 
   subscribe(listener: Listener): () => void {
@@ -182,9 +197,13 @@ export class GameEngine {
     const next = this.#nextSession()
     next.foundItemIds.push(itemId)
     if (hotspot.scope === 'zoom') {
-      const hosId = hotspot.id.startsWith('HOS-G01-002')
-        ? 'HOS-G01-002'
-        : 'HOS-G01-001'
+      const hosId =
+        hotspot.hosId ??
+        (hotspot.id.startsWith('HOS-G01-003')
+          ? 'HOS-G01-003'
+          : hotspot.id.startsWith('HOS-G01-002')
+            ? 'HOS-G01-002'
+            : 'HOS-G01-001')
       next.hosProgress[hosId] = [
         ...new Set([...(next.hosProgress[hosId] ?? []), itemId]),
       ]
@@ -306,6 +325,45 @@ export class GameEngine {
     return { ok: true, message: '已回退到最近的安全位置。' }
   }
 
+  triggerCargoSoftFailure(reason: string): ActionResult {
+    if (
+      this.#session.currentSceneId !== 'SCN-G01-03' ||
+      !['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState)
+    ) {
+      return { ok: false, message: '当前没有需要执行的货舱安全回退。' }
+    }
+
+    const next = this.#nextSession()
+    next.flags.g01_scn03_safe_recovery_active = true
+    next.flags.g01_scn03_last_soft_failure = reason
+    next.flags.g01_scn03_soft_failure_count =
+      Number(next.flags.g01_scn03_soft_failure_count ?? 0) + 1
+    next.flags.g01_scn03_evidence_leak_confirmed = true
+    next.flags.g01_scn03_evidence_pressure_reading = true
+    next.flags.world_star_core_count = 0
+    this.#commit(next)
+    this.saves.saveCheckpoint(next)
+    return {
+      ok: true,
+      message: '氧压警报触发。星宇退回安全舱门；工具、证据和正确修复步骤全部保留。',
+    }
+  }
+
+  resumeCargoAfterSoftFailure(): ActionResult {
+    if (
+      this.#session.currentSceneId !== 'SCN-G01-03' ||
+      this.#session.flags.g01_scn03_safe_recovery_active !== true
+    ) {
+      return { ok: false, message: '当前不在货舱安全恢复节点。' }
+    }
+    const next = this.#nextSession()
+    next.flags.g01_scn03_safe_recovery_active = false
+    next.flags.g01_scn03_retry_available = true
+    next.flags.g01_scn03_danger_started_at = now()
+    this.#commit(next)
+    return { ok: true, message: '安全门已重新开启，可以从保留的进度继续修复。' }
+  }
+
   reset(): void {
     this.saves.clear()
     this.#session = createSession(this.chapter)
@@ -347,6 +405,8 @@ export class GameEngine {
 
   #commit(next: GameSession): void {
     next.flags.world_star_core_count = 0
+    next.flags.g01_chapter_complete = false
+    next.flags.g01_handoff_to_g02 = false
     this.#session = next
     this.saves.save(this.#session)
     if (this.currentSceneDefinition.states[this.#session.sceneState].safeCheckpoint) {

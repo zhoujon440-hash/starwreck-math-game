@@ -113,7 +113,7 @@ const fixtureDiagnostics = {
   wrong_runtime: ['CS-036-SCOPE', 'config/character-story-policy.json', 'wrong current runtime', 'HTML5/PWA + Vite + TypeScript', 'Issue #3 §18', 'Restore the frozen runtime technology.'],
   pr5_asset: ['CS-007-RUNTIME-PORTRAIT', 'src/data/characters/index.ts', 'pull/5/generated.png', 'approved Issue #8 runtime path', 'PR #5 close decision', 'Use only the merged Issue #8 assets.'],
   changed_character_png: ['CS-009-CHARACTER-HASH', 'public/assets/characters/qima/qima_normal.png', 'modified SHA-256', 'approved SHA-256', 'CHARACTER_ASSET_PROVENANCE.json', 'Restore the approved PNG byte-for-byte.'],
-  scn02_content: ['CS-036-SCOPE', 'src/scenes/g01/scn02.ts', 'runtime scene content', 'boundary reference only', 'Issue #3 §2/§10', 'Remove all SCN-G01-02 content.'],
+  scn04_content: ['CS-036-SCOPE', 'src/scenes/g01/scn04.ts', 'runtime scene content', 'boundary reference only', 'Issue #9 comment 5114041966', 'Remove all SCN-G01-04 content from PR-A.'],
   changed_g02_boundary: ['CS-036-SCOPE', 'docs/baseline/06_G01_G02_BOUNDARY.md', 'modified handoff', 'frozen V2.2 boundary', 'Issue #3 §1/§24', 'Restore the approved boundary document.'],
   missing_scene_asset: ['CS-ART-001-SCENE', 'public/assets/g01/scn-g01-01/background/SCENE-G01-002_navigation_core_cabin.webp', 'missing', '3840x2160 runtime scene', 'scene_manifest.json', 'Restore the recorded scene asset.'],
   missing_item_asset: ['CS-ART-002-ITEMS', 'public/assets/g01/scn-g01-01/items/PROP-G01-004_qima_chip_scene.png', 'missing', 'all target scene and inventory layers', 'hos_manifest.json', 'Restore the independent target layer.'],
@@ -163,15 +163,15 @@ if (fixturePath) {
   check(provenance.runtime_assets.every((asset) => existsSync(resolve(root, asset.path))), 'CS-008-CHARACTER-FILES', 'public/assets/characters', 'runtime file set', 'all 14 assets', 'CHARACTER_ASSET_PROVENANCE.json', 'Restore missing runtime assets.')
   check(provenance.runtime_assets.every((asset) => sha256(readFileSync(resolve(root, asset.path))) === asset.sha256), 'CS-009-CHARACTER-HASH', 'public/assets/characters', 'runtime SHA set', 'approved SHA set', 'CHARACTER_ASSET_PROVENANCE.json', 'Restore approved files byte-for-byte.')
 
-  const formalSix = formalDialogue.filter((row) => ['SCN-G01-00', 'SCN-G01-01'].includes(row['场景ID']))
-  check(formalSix.length === 6 && formalSix.every((row) => dialogueSource.includes(row['对话ID'])), 'CS-010-DIALOGUE-SET', 'src/data/dialogue/g01.ts', 'runtime dialogue ids', formalSix.map((row) => row['对话ID']), '对话脚本.json', 'Restore all six formal nodes.')
-  check(formalSix.every((row, index) => dialogueSource.indexOf(row['对话ID']) < (formalSix[index + 1] ? dialogueSource.indexOf(formalSix[index + 1]['对话ID']) : Infinity)), 'CS-011-DIALOGUE-ORDER', 'src/data/dialogue/g01.ts', 'node order', 'formal source order', '对话脚本.json', 'Keep the formal sequence.')
+  const formalPrA = formalDialogue.filter((row) => ['SCN-G01-00', 'SCN-G01-01', 'SCN-G01-02', 'SCN-G01-03'].includes(row['场景ID']))
+  check(formalPrA.length === 11 && formalPrA.every((row) => dialogueSource.includes(row['对话ID'])), 'CS-010-DIALOGUE-SET', 'src/data/dialogue/g01.ts', 'runtime dialogue ids', formalPrA.map((row) => row['对话ID']), '对话脚本.json', 'Restore all eleven formal nodes through SCN-G01-03.')
+  check(formalPrA.every((row, index) => dialogueSource.indexOf(row['对话ID']) < (formalPrA[index + 1] ? dialogueSource.indexOf(formalPrA[index + 1]['对话ID']) : Infinity)), 'CS-011-DIALOGUE-ORDER', 'src/data/dialogue/g01.ts', 'node order', 'formal source order', '对话脚本.json', 'Keep the formal sequence.')
   check(!dialogueSource.includes("speaker_id: 'CHAR-UNKNOWN'"), 'CS-012-SPEAKER', 'src/data/dialogue/g01.ts', 'speaker ids', 'registered ids', 'Issue #3 §6', 'Use registered speakers.')
   check([...xingyuStates, ...qimaStates].every((state) => !dialogueSource.includes(`portrait_state: '${state}-unknown'`)), 'CS-013-PORTRAIT', 'src/data/dialogue/g01.ts', 'portrait states', 'approved states', 'Issue #8 acceptance', 'Use approved portrait states.')
   check(!dialogueSource.includes('DLG-G01-9999'), 'CS-014-NEXT', 'src/data/dialogue/g01.ts', 'next references', 'existing nodes only', '对话脚本.json', 'Repair dangling next references.')
   check(['dialogue_id', 'scene_id', 'speaker_id', 'portrait_state', 'text', 'sequence', 'trigger_condition', 'next_dialogue_id', 'writes_variables', 'grants_item', 'updates_character_state', 'updates_scene_state', 'skippable', 'replayable', 'history_visible'].every((field) => dialogueSource.includes(field)), 'CS-015-DIALOGUE-FIELDS', 'src/data/dialogue/g01.ts', 'field coverage', '15 required fields', 'Issue #3 §6', 'Restore the missing runtime field.')
-  check(formalSix.every((row) => dialogueSource.includes(row['台词'])), 'CS-016-DIALOGUE-TEXT', 'src/data/dialogue/g01.ts', 'dialogue text', 'exact formal text', '对话脚本.json', 'Restore exact formal dialogue text.')
-  check(formalSix.every((row) => !gameView.includes(row['台词'])), 'CS-017-VIEW-DATA', 'src/ui/GameView.ts', 'formal text literals', 'none', 'Issue #3 §6', 'Keep dialogue text in data.')
+  check(formalPrA.every((row) => dialogueSource.includes(row['台词'])), 'CS-016-DIALOGUE-TEXT', 'src/data/dialogue/g01.ts', 'dialogue text', 'exact formal text', '对话脚本.json', 'Restore exact formal dialogue text.')
+  check(formalPrA.every((row) => !gameView.includes(row['台词'])), 'CS-017-VIEW-DATA', 'src/ui/GameView.ts', 'formal text literals', 'none', 'Issue #3 §6', 'Keep dialogue text in data.')
   check(existsSync(resolve(root, 'src/services/DialogueRunner.ts')), 'CS-018-RUNNER', 'src/services/DialogueRunner.ts', 'file', 'present', 'Issue #3 §6', 'Restore DialogueRunner.')
   check(existsSync(resolve(root, 'src/services/DialogueDataLoader.ts')), 'CS-019-LOADER', 'src/services/DialogueDataLoader.ts', 'file', 'present', 'Issue #3 §6', 'Restore DialogueDataLoader.')
   check(existsSync(resolve(root, 'src/services/DialogueHistory.ts')), 'CS-020-HISTORY', 'src/services/DialogueHistory.ts', 'file', 'present', 'Issue #3 §6', 'Restore DialogueHistory.')
@@ -203,7 +203,30 @@ if (fixturePath) {
     '背包道具流转.json + Issue #3 comment 5105774977',
     'Restore every key-item contract.',
   )
-  check(contract.completion_boundary === 'SCN-G01-02' && contract.completion_boundary_only === true && !existsSync(resolve(root, 'src/scenes/g01/scn02.ts')), 'CS-036-SCOPE', rel(policyPath), { boundary: contract.completion_boundary, boundaryOnly: contract.completion_boundary_only }, { boundary: 'SCN-G01-02', boundaryOnly: true }, 'Issue #3 §2/§10', 'Keep the next scene as a boundary reference only.')
+  const activeScope = policy.active_scope
+  check(
+    contract.completion_boundary === 'SCN-G01-02' &&
+      contract.completion_boundary_only === false &&
+      JSON.stringify(activeScope.implemented_scenes) === JSON.stringify(['SCN-G01-02', 'SCN-G01-03']) &&
+      activeScope.maximum_runtime_scene === 'SCN-G01-03' &&
+      activeScope.next_boundary === 'SCN-G01-04' &&
+      activeScope.next_boundary_only === true &&
+      activeScope.g01_chapter_complete === false &&
+      activeScope.g01_handoff_to_g02 === false &&
+      existsSync(resolve(root, 'src/scenes/g01/scn02.ts')) &&
+      existsSync(resolve(root, 'src/scenes/g01/scn03.ts')) &&
+      !existsSync(resolve(root, 'src/scenes/g01/scn04.ts')),
+    'CS-036-SCOPE',
+    rel(policyPath),
+    activeScope,
+    {
+      implemented: ['SCN-G01-02', 'SCN-G01-03'],
+      maximum: 'SCN-G01-03',
+      nextBoundaryOnly: 'SCN-G01-04',
+    },
+    'Issue #9 comment 5114041966',
+    'Keep PR-A implementation within SCN-G01-02 and SCN-G01-03.',
+  )
 
   const packagePath = resolve(root, policy.formal_source.package_path)
   if (!existsSync(packagePath)) {

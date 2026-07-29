@@ -22,5 +22,6 @@ jobs:
         with:
           name: g01-visual-acceptance-${{ github.run_number }}
           path: test-results/visual-acceptance
+          # PR-A visuals are uploaded independently by G01 PR-A Gate.
           if-no-files-found: error
           retention-days: 14

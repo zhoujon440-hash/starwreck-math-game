@@ -1986,3 +1986,268 @@ i.inventory-art {
     transition-duration: 1ms !important;
   }
 }
+
+/* G01 PR-A runtime scenes: all environmental imagery is raster production art. */
+.scene-scn-g01-02 .scene-art,
+.scene-scn-g01-03 .scene-art {
+  filter: brightness(0.96) saturate(0.94);
+  transform: none;
+}
+
+.scene-scn-g01-02.state-S5 .scene-art,
+.scene-scn-g01-02.state-S6 .scene-art,
+.scene-scn-g01-03.state-S6 .scene-art {
+  filter: brightness(1.04) saturate(1.02);
+}
+
+.pr-a-state-layer,
+.pr-a-scene-object {
+  position: absolute;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.pr-a-scene-object {
+  width: auto;
+  height: auto;
+  transform: rotate(var(--object-rotation, 0deg));
+  filter: brightness(0.78) saturate(0.74);
+}
+
+.scene-scn-g01-02 .collectible-scene {
+  z-index: 6;
+  filter: brightness(0.84) saturate(0.78);
+}
+
+.pr-a-detail-modal,
+.pr-a-puzzle-modal {
+  width: min(1040px, 92vw);
+  max-height: min(860px, 90vh);
+}
+
+.pr-a-detail-art {
+  min-height: min(54vh, 540px);
+  background-position: center;
+  background-size: cover;
+  border-block: 1px solid rgb(132 180 190 / 18%);
+}
+
+.pr-a-detail-copy {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 24px 22px;
+  color: #9eb2bb;
+  background: rgb(6 12 18 / 96%);
+}
+
+.pr-a-detail-copy strong {
+  color: #d7e5e8;
+  white-space: nowrap;
+}
+
+.pr-a-detail-copy p {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.pr-a-hos-modal {
+  width: min(1220px, 95vw);
+}
+
+.pr-a-hos-art {
+  min-height: min(66vh, 700px);
+}
+
+.pr-a-puzzle-stage {
+  min-height: min(52vh, 500px);
+  padding: 36px;
+  background:
+    linear-gradient(rgb(7 14 20 / 24%), rgb(7 14 20 / 82%)),
+    url("/assets/g01/pr-a/scn-g01-02/closeups/task-console.webp") center / cover;
+}
+
+.task-chain-stage {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: center;
+  gap: 24px;
+}
+
+.task-chain-node {
+  display: grid;
+  min-height: 160px;
+  place-content: center;
+  gap: 12px;
+  border: 1px solid rgb(124 187 195 / 35%);
+  border-radius: 10px;
+  color: #b5c9ce;
+  background: rgb(8 16 22 / 90%);
+  box-shadow: 0 18px 45px rgb(0 0 0 / 34%);
+}
+
+.task-chain-node span {
+  color: var(--amber);
+  font: 700 28px/1 ui-monospace, monospace;
+}
+
+.task-chain-node.is-complete {
+  border-color: rgb(91 191 195 / 70%);
+  color: #eef7f7;
+  background: rgb(20 72 76 / 76%);
+}
+
+.pressure-stage {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(300px, 1.2fr);
+  align-items: center;
+  gap: 36px;
+  background:
+    linear-gradient(rgb(5 14 20 / 38%), rgb(5 14 20 / 82%)),
+    url("/assets/g01/pr-a/scn-g01-03/closeups/gauge-and-valve.webp") center / cover;
+}
+
+.pressure-stage > img {
+  width: min(360px, 100%);
+  margin: auto;
+  filter: drop-shadow(0 18px 32px rgb(0 0 0 / 65%));
+}
+
+.pressure-steps {
+  display: grid;
+  gap: 14px;
+}
+
+.pressure-steps button {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 17px 18px;
+  border: 1px solid rgb(123 182 192 / 34%);
+  border-radius: 8px;
+  color: #b9cbd0;
+  text-align: left;
+  background: rgb(7 15 21 / 88%);
+}
+
+.pressure-steps i {
+  width: 13px;
+  height: 13px;
+  border: 1px solid #6d858e;
+  border-radius: 50%;
+}
+
+.pressure-steps button.is-complete {
+  border-color: rgb(92 201 190 / 72%);
+  color: #f0fbf8;
+}
+
+.pressure-steps button.is-complete i {
+  border-color: #71d0c8;
+  background: #71d0c8;
+  box-shadow: 0 0 14px rgb(113 208 200 / 58%);
+}
+
+.cargo-recovery-panel {
+  position: absolute;
+  z-index: 28;
+  top: 50%;
+  left: 13%;
+  width: min(440px, 38vw);
+  padding: 28px;
+  transform: translateY(-50%);
+  border: 1px solid rgb(222 164 91 / 48%);
+  border-radius: 12px;
+  color: #cbd8dc;
+  background: rgb(7 12 18 / 96%);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 60%);
+}
+
+.cargo-recovery-panel h2 {
+  margin: 6px 0 10px;
+  color: #f0e6d7;
+  font-family: "Noto Serif SC", "Songti SC", serif;
+}
+
+.cargo-recovery-panel p,
+.cargo-recovery-panel li {
+  color: #9eafb5;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.cargo-recovery-panel ul {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 18px;
+  margin: 16px 0 20px;
+  padding-left: 18px;
+}
+
+.danger-soft-fail-hotspot {
+  cursor: crosshair;
+}
+
+.cargo-danger-status {
+  position: absolute;
+  z-index: 16;
+  top: 88px;
+  right: 24px;
+  display: grid;
+  min-width: 150px;
+  gap: 3px;
+  padding: 11px 14px;
+  border-right: 2px solid #7adbe1;
+  color: #8fa8b1;
+  text-align: right;
+  background: rgb(5 12 18 / 82%);
+  backdrop-filter: blur(8px);
+}
+
+.cargo-danger-status span {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.cargo-danger-status strong {
+  color: #dbeef0;
+  font: 700 15px/1.2 ui-monospace, monospace;
+}
+
+.pr-a-complete {
+  width: min(520px, 43vw);
+}
+
+@media (max-width: 900px) {
+  .pr-a-detail-copy {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .task-chain-stage {
+    gap: 10px;
+    padding: 18px;
+  }
+
+  .task-chain-node {
+    min-height: 110px;
+  }
+
+  .pressure-stage {
+    grid-template-columns: 180px 1fr;
+    gap: 12px;
+    padding: 18px;
+  }
+
+  .cargo-recovery-panel {
+    left: 8%;
+    width: min(430px, 52vw);
+  }
+}
