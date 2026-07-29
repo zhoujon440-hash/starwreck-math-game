@@ -171,6 +171,22 @@ check(
 
 const runtimeEntries = Object.entries(provenance.runtime_sha256)
 check(runtimeEntries.length >= 36, 'PRA-ART-005', 'expected at least 36 runtime assets')
+const productionInputs = Object.entries(provenance.production_inputs)
+check(
+  productionInputs.length === 6,
+  'PRA-ART-016',
+  'expected all six checked-in runtime production inputs',
+)
+for (const [path, expectedSha] of productionInputs) {
+  check(existsSync(resolve(root, path)), 'PRA-ART-017', `production input missing: ${path}`)
+  if (existsSync(resolve(root, path))) {
+    check(
+      sha256(path) === expectedSha,
+      'PRA-ART-018',
+      `production input SHA mismatch: ${path}`,
+    )
+  }
+}
 for (const [path, expectedSha] of runtimeEntries) {
   check(existsSync(resolve(root, path)), 'PRA-ART-006', `runtime asset missing: ${path}`)
   if (existsSync(resolve(root, path))) {
@@ -191,6 +207,14 @@ for (const scene of [scn02.scene_asset, scn03.scene_asset]) {
   check(scene.runtime_asset === true, 'PRA-ART-009', `${scene.asset_id} is not runtime`)
   check(scene.width === 3840 && scene.height === 2160, 'PRA-ART-010', `${scene.asset_id} is not 3840x2160`)
   check(Boolean(scene.sha256), 'PRA-ART-011', `${scene.asset_id} SHA is missing`)
+  if (existsSync(resolve(root, scene.runtime_path))) {
+    check(
+      sha256(scene.runtime_path) === scene.sha256 &&
+        provenance.runtime_sha256[scene.runtime_path] === scene.sha256,
+      'PRA-ART-019',
+      `${scene.asset_id} manifest, provenance and file SHA disagree`,
+    )
+  }
 }
 
 for (const target of [
@@ -202,6 +226,17 @@ for (const target of [
   check(existsSync(resolve(root, target.inventory_asset)), 'PRA-ART-014', `${target.asset_id} inventory asset missing`)
   if (target.official_id === undefined) {
     fail('PRA-DATA-004', `${target.asset_id} must explicitly record official_id`)
+  }
+  if (
+    existsSync(resolve(root, target.scene_asset)) &&
+    existsSync(resolve(root, target.inventory_asset))
+  ) {
+    check(
+      sha256(target.scene_asset) === target.scene_sha256 &&
+        sha256(target.inventory_asset) === target.inventory_sha256,
+      'PRA-ART-020',
+      `${target.asset_id} scene/inventory SHA disagrees with manifest`,
+    )
   }
 }
 
@@ -243,7 +278,8 @@ if (!process.exitCode) {
     8 +
     adapter.hint_contracts.length * 3 +
     runtimeEntries.length +
-    17
+    productionInputs.length +
+    20
   console.log(
     `G01_PR_A_VALIDATION_OK rules=${rules} assets=${runtimeEntries.length} ` +
       `critical_items=${adapter.critical_item_contracts.length} hints=${adapter.hint_contracts.length}`,
