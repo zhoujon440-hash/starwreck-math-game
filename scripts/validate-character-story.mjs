@@ -207,25 +207,27 @@ if (fixturePath) {
   check(
     contract.completion_boundary === 'SCN-G01-02' &&
       contract.completion_boundary_only === false &&
-      JSON.stringify(activeScope.implemented_scenes) === JSON.stringify(['SCN-G01-02', 'SCN-G01-03']) &&
-      activeScope.maximum_runtime_scene === 'SCN-G01-03' &&
-      activeScope.next_boundary === 'SCN-G01-04' &&
+      JSON.stringify(activeScope.implemented_scenes) === JSON.stringify(['SCN-G01-02', 'SCN-G01-03', 'SCN-G01-04', 'SCN-G01-05']) &&
+      activeScope.maximum_runtime_scene === 'SCN-G01-05' &&
+      activeScope.next_boundary === 'SCN-G01-06' &&
       activeScope.next_boundary_only === true &&
       activeScope.g01_chapter_complete === false &&
       activeScope.g01_handoff_to_g02 === false &&
       existsSync(resolve(root, 'src/scenes/g01/scn02.ts')) &&
       existsSync(resolve(root, 'src/scenes/g01/scn03.ts')) &&
-      !existsSync(resolve(root, 'src/scenes/g01/scn04.ts')),
+      existsSync(resolve(root, 'src/scenes/g01/scn04.ts')) &&
+      existsSync(resolve(root, 'src/scenes/g01/scn05.ts')) &&
+      !existsSync(resolve(root, 'src/scenes/g01/scn06.ts')),
     'CS-036-SCOPE',
     rel(policyPath),
     activeScope,
     {
-      implemented: ['SCN-G01-02', 'SCN-G01-03'],
-      maximum: 'SCN-G01-03',
-      nextBoundaryOnly: 'SCN-G01-04',
+      implemented: ['SCN-G01-02', 'SCN-G01-03', 'SCN-G01-04', 'SCN-G01-05'],
+      maximum: 'SCN-G01-05',
+      nextBoundaryOnly: 'SCN-G01-06',
     },
-    'Issue #9 comment 5114041966',
-    'Keep PR-A implementation within SCN-G01-02 and SCN-G01-03.',
+    'Issue #9 comment 5115689539',
+    'Keep PR-B implementation within SCN-G01-04 and SCN-G01-05, with SCN-G01-06 boundary only.',
   )
 
   const packagePath = resolve(root, policy.formal_source.package_path)

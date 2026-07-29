@@ -52,6 +52,12 @@ const parseSession = (value: string | null): GameSession | null => {
         g01_chapter_complete: false,
         g01_handoff_to_g02: false,
         world_star_core_count: 0,
+        ability_qima_search: false,
+        ability_analysis: false,
+        ability_pathfinding: false,
+        ability_teleport: false,
+        ability_shrink: false,
+        ability_clone: false,
       },
       dialogue: parsed.dialogue ?? {
         currentDialogueId: null,

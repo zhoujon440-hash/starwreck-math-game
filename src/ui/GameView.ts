@@ -4,6 +4,7 @@ import { sceneStateOrder } from '../game/engine'
 import hosManifest from '../../data/source/g01/scn-g01-01/hos_manifest.json'
 import scn02Art from '../../data/source/g01/pr-a/scn-g01-02-art-manifest.json'
 import scn03Art from '../../data/source/g01/pr-a/scn-g01-03-art-manifest.json'
+import prBArt from '../../data/source/g01/pr-b/runtime-art-manifest.json'
 import { DEBUG_UI } from '../config'
 import { CharacterPortrait } from '../components/characters/CharacterPortrait'
 import { characterData } from '../data/characters'
@@ -60,12 +61,14 @@ export class GameView {
   #profileOpen = false
   #puzzleOpen = false
   #activeZoomId: string | null = null
+  #pendingZoomId: string | null = null
   #toast = ''
   #toastTimer: number | undefined
   #hintTimer: number | undefined
   #bootTimer: number | undefined
   #recoveryDialogueTimer: number | undefined
   #cargoDangerTimer: number | undefined
+  #routeWindowTimer: number | undefined
   #unsubscribe: (() => void) | undefined
 
   constructor(
@@ -127,6 +130,7 @@ export class GameView {
     if (this.#bootTimer) window.clearTimeout(this.#bootTimer)
     if (this.#recoveryDialogueTimer) window.clearTimeout(this.#recoveryDialogueTimer)
     if (this.#cargoDangerTimer) window.clearTimeout(this.#cargoDangerTimer)
+    if (this.#routeWindowTimer) window.clearTimeout(this.#routeWindowTimer)
   }
 
   #render(): void {
@@ -135,16 +139,22 @@ export class GameView {
     const isScn01 = scene.id === 'SCN-G01-01'
     const isScn02 = scene.id === 'SCN-G01-02'
     const isScn03 = scene.id === 'SCN-G01-03'
+    const isScn04 = scene.id === 'SCN-G01-04'
+    const isScn05 = scene.id === 'SCN-G01-05'
     const isCargoRecovery =
       isScn03 &&
       this.#session.activeRuntimeNodeId === 'SCN-G01-03:cargo-safety-door' &&
       Boolean(this.#session.safeRecovery)
-    const state = isCargoRecovery
+    const isPrBRecovery =
+      (isScn04 || isScn05) &&
+      this.#session.safeRecovery?.sceneId === scene.id &&
+      Boolean(this.#session.activeRuntimeNodeId)
+    const state = isCargoRecovery || isPrBRecovery
       ? {
           id: this.#session.sceneState,
-          title: '货舱安全门',
+          title: isCargoRecovery ? '货舱安全门' : '航行安全节点',
           objective: '确认保留内容，并从失败前进度继续',
-          narrative: '内门已经关闭，当前位于独立保存的安全恢复节点。',
+          narrative: '当前位于独立保存的安全恢复节点，正确进度未被回滚。',
         }
       : scene.states[this.#session.sceneState]
     const activeHotspots = this.engine.activeHotspots()
@@ -169,7 +179,7 @@ export class GameView {
 
     this.root.innerHTML = `
       <main
-        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery ? 'is-cargo-safe-recovery' : ''}"
+        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery ? 'is-cargo-safe-recovery' : ''}"
         data-debug-ui="${DEBUG_UI}"
         data-scene-id="${scene.id}"
         data-runtime-node-id="${escapeHtml(this.#session.activeRuntimeNodeId ?? 'scene-active')}"
@@ -222,13 +232,18 @@ export class GameView {
                     ? '受损的拾光号导航核心舱，七码维修托架位于右侧'
                     : isScn02
                       ? '拾光号中控任务台、船内地图与通往货舱的舱门'
-                      : '结霜的拾光号货舱，右侧外壳裂口正在漏气',
+                      : isScn03
+                        ? '结霜的拾光号货舱，右侧外壳裂口正在漏气'
+                        : isScn04
+                          ? '布满导航零件的星图室，中央十二星门环有三处缺口'
+                          : '拾光号驾驶舱外是密集垃圾雨与一条狭窄安全航线',
               )}"
             ></div>
             <div class="state-layer distribution-box-layer" aria-hidden="true"></div>
             <div class="state-layer lighting-layer" aria-hidden="true"></div>
             ${isScn01 ? this.#scn01SceneLayersTemplate() : ''}
             ${isScn02 || (isScn03 && !isCargoRecovery) ? this.#prASceneLayersTemplate() : ''}
+            ${isScn04 || isScn05 ? this.#prBSceneLayersTemplate() : ''}
             <div class="scene-treatment" aria-hidden="true"></div>
             <div class="foreground-layer" aria-hidden="true"></div>
             ${this.#collectibleLayersTemplate('scene')}
@@ -377,9 +392,9 @@ export class GameView {
                 <section class="story-panel complete-panel pr-a-complete" aria-labelledby="scn03-complete-title">
                   <span class="eyebrow">${DEBUG_UI ? 'S6 · SCN-G01-03' : '首项任务完成'}</span>
                   <h2 id="scn03-complete-title">货舱压力恢复</h2>
-                  <p>裂口、测压证据与修复步骤已写入任务日志。后续舱段暂不开放。</p>
+                  <p>裂口、测压证据与修复步骤已写入任务日志。导航星图室已经开放。</p>
                   <p data-evidence-summary="leak,pressure,repair">已恢复记录：漏气调查、测压读数与正确修复步骤。</p>
-                  <p data-next-boundary="scn-g01-04">下一场景边界“星图缺口”已记录，但没有加载运行时内容。</p>
+                  <button class="secondary-action" data-action="enter-scn04">前往导航星图室</button>
                   <div class="completion-stats">
                     <span><b>4</b> 维修物</span>
                     <span><b>${Number(this.#session.flags.g01_scn03_soft_failure_count ?? 0)}</b> 安全回退</span>
@@ -391,8 +406,38 @@ export class GameView {
           }
 
           ${
+            isScn04 && this.#session.sceneState === 'S6' && !dialogue
+              ? `
+                <section class="story-panel complete-panel pr-a-complete" aria-labelledby="scn04-complete-title">
+                  <span class="eyebrow">坐标已锁定</span>
+                  <h2 id="scn04-complete-title">锈环星异常信号</h2>
+                  <p>三片星图已嵌回，十二星门环完成校准。七码只分析了本场取得的证据。</p>
+                  <p data-evidence-summary="star-map,anomaly,coordinate">证据：修复星图、十二处异常、锈环星自删除信号。</p>
+                  <button class="secondary-action" data-action="enter-scn05">前往驾驶舱规划航线</button>
+                </section>
+              `
+              : ''
+          }
+
+          ${
+            isScn05 && this.#session.sceneState === 'S6' && !dialogue
+              ? `
+                <section class="story-panel complete-panel pr-a-complete" aria-labelledby="scn05-complete-title">
+                  <span class="eyebrow">垃圾雨航线完成</span>
+                  <h2 id="scn05-complete-title">安全落点已保存</h2>
+                  <p>两个安全节点、旁路板和短时窗口已经连成完整路线。</p>
+                  <p data-next-boundary="scn-g01-06">下一边界：锈环星求救信号。本PR未加载求救信号、能力授权或后续剧情。</p>
+                  <div class="completion-stats"><span><b>0</b> 序章星核</span><span><b>6</b> 永久能力仍锁定</span></div>
+                </section>
+              `
+              : ''
+          }
+
+          ${
             isCargoRecovery
               ? this.#cargoRecoveryTemplate(sceneArt)
+              : isPrBRecovery
+                ? this.#prBRecoveryTemplate(sceneArt)
               : ''
           }
 
@@ -412,6 +457,33 @@ export class GameView {
                 <div class="cargo-danger-status" aria-live="polite">
                   <span>货舱氧压安全窗</span>
                   <strong>${this.#cargoSecondsRemaining()} 秒</strong>
+                </div>
+              `
+              : ''
+          }
+
+          ${
+            isScn05 &&
+            !isPrBRecovery &&
+            this.#session.sceneState === 'S4' &&
+            this.#session.flags.g01_scn05_window_open === true
+              ? `
+                <div class="route-window-status" aria-live="assertive" data-route-window="active">
+                  <span>垃圾雨通行窗口</span>
+                  <strong>${this.#routeWindowSecondsRemaining()} 秒</strong>
+                  <small>到期将自动退回最近有效安全步骤</small>
+                </div>
+              `
+              : ''
+          }
+
+          ${
+            isScn05 && this.#session.flags.g01_scn05_collision_active === true
+              ? `
+                <div class="route-collision-status" data-route-stepback="one-step" role="status">
+                  <span>碰撞路线已撤销</span>
+                  <strong>仅退回本次尝试</strong>
+                  <small>已确认安全节点、物品与证据均保留</small>
                 </div>
               `
               : ''
@@ -481,6 +553,17 @@ export class GameView {
     } else if (this.#cargoDangerTimer) {
       window.clearTimeout(this.#cargoDangerTimer)
       this.#cargoDangerTimer = undefined
+    }
+    if (
+      isScn05 &&
+      this.#session.sceneState === 'S4' &&
+      this.#session.flags.g01_scn05_window_open === true &&
+      !isPrBRecovery
+    ) {
+      this.#scheduleRouteWindow()
+    } else if (this.#routeWindowTimer) {
+      window.clearTimeout(this.#routeWindowTimer)
+      this.#routeWindowTimer = undefined
     }
   }
 
@@ -563,6 +646,21 @@ export class GameView {
           data-action="trigger-cargo-soft-fail"
           aria-label="在氧压临界时继续检查裂口"
         ><span class="sr-only">触发氧压临界安全回退</span></button>
+      `
+    }
+    if (
+      DEBUG_UI &&
+      ['SCN-G01-04', 'SCN-G01-05'].includes(this.#session.currentSceneId) &&
+      ['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState) &&
+      !this.#session.safeRecovery
+    ) {
+      return `
+        <button
+          class="scene-hotspot danger-soft-fail-hotspot"
+          style="left:88%;top:5%;width:9%;height:14%"
+          data-action="trigger-pr-b-soft-fail"
+          aria-label="触发当前危险窗口的安全回退"
+        ><span class="sr-only">触发安全回退</span></button>
       `
     }
     if (this.#session.currentSceneId !== 'SCN-G01-00') return ''
@@ -710,6 +808,7 @@ export class GameView {
     if (this.#session.currentSceneId === 'SCN-G01-01') return this.#qimaHosTemplate()
     if (this.#session.currentSceneId === 'SCN-G01-02') return this.#shipMapCloseupTemplate()
     if (this.#session.currentSceneId === 'SCN-G01-03') return this.#cargoHosTemplate()
+    if (this.#session.currentSceneId === 'SCN-G01-04') return this.#starMapHosTemplate()
     return ''
   }
 
@@ -720,7 +819,31 @@ export class GameView {
     if (this.#session.currentSceneId === 'SCN-G01-03') {
       return this.#pressurePuzzleTemplate()
     }
+    if (this.#session.currentSceneId === 'SCN-G01-04') {
+      return this.#starMapPuzzleTemplate()
+    }
     return this.#chipPuzzleTemplate()
+  }
+
+  #prBSceneLayersTemplate(): string {
+    const layers =
+      this.#session.currentSceneId === 'SCN-G01-04'
+        ? [
+            ['g01_star_map_calibrated', '/assets/g01/pr-b/scn-g01-04/states/star-map-calibrated.png'],
+            ['g01_scn04_evidence_anomaly', '/assets/g01/pr-b/scn-g01-04/states/anomaly-signal.png'],
+            ['g01_star_map_coordinate_locked', '/assets/g01/pr-b/scn-g01-04/states/coordinate-locked.png'],
+          ]
+        : [
+            ['g01_scn05_node_a', '/assets/g01/pr-b/scn-g01-05/states/route-node-a.png'],
+            ['g01_scn05_node_b', '/assets/g01/pr-b/scn-g01-05/states/route-node-b.png'],
+            ['g01_scn05_bypass_installed', '/assets/g01/pr-b/scn-g01-05/states/bypass-installed.png'],
+            ['g01_scn05_window_open', '/assets/g01/pr-b/scn-g01-05/states/route-window-open.png'],
+            ['g01_route_complete', '/assets/g01/pr-b/scn-g01-05/states/safe-landing.png'],
+          ]
+    return layers
+      .filter(([flag]) => this.#session.flags[flag] === true)
+      .map(([, path]) => `<img class="pr-a-state-layer" src="${path}" alt="" aria-hidden="true">`)
+      .join('')
   }
 
   #prASceneLayersTemplate(): string {
@@ -896,6 +1019,83 @@ export class GameView {
     `
   }
 
+  #starMapHosTemplate(): string {
+    const targets = prBArt.hos.targets
+    const foundCount = targets.filter((target) =>
+      this.#session.foundItemIds.includes(target.item_id),
+    ).length
+    const activeTargets = this.engine
+      .activeHotspots()
+      .filter(
+        (hotspot) =>
+          hotspot.hosId === 'HOS-G01-004' &&
+          hotspot.itemId &&
+          !this.#session.foundItemIds.includes(hotspot.itemId),
+      )
+    return `
+      <div class="modal-backdrop" data-action="close-cabinet"></div>
+      <section class="zoom-modal pr-a-hos-modal" role="dialog" aria-modal="true" aria-labelledby="star-map-hos-title">
+        <header>
+          <div><span class="eyebrow">星图台 · 局部放大</span><h2 id="star-map-hos-title">找回星图缺失部件</h2></div>
+          <div class="zoom-progress">${foundCount} / ${targets.length}</div>
+          <button class="icon-button" data-action="close-cabinet" aria-label="关闭星图台近景">×</button>
+        </header>
+        <div class="qima-hos-content">
+          <div class="qima-hos-art pr-b-star-map-hos" role="img" aria-label="散落透明星图板和导航零件的破损星图台">
+            ${this.#collectibleLayersTemplate('zoom')}
+            ${prBArt.hos.distractors
+              .map(
+                (item) => `
+                  <img class="hos-distractor-object" src="/${item.runtime_path.replace(/^public\//, '')}" style="${areaStyle(
+                    item.name === '普通星图页'
+                      ? { x: 52, y: 18, width: 16, height: 24 }
+                      : { x: 12, y: 64, width: 14, height: 22 },
+                    item.name === '普通星图页' ? 9 : -14,
+                  )}" alt="" aria-hidden="true">
+                  <button class="scene-hotspot hos-distractor-hotspot" style="${hotspotStyle({
+                    area:
+                      item.name === '普通星图页'
+                        ? { x: 52, y: 18, width: 16, height: 24 }
+                        : { x: 12, y: 64, width: 14, height: 22 },
+                  } as HotspotDefinition)}" data-action="star-map-distractor" aria-label="检查${escapeHtml(item.name)}"><span class="sr-only">${escapeHtml(item.name)}</span></button>
+                `,
+              )
+              .join('')}
+            ${activeTargets.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}
+          </div>
+          <aside class="hos-list qima-hos-list">
+            <span>星图台清单</span><h3>观察边缘与坐标材质</h3>
+            <ul>${targets
+              .map(
+                (target) => `<li class="${this.#session.foundItemIds.includes(target.item_id) ? 'is-found' : ''}"><i aria-hidden="true"></i>${escapeHtml(target.name)}<small>关键</small></li>`,
+              )
+              .join('')}</ul>
+            <p>普通星图页和错误坐标标签会保留。目标物拾取后独立消失并进入背包。</p>
+          </aside>
+        </div>
+      </section>
+    `
+  }
+
+  #starMapPuzzleTemplate(): string {
+    return `
+      <div class="modal-backdrop"></div>
+      <section class="zoom-modal pr-a-puzzle-modal" role="dialog" aria-modal="true" aria-labelledby="star-map-puzzle-title">
+        <header><div><span class="eyebrow">十二星门环 · 近景</span><h2 id="star-map-puzzle-title">校准碎片来源</h2></div>
+          <button class="icon-button" data-action="close-puzzle" aria-label="关闭星图校准">×</button>
+        </header>
+        <div class="pr-b-star-map-puzzle" role="img" aria-label="三片星图已经嵌入机械星门环">
+          <img src="/assets/g01/pr-b/scn-g01-04/items/fragment-a_inventory.png" alt="">
+          <img src="/assets/g01/pr-b/scn-g01-04/items/fragment-b_inventory.png" alt="">
+          <img src="/assets/g01/pr-b/scn-g01-04/items/fragment-c_inventory.png" alt="">
+        </div>
+        <div class="pr-a-detail-copy"><p>依次比对缺口边缘、同心环和锈环星坐标源。完成一步不会跳过后续分析。</p>
+          <button class="primary-action" data-action="calibrate-star-map">锁定十二星门环</button>
+        </div>
+      </section>
+    `
+  }
+
   #taskDependencyPuzzleTemplate(): string {
     const step = Number(this.#session.puzzleProgress.task_dependency_step ?? 0)
     const tasks = ['测量货舱压力', '封堵外壳裂口', '启动货舱复压']
@@ -994,7 +1194,7 @@ export class GameView {
         aria-labelledby="cargo-recovery-title"
       >
         <div class="cargo-recovery-panel">
-          <span class="eyebrow">安全恢复节点 · 失败前 ${recovery.preFailureState}</span>
+          <span class="eyebrow">安全恢复节点 · 已保留失败前状态</span>
           <h2 id="cargo-recovery-title">已退回货舱安全门</h2>
           <p>氧压临界警报已关闭内门。这里只显示真实取得的证据；关键物与正确修复步骤按失败前快照保留。</p>
           <ul>
@@ -1006,6 +1206,27 @@ export class GameView {
             <li>场景重置：未发生</li>
           </ul>
           <button class="primary-action" data-action="resume-cargo">从 ${recovery.preFailureState} 保留进度继续</button>
+        </div>
+      </section>
+    `
+  }
+
+  #prBRecoveryTemplate(sceneArt: string): string {
+    const recovery = this.#session.safeRecovery
+    if (!recovery) return ''
+    const evidenceCount = Object.entries(this.#session.flags).filter(
+      ([key, value]) => key.includes('evidence') && value === true,
+    ).length
+    return `
+      <section class="cargo-safe-recovery-node" data-safe-recovery-node="${escapeHtml(recovery.nodeId)}"
+        data-pre-failure-state="${recovery.preFailureState}" style="--safe-node-art:url('${sceneArt}')"
+        aria-labelledby="pr-b-recovery-title">
+        <div class="cargo-recovery-panel">
+          <span class="eyebrow">安全恢复节点${DEBUG_UI ? ` · 失败前 ${recovery.preFailureState}` : ''}</span>
+          <h2 id="pr-b-recovery-title">${recovery.sceneId === 'SCN-G01-04' ? '已退回星图台安全位置' : '已退回最近航线安全节点'}</h2>
+          <p>危险只中断当前确认动作；背包、找物、谜题、证据和正确步骤均保持失败前状态。</p>
+          <ul><li>关键物：${this.#session.inventoryItemIds.length} 件保留</li><li>证据：${evidenceCount} 条保留</li><li>已确认热点：${this.#session.completedHotspotIds.length} 个</li><li>继续位置：${recovery.resumeState === 'S3' ? '旁路重启步骤' : '失败前操作步骤'}</li><li>场景重置：未发生</li></ul>
+          <button class="primary-action" data-action="resume-pr-b">保留进度继续</button>
         </div>
       </section>
     `
@@ -1206,6 +1427,36 @@ export class GameView {
     }, 1_000)
   }
 
+  #routeWindowSecondsRemaining(): number {
+    return Math.max(0, Math.ceil(this.engine.prBRouteWindowRemainingMs() / 1_000))
+  }
+
+  #scheduleRouteWindow(): void {
+    if (this.#routeWindowTimer) return
+    this.#routeWindowTimer = window.setTimeout(() => {
+      this.#routeWindowTimer = undefined
+      if (
+        this.#session.currentSceneId !== 'SCN-G01-05' ||
+        this.#session.sceneState !== 'S4' ||
+        this.#session.safeRecovery ||
+        this.#session.flags.g01_scn05_window_open !== true
+      ) {
+        return
+      }
+      if (this.engine.prBRouteWindowRemainingMs() <= 0) {
+        this.#handleResult(
+          this.engine.expirePrBRouteWindow('garbage-route-window-expired'),
+        )
+        return
+      }
+      const countdown = this.root.querySelector<HTMLElement>(
+        '.route-window-status strong',
+      )
+      if (countdown) countdown.textContent = `${this.#routeWindowSecondsRemaining()} 秒`
+      this.#scheduleRouteWindow()
+    }, 250)
+  }
+
   #scheduleBootSequence(): void {
     if (this.#bootTimer) return
     this.#bootTimer = window.setTimeout(() => {
@@ -1272,7 +1523,7 @@ export class GameView {
           }
           if (
             result.ok &&
-            this.#session.currentSceneId === 'SCN-G01-03' &&
+            ['SCN-G01-03', 'SCN-G01-04'].includes(this.#session.currentSceneId) &&
             this.#session.sceneState !== 'S1'
           ) {
             this.#cabinetOpen = false
@@ -1283,7 +1534,16 @@ export class GameView {
         break
       }
       case 'advance-dialogue':
-        this.#dialogueRunner.advance()
+        {
+          const dialogueId = this.#dialogueRunner.current?.dialogue_id
+          this.#dialogueRunner.advance()
+          if (dialogueId === 'DLG-G01-0013' && this.#pendingZoomId) {
+            this.#activeZoomId = this.#pendingZoomId
+            this.#pendingZoomId = null
+            this.#cabinetOpen = true
+            this.#render()
+          }
+        }
         break
       case 'enter-scn01':
         this.#selectedItemId = null
@@ -1307,6 +1567,21 @@ export class GameView {
         if (!this.#session.dialogue.readDialogueIds.includes('DLG-G01-0009')) {
           this.#dialogueRunner.startTrigger('SCN-G01-03', '进入货舱')
         }
+        break
+      case 'enter-scn04':
+        this.#selectedItemId = null
+        this.#cabinetOpen = false
+        this.#puzzleOpen = false
+        this.#activeZoomId = null
+        this.#handleResult(this.engine.enterScene('SCN-G01-04'))
+        this.#dialogueRunner.startTrigger('SCN-G01-04', '进入星图室')
+        break
+      case 'enter-scn05':
+        this.#selectedItemId = null
+        this.#cabinetOpen = false
+        this.#puzzleOpen = false
+        this.#activeZoomId = null
+        this.#handleResult(this.engine.enterScene('SCN-G01-05'))
         break
       case 'open-history':
         this.#historyOpen = true
@@ -1344,6 +1619,7 @@ export class GameView {
             'PUZ-G01-CHIP-ORIENTATION',
             'RUNTIME-PUZ-G01-TASK-DEPENDENCY',
             'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION',
+            'TUT-MECH-002',
           ].includes(this.#activeZoomId ?? '')
         ) {
           this.#puzzleOpen = true
@@ -1433,6 +1709,10 @@ export class GameView {
         }
         break
       }
+      case 'calibrate-star-map':
+        this.#puzzleOpen = false
+        this.#handleResult(this.engine.completePuzzle('TUT-MECH-002'))
+        break
       case 'dismiss-complete':
         this.#completionPanelDismissed = true
         this.#render()
@@ -1445,6 +1725,9 @@ export class GameView {
         break
       case 'cargo-distractor':
         this.#showToast('这件物品已经损坏或接口不匹配，留在工具箱里。')
+        break
+      case 'star-map-distractor':
+        this.#showToast('边缘与缺口不匹配，这不是本次修复目标。')
         break
       case 'inspect': {
         const hotspotId = actionElement.dataset.hotspotId
@@ -1494,6 +1777,44 @@ export class GameView {
           ) {
             this.#dialogueRunner.startTrigger('SCN-G01-03', '进入货舱')
           }
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-04' &&
+            hotspotId === 'HS-G01-0017'
+          ) {
+            const dialogueStarted = this.#dialogueRunner.startTrigger(
+              'SCN-G01-04',
+              '开始星图机制',
+            )
+            if (dialogueStarted) {
+              this.#pendingZoomId = 'HOS-G01-004'
+            } else {
+              this.#activeZoomId = 'HOS-G01-004'
+              this.#cabinetOpen = true
+            }
+            this.#render()
+          }
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-04' &&
+            hotspotId === 'HS-G01-0019'
+          ) {
+            this.#dialogueRunner.startTrigger('SCN-G01-04', '分析完成')
+          }
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-05' &&
+            hotspotId === 'HS-G01-0021'
+          ) {
+            this.#dialogueRunner.startTrigger('SCN-G01-05', '打开航线')
+          }
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-05' &&
+            hotspotId === 'HS-G01-0024'
+          ) {
+            this.#showToast('时间窗口已确认，安全落点保持可用。')
+          }
         }
         break
       }
@@ -1504,6 +1825,18 @@ export class GameView {
         break
       case 'resume-cargo':
         this.#handleResult(this.engine.resumeCargoAfterSoftFailure())
+        break
+      case 'trigger-pr-b-soft-fail':
+        this.#handleResult(
+          this.engine.triggerPrBSoftFailure(
+            this.#session.currentSceneId === 'SCN-G01-04'
+              ? 'star-map-data-glitch'
+              : 'garbage-route-window-closed',
+          ),
+        )
+        break
+      case 'resume-pr-b':
+        this.#handleResult(this.engine.resumePrBAfterSoftFailure())
         break
       case 'hint':
         this.#requestHint()
@@ -1580,6 +1913,12 @@ export class GameView {
           this.#dialogueRunner.startTrigger('SCN-G01-03', '复压完成')
         }
       }
+      if (
+        this.#session.currentSceneId === 'SCN-G01-05' &&
+        targetId === 'HS-G01-0023'
+      ) {
+        this.#dialogueRunner.startTrigger('SCN-G01-05', '旁路片安装')
+      }
     }
     this.#handleResult(result)
   }
@@ -1598,7 +1937,25 @@ export class GameView {
     this.#render()
     this.#showToast(this.#hintCopy(result))
 
-    if (result.level === 3 && this.#session.currentSceneId !== 'SCN-G01-00') {
+    if (
+      result.level === 3 &&
+      ['SCN-G01-04', 'SCN-G01-05'].includes(this.#session.currentSceneId)
+    ) {
+      window.setTimeout(() => {
+        const step = this.engine.completeHintStep(result)
+        this.#handleResult(step)
+        if (!step.ok) return
+        if (result.hotspot.id === 'HS-G01-0017') {
+          this.#dialogueRunner.startTrigger('SCN-G01-04', '开始星图机制')
+        } else if (result.hotspot.id === 'HS-G01-0019') {
+          this.#dialogueRunner.startTrigger('SCN-G01-04', '分析完成')
+        } else if (result.hotspot.id === 'HS-G01-0021') {
+          this.#dialogueRunner.startTrigger('SCN-G01-05', '打开航线')
+        } else if (result.hotspot.id === 'HS-G01-0023') {
+          this.#dialogueRunner.startTrigger('SCN-G01-05', '旁路片安装')
+        }
+      }, 450)
+    } else if (result.level === 3 && this.#session.currentSceneId !== 'SCN-G01-00') {
       if (result.hotspot.kind === 'hidden-item' && result.hotspot.itemId) {
         window.setTimeout(() => this.#handleResult(this.engine.findItem(result.hotspot.itemId!)), 450)
       } else if (
@@ -1611,6 +1968,11 @@ export class GameView {
               result.hotspot.requiredItemId!,
               result.hotspot.id,
             ),
+          450,
+        )
+      } else if (result.hotspot.kind === 'inspect') {
+        window.setTimeout(
+          () => this.#handleResult(this.engine.inspect(result.hotspot.id)),
           450,
         )
       } else if (result.hotspot.zoomId === 'PUZ-G01-CHIP-ORIENTATION') {
@@ -1651,6 +2013,16 @@ export class GameView {
 
   #hintCopy(result: HintResult): string {
     const { hotspot, level } = result
+    if (this.#session.currentSceneId === 'SCN-G01-04') {
+      if (level === 1) return '一级提示：先观察碎片边缘与十二星门环的机械编号。'
+      if (level === 2) return '二级提示：锈环星坐标位于反复删除自身的信号源。'
+      return '三级提示：七码会替你完成当前星图任务的一步。'
+    }
+    if (this.#session.currentSceneId === 'SCN-G01-05') {
+      if (level === 1) return '一级提示：先连接两个已经确认的安全节点。'
+      if (level === 2) return '二级提示：第三航段需要驾驶舱工具槽中的旁路板。'
+      return '三级提示：七码会替你完成第一段航线确认。'
+    }
     const horizontal =
       hotspot.area.x < 34 ? '左侧' : hotspot.area.x > 66 ? '右侧' : '中央区域'
     const vertical =

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5115689539",
+  "implementation_plan": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5115836880",
+  "tool": "OpenAI built-in image_gen + Pillow deterministic runtime preparation",
+  "status": "project_owner_authorized_runtime_production",
+  "inputs": [
+    {
+      "path": "art/runtime-production/g01/pr-b/source/pr-b-props-magenta.png",
+      "sha256": "aa77e906ca482684612f9e332230bc96066cd3733ed661591017a711ad610042"
+    },
+    {
+      "path": "art/runtime-production/g01/pr-b/source/scn04-star-map-room.png",
+      "sha256": "5fe97b3e598e14f930ad049da9bb48f658b80c8e1ac3a9ed4ba47f56712a340d"
+    },
+    {
+      "path": "art/runtime-production/g01/pr-b/source/scn05-garbage-route.png",
+      "sha256": "314e31e240fcc08e12755efdfa22c3987fce97993ee6a3737931a052c5d3288f"
+    }
+  ],
+  "manifest": "data/source/g01/pr-b/runtime-art-manifest.json",
+  "formal_package": {
+    "id": "PKG-G01-V3.0",
+    "sha256": "85a20020d471e6dc77454b90e9d7792216db2555aef4e44fa729862ae9ddc043"
+  },
+  "not_used": [
+    "PR #5 assets",
+    "third-party network assets",
+    "design-board direct runtime use"
+  ]
+}

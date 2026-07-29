@@ -102,9 +102,10 @@ export type TransitionRecord = {
 }
 
 export type SafeRecoveryState = {
-  nodeId: 'SCN-G01-03:cargo-safety-door'
-  sceneId: 'SCN-G01-03'
+  nodeId: string
+  sceneId: string
   preFailureState: Extract<SceneStateId, 'S1' | 'S2' | 'S3' | 'S4'>
+  resumeState?: Extract<SceneStateId, 'S1' | 'S2' | 'S3' | 'S4'>
   reason: string
   enteredAt: string
 }

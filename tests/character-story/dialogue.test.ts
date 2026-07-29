@@ -20,6 +20,11 @@ describe('dialogue data and runner', () => {
       'DLG-G01-0009',
       'DLG-G01-0010',
       'DLG-G01-0011',
+      'DLG-G01-0012',
+      'DLG-G01-0013',
+      'DLG-G01-0014',
+      'DLG-G01-0015',
+      'DLG-G01-0016',
     ])
   })
 

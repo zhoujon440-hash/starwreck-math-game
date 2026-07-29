@@ -14,6 +14,34 @@
   --line: rgb(185 214 216 / 18%);
 }
 
+.pr-b-star-map-hos {
+  background-image: url('/assets/g01/pr-b/scn-g01-04/closeups/star-map-table.webp');
+  background-size: cover;
+  background-position: center;
+}
+
+.pr-b-star-map-puzzle {
+  min-height: 52vh;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  place-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at center, rgba(53, 177, 201, 0.24), transparent 48%),
+    url('/assets/g01/pr-b/scn-g01-04/closeups/star-map-table.webp') center/cover;
+}
+
+.pr-b-star-map-puzzle img {
+  width: min(100%, 250px);
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.72));
+}
+
+.scene-scn-g01-04 .scene-treatment,
+.scene-scn-g01-05 .scene-treatment {
+  background: linear-gradient(180deg, rgba(5, 17, 24, 0.08), rgba(4, 10, 15, 0.25));
+}
+
 * {
   box-sizing: border-box;
 }
@@ -2238,6 +2266,51 @@ i.inventory-art {
 .cargo-danger-status strong {
   color: #dbeef0;
   font: 700 15px/1.2 ui-monospace, monospace;
+}
+
+.route-window-status,
+.route-collision-status {
+  position: absolute;
+  z-index: 18;
+  top: 88px;
+  right: 24px;
+  display: grid;
+  min-width: 220px;
+  gap: 3px;
+  padding: 11px 14px;
+  border-right: 2px solid #f0b65b;
+  color: #bdc8ca;
+  text-align: right;
+  background: rgb(5 12 18 / 88%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(8px);
+}
+
+.route-window-status span,
+.route-collision-status span {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.route-window-status strong {
+  color: #ffd47e;
+  font: 800 18px/1.2 ui-monospace, monospace;
+}
+
+.route-window-status small,
+.route-collision-status small {
+  color: #94a6ab;
+  font-size: 10px;
+}
+
+.route-collision-status {
+  top: 152px;
+  border-color: #e46c63;
+}
+
+.route-collision-status strong {
+  color: #ff9e91;
+  font-size: 13px;
 }
 
 .pr-a-complete {

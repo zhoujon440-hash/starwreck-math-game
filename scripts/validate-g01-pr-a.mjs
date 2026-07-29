@@ -344,10 +344,12 @@ check(
 )
 check(
   !/SCN-G01-0[4-9]|SCN-G01-1[0-9]/.test(
-    walk('src').map((path) => readFileSync(resolve(root, path), 'utf8')).join('\n'),
+    ['src/scenes/g01/scn02.ts', 'src/scenes/g01/scn03.ts']
+      .map((path) => readFileSync(resolve(root, path), 'utf8'))
+      .join('\n'),
   ),
   'PRA-SCOPE-006',
-  'runtime code contains SCN-G01-04 or later scene implementation',
+  'PR-A scene modules contain SCN-G01-04 or later implementation',
 )
 check(
   !/(assets\/generated|pull\/5|PR\s*#?5)/i.test(JSON.stringify(provenance)),
