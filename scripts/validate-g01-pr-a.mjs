@@ -58,6 +58,17 @@ if (fixture) {
     case 'hint-missing-level':
       adapter.hint_contracts[0].levels.splice(1, 1)
       break
+    case 'missing-pre-failure-state':
+      delete adapter.scenes[1].danger_contract.pre_failure_state_field
+      break
+    case 'soft-failure-creates-evidence':
+      adapter.scenes[1].danger_contract.soft_failure_creates_evidence = true
+      break
+    case 'formal-hotspot-semantic-conflict':
+      adapter.formal_gaps = adapter.formal_gaps.filter(
+        (gap) => gap.field !== 'HS-G01-0012 hotspot semantics versus SCN-G01-03 route',
+      )
+      break
     default:
       fail('PRA-FIXTURE-UNKNOWN', `unknown mutation ${fixture.mutation}`)
   }
@@ -67,6 +78,11 @@ check(
   adapter.scope.join(',') === 'SCN-G01-02,SCN-G01-03',
   'PRA-SCOPE-001',
   'adapter scope must contain exactly SCN-G01-02 and SCN-G01-03',
+)
+check(
+  adapter.schema_version === 2,
+  'PRA-DATA-005',
+  'corrective runtime adapter must use schema version 2',
 )
 check(
   adapter.frozen_invariants.world_star_core_count === 0,
@@ -110,6 +126,29 @@ for (const contract of adapter.critical_item_contracts) {
 const danger = adapter.scenes.find((scene) => scene.scene_id === 'SCN-G01-03')
   ?.danger_contract
 check(Boolean(danger?.safe_recovery_node), 'PRA-DANGER-001', 'safe recovery node missing')
+check(
+  danger?.persistent_runtime_node_field === 'activeRuntimeNodeId' &&
+    danger?.pre_failure_state_field === 'safeRecovery.preFailureState',
+  'PRA-DANGER-003',
+  'persistent runtime node or pre-failure state field missing',
+)
+check(
+  JSON.stringify(danger?.failure_phases) === '["S1","S2","S3","S4"]',
+  'PRA-DANGER-004',
+  'soft-failure matrix must cover S1/S2/S3/S4',
+)
+check(
+  danger?.soft_failure_creates_evidence === false,
+  'PRA-DANGER-005',
+  'soft failure must not create evidence',
+)
+check(
+  danger?.leak_evidence_source === 'inspect:HS-G01-0013' &&
+    danger?.pressure_evidence_source ===
+      'puzzle:RUNTIME-PUZ-G01-PRESSURE-CALIBRATION',
+  'PRA-DANGER-006',
+  'evidence acquisition sources are not explicit',
+)
 for (const field of [
   'retain_key_items',
   'retain_evidence',
@@ -244,10 +283,55 @@ for (const path of Object.values(adapter.formal_sources)) {
   check(existsSync(resolve(root, path)), 'PRA-SOURCE-001', `formal source missing: ${path}`)
 }
 
+const hotspotConflict = adapter.formal_gaps.find(
+  (gap) => gap.field === 'HS-G01-0012 hotspot semantics versus SCN-G01-03 route',
+)
+check(
+  hotspotConflict?.formal_value?.hotspot_id === 'HS-G01-0012' &&
+    hotspotConflict?.formal_value?.name === '星图室门' &&
+    hotspotConflict?.formal_value?.success_result === '开放星图室路径',
+  'PRA-DATA-006',
+  'formal HS-G01-0012 semantics conflict is not recorded',
+)
+check(
+  adapter.scenes[0].runtime_adapter_ids.includes(
+    'RUNTIME-HS-G01-02-CARGO-ENTRY',
+  ),
+  'PRA-DATA-007',
+  'runtime cargo entry adapter ID is missing',
+)
+
 const runtimeCode = [
   ...walk('src'),
   'data/source/g01/pr-a/runtime-adapter.json',
 ].map((path) => readFileSync(resolve(root, path), 'utf8')).join('\n')
+const scn02Runtime = readFileSync(resolve(root, 'src/scenes/g01/scn02.ts'), 'utf8')
+const engineRuntime = readFileSync(resolve(root, 'src/game/engine.ts'), 'utf8')
+check(
+  !/id:\s*['"]HS-G01-0012['"]/.test(scn02Runtime) &&
+    /id:\s*['"]RUNTIME-HS-G01-02-CARGO-ENTRY['"]/.test(scn02Runtime),
+  'PRA-DATA-008',
+  'SCN-G01-02 runtime silently reuses formal HS-G01-0012 semantics',
+)
+const softFailureBody =
+  engineRuntime.match(
+    /triggerCargoSoftFailure\(reason: string\): ActionResult \{([\s\S]*?)\n  \}\n\n  resumeCargoAfterSoftFailure/,
+  )?.[1] ?? ''
+check(
+  !/evidence_(?:leak_confirmed|pressure_reading)\s*=\s*true/.test(
+    softFailureBody,
+  ),
+  'PRA-DANGER-007',
+  'triggerCargoSoftFailure creates evidence',
+)
+check(
+  /activeRuntimeNodeId\s*=\s*next\.safeRecovery\.nodeId/.test(
+    softFailureBody,
+  ) &&
+    /preFailureState/.test(softFailureBody),
+  'PRA-DANGER-008',
+  'soft failure does not enter a persisted runtime recovery node',
+)
 check(
   !/g01_chapter_complete\s*[:=]\s*true/.test(runtimeCode),
   'PRA-SCOPE-004',
@@ -279,7 +363,7 @@ if (!process.exitCode) {
     adapter.hint_contracts.length * 3 +
     runtimeEntries.length +
     productionInputs.length +
-    20
+    31
   console.log(
     `G01_PR_A_VALIDATION_OK rules=${rules} assets=${runtimeEntries.length} ` +
       `critical_items=${adapter.critical_item_contracts.length} hints=${adapter.hint_contracts.length}`,

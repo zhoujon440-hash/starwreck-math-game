@@ -15,6 +15,9 @@
 [`5114041966`](https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5114041966)；
 编码前计划为评论
 [`5114127141`](https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5114127141)。
+合并后纠正以项目负责人评论
+[`5115004680`](https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5115004680)
+为唯一依据。
 
 ## 正式来源与适配边界
 
@@ -41,6 +44,10 @@
   `runtime_adapter_for_formal_gap`，不回写正式源。
 - SCN-G01-03 的“复压钥”是 `HOS-G01-003` 正式目标名称，但没有独立正式道具
   编号，因此使用 `RUNTIME-ITM-G01-REPRESS-KEY` 且 `official_id=null`。
+- 正式热点 `HS-G01-0012` 的含义固定为“星图室门 / 开放星图室路径”。
+  PR-A 不复用该编号作为货舱门；从任务台进入货舱的运行时入口为
+  `RUNTIME-HS-G01-02-CARGO-ENTRY`。热点表与场景流程的冲突及优先级已写入
+  `runtime-adapter.json`，正式源文件没有被修改。
 
 ## SCN-G01-02 完整操作
 
@@ -75,9 +82,16 @@
 13. 将复压钥拖到右侧阀门，恢复压力并触发 `DLG-G01-0011`。
 14. 到达 S6 完成态；只展示后续舱段边界。
 
-危险回退不加载旧的整场 checkpoint。它只设置
-`g01_scn03_safe_recovery_active=true` 并保存当前会话，因此已经确认的正确步骤
-不会回滚。恢复时重启 90 秒安全窗，继续当前 S 状态。
+危险回退不加载旧的整场 checkpoint。失败时会写入持久化
+`activeRuntimeNodeId=SCN-G01-03:cargo-safety-door`，并在 `safeRecovery` 中保存
+`preFailureState`、原因和进入时间。此时运行时切换到独立安全门子状态，不再
+显示或开放失败前场景热点；刷新后仍留在该节点。玩家继续后清除恢复子状态，
+恢复失败前最近有效的 S1、S2、S3 或 S4。
+
+回退不会写入任何新证据。漏气证据只由 `inspect:HS-G01-0013` 产生，压力证据
+只由 `puzzle:RUNTIME-PUZ-G01-PRESSURE-CALIBRATION` 产生。S1—S3 回退不会出现
+压力证据，S4 只保留此前真实完成测压得到的证据。既有物品、HOS 消失状态、
+谜题、对白历史、档案发现和正确修复步骤保持不变，也不会重复发放。
 
 ## 运行时美术
 
@@ -113,9 +127,11 @@
 - `npm run test:g01-pr-a`
 - 全部来源、基线、人物、剧情、Vitest、Build 和 Playwright 门禁
 
-PR-A 校验覆盖来源/SHA、37 个运行时文件、6 个关键物、4 组三级提示、危险
-恢复字段、正式编号/内部编号边界、禁止范围及 8 个负向破坏用例。Playwright
-在 1366×768 和 1920×1080 各运行完整两场流程并检查浏览器控制台错误。
+PR-A 校验覆盖来源/SHA、37 个运行时文件、6 个关键物、4 组三级提示、持久化
+安全恢复字段、证据取得顺序、正式热点/运行时适配编号边界、禁止范围及 11 个
+负向破坏用例。Playwright 在 1366×768 和 1920×1080 各生成 45 张真实运行时
+截图，覆盖错误使用、S1—S4 回退矩阵、刷新、继续、历史、档案、S6 与下一场景
+边界，并在截图前等待所有图片、CSS 背景和字体完成加载解码。
 
 ## 尚存风险
 

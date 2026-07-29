@@ -22,6 +22,8 @@ const createSession = (chapter: ChapterDefinition): GameSession => ({
   currentSceneId: 'SCN-G01-00',
   sceneState: chapter.initialState,
   sceneStates: { 'SCN-G01-00': chapter.initialState },
+  activeRuntimeNodeId: null,
+  safeRecovery: null,
   foundItemIds: [],
   inventoryItemIds: [],
   usedItemIds: [],
@@ -63,6 +65,7 @@ export class GameEngine {
   ) {
     const restored = saves.load()
     this.#session = restored?.chapterId === chapter.id ? restored : createSession(chapter)
+    this.#normalizeRestoredSession()
 
     if (!this.currentSceneDefinition.states[this.#session.sceneState]) {
       this.#session = createSession(chapter)
@@ -126,6 +129,10 @@ export class GameEngine {
     next.currentSceneId = sceneId
     next.sceneState = next.sceneStates[sceneId] ?? scene.initialState
     next.sceneStates[sceneId] = next.sceneState
+    if (next.safeRecovery?.sceneId !== sceneId) {
+      next.activeRuntimeNodeId = null
+      next.safeRecovery = null
+    }
     if (sceneId === 'SCN-G01-01') {
       next.characterStates['CHAR-QIMA'] = 'offline'
       next.flags.g01_scn01_entered = true
@@ -135,9 +142,10 @@ export class GameEngine {
       next.flags.g01_scn02_entered = true
     } else if (sceneId === 'SCN-G01-03') {
       next.flags.g01_scn03_entered = true
-      next.flags.g01_scn03_safe_recovery_active = false
-      next.flags.g01_scn03_evidence_leak_confirmed = true
-      next.flags.g01_scn03_danger_started_at = now()
+      if (!next.safeRecovery) {
+        next.flags.g01_scn03_safe_recovery_active = false
+        next.flags.g01_scn03_danger_started_at = now()
+      }
     }
     this.#commit(next)
     this.saves.saveCheckpoint(next)
@@ -165,6 +173,7 @@ export class GameEngine {
   }
 
   activeHotspots(): HotspotDefinition[] {
+    if (this.#session.safeRecovery) return []
     return this.currentSceneDefinition.hotspots.filter(
       (hotspot) =>
         hotspot.activeStates.includes(this.#session.sceneState) &&
@@ -270,6 +279,10 @@ export class GameEngine {
 
     const next = this.#nextSession()
     next.completedPuzzleIds.push(puzzleId)
+    if (puzzleId === 'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION') {
+      next.flags.g01_scn03_evidence_pressure_reading = true
+      next.puzzleProgress.pressure_reading = 'safe-window-90s'
+    }
     const transitioned = this.#applyTransition(next, `puzzle:${puzzleId}`)
 
     if (!transitioned) {
@@ -283,7 +296,16 @@ export class GameEngine {
   inspect(hotspotId: string): ActionResult {
     const hotspot = this.activeHotspots().find((candidate) => candidate.id === hotspotId)
     if (!hotspot) return { ok: false, message: '这里暂时没有更多线索。' }
-    return this.#dispatch(`inspect:${hotspotId}`, '星宇记下了这处异常。')
+    const next = this.#nextSession()
+    if (!this.#applyTransition(next, `inspect:${hotspotId}`)) {
+      return { ok: false, message: '当前状态无法执行这个动作。' }
+    }
+    if (hotspotId === 'HS-G01-0013') {
+      next.flags.g01_scn03_evidence_leak_confirmed = true
+      next.flags.g01_scn03_danger_started_at = now()
+    }
+    this.#commit(next)
+    return { ok: true, message: '星宇记下了这处异常。' }
   }
 
   requestHint(scope: 'scene' | 'zoom' = 'scene'): HintResult | null {
@@ -334,29 +356,46 @@ export class GameEngine {
     }
 
     const next = this.#nextSession()
+    const preFailureState = next.sceneState as Extract<
+      SceneStateId,
+      'S1' | 'S2' | 'S3' | 'S4'
+    >
+    next.safeRecovery = {
+      nodeId: 'SCN-G01-03:cargo-safety-door',
+      sceneId: 'SCN-G01-03',
+      preFailureState,
+      reason,
+      enteredAt: now(),
+    }
+    next.activeRuntimeNodeId = next.safeRecovery.nodeId
     next.flags.g01_scn03_safe_recovery_active = true
     next.flags.g01_scn03_last_soft_failure = reason
     next.flags.g01_scn03_soft_failure_count =
       Number(next.flags.g01_scn03_soft_failure_count ?? 0) + 1
-    next.flags.g01_scn03_evidence_leak_confirmed = true
-    next.flags.g01_scn03_evidence_pressure_reading = true
     next.flags.world_star_core_count = 0
     this.#commit(next)
     this.saves.saveCheckpoint(next)
     return {
       ok: true,
-      message: '氧压警报触发。星宇退回安全舱门；工具、证据和正确修复步骤全部保留。',
+      message: '氧压警报触发。星宇退回安全舱门；已取得的工具、证据和正确修复步骤全部保留。',
     }
   }
 
   resumeCargoAfterSoftFailure(): ActionResult {
     if (
       this.#session.currentSceneId !== 'SCN-G01-03' ||
-      this.#session.flags.g01_scn03_safe_recovery_active !== true
+      this.#session.activeRuntimeNodeId !== 'SCN-G01-03:cargo-safety-door' ||
+      !this.#session.safeRecovery
     ) {
       return { ok: false, message: '当前不在货舱安全恢复节点。' }
     }
+    const recovery = this.#session.safeRecovery
     const next = this.#nextSession()
+    const preFailureState = recovery.preFailureState
+    next.sceneState = preFailureState
+    next.sceneStates['SCN-G01-03'] = preFailureState
+    next.activeRuntimeNodeId = null
+    next.safeRecovery = null
     next.flags.g01_scn03_safe_recovery_active = false
     next.flags.g01_scn03_retry_available = true
     next.flags.g01_scn03_danger_started_at = now()
@@ -385,6 +424,47 @@ export class GameEngine {
     const next = clone(this.#session)
     next.updatedAt = now()
     return next
+  }
+
+  #normalizeRestoredSession(): void {
+    this.#session.activeRuntimeNodeId ??= null
+    this.#session.safeRecovery ??= null
+
+    const leakWasInvestigated =
+      this.#session.completedHotspotIds.includes('HS-G01-0013') ||
+      this.#session.transitionLog.some(
+        (entry) => entry.event === 'inspect:HS-G01-0013',
+      )
+    const pressureWasMeasured = this.#session.completedPuzzleIds.includes(
+      'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION',
+    )
+    if (!leakWasInvestigated) {
+      this.#session.flags.g01_scn03_evidence_leak_confirmed = false
+    }
+    if (!pressureWasMeasured) {
+      this.#session.flags.g01_scn03_evidence_pressure_reading = false
+      delete this.#session.puzzleProgress.pressure_reading
+    }
+
+    if (
+      this.#session.currentSceneId === 'SCN-G01-03' &&
+      this.#session.flags.g01_scn03_safe_recovery_active === true &&
+      !this.#session.safeRecovery &&
+      ['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState)
+    ) {
+      const preFailureState = this.#session.sceneState as Extract<
+        SceneStateId,
+        'S1' | 'S2' | 'S3' | 'S4'
+      >
+      this.#session.safeRecovery = {
+        nodeId: 'SCN-G01-03:cargo-safety-door',
+        sceneId: 'SCN-G01-03',
+        preFailureState,
+        reason: 'legacy-save-migration',
+        enteredAt: this.#session.updatedAt,
+      }
+      this.#session.activeRuntimeNodeId = this.#session.safeRecovery.nodeId
+    }
   }
 
   #applyTransition(next: GameSession, event: GameEvent): boolean {

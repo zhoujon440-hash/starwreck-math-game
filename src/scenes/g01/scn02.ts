@@ -128,9 +128,9 @@ export const G01_SCN02: SceneDefinition = {
       scope: 'scene',
     },
     {
-      id: 'HS-G01-0012',
+      id: 'RUNTIME-HS-G01-02-CARGO-ENTRY',
       kind: 'inspect',
-      ariaLabel: '打开前往货舱的右侧舱门',
+      ariaLabel: '从已确认的维修路线前往漏气货舱',
       area: { x: 73, y: 11, width: 17, height: 63 },
       activeStates: ['S6'],
       scope: 'scene',

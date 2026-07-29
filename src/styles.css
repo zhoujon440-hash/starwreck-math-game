@@ -2154,9 +2154,29 @@ i.inventory-art {
   box-shadow: 0 0 14px rgb(113 208 200 / 58%);
 }
 
+.cargo-safe-recovery-node {
+  position: absolute;
+  z-index: 27;
+  inset: 0;
+  overflow: hidden;
+  background-image: var(--safe-node-art);
+  background-position: 12% center;
+  background-size: cover;
+}
+
+.cargo-safe-recovery-node::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(3 8 13 / 28%) 0%, rgb(3 8 13 / 72%) 58%, rgb(3 8 13 / 42%) 100%),
+    linear-gradient(0deg, rgb(3 8 13 / 45%), transparent 42%);
+  content: "";
+}
+
 .cargo-recovery-panel {
   position: absolute;
-  z-index: 28;
+  z-index: 1;
   top: 50%;
   left: 13%;
   width: min(440px, 38vw);

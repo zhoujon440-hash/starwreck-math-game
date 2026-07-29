@@ -101,12 +101,22 @@ export type TransitionRecord = {
   at: string
 }
 
+export type SafeRecoveryState = {
+  nodeId: 'SCN-G01-03:cargo-safety-door'
+  sceneId: 'SCN-G01-03'
+  preFailureState: Extract<SceneStateId, 'S1' | 'S2' | 'S3' | 'S4'>
+  reason: string
+  enteredAt: string
+}
+
 export type GameSession = {
   schemaVersion: 2
   chapterId: string
   currentSceneId: string
   sceneState: SceneStateId
   sceneStates: Record<string, SceneStateId>
+  activeRuntimeNodeId: string | null
+  safeRecovery: SafeRecoveryState | null
   foundItemIds: string[]
   inventoryItemIds: string[]
   usedItemIds: string[]
