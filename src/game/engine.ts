@@ -38,6 +38,12 @@ const createSession = (chapter: ChapterDefinition): GameSession => ({
     g01_handoff_to_g02: false,
     g01_qima_online: false,
     world_star_core_count: 0,
+    ability_qima_search: false,
+    ability_analysis: false,
+    ability_pathfinding: false,
+    ability_teleport: false,
+    ability_shrink: false,
+    ability_clone: false,
   },
   dialogue: {
     currentDialogueId: null,
@@ -146,6 +152,12 @@ export class GameEngine {
         next.flags.g01_scn03_safe_recovery_active = false
         next.flags.g01_scn03_danger_started_at = now()
       }
+    } else if (sceneId === 'SCN-G01-04') {
+      next.flags.g01_scn04_entered = true
+      next.flags.g01_scn04_controlled_analysis = true
+    } else if (sceneId === 'SCN-G01-05') {
+      next.flags.g01_scn05_entered = true
+      next.flags.g01_scn05_controlled_route = true
     }
     this.#commit(next)
     this.saves.saveCheckpoint(next)
@@ -154,6 +166,8 @@ export class GameEngine {
       'SCN-G01-01': '星宇进入导航核心舱。',
       'SCN-G01-02': '星宇和七码来到中控任务台。',
       'SCN-G01-03': '星宇从安全舱门进入漏气货舱。',
+      'SCN-G01-04': '星宇和七码进入导航星图室。',
+      'SCN-G01-05': '星宇回到驾驶舱规划垃圾雨航线。',
     }
     return { ok: true, message: messages[sceneId] ?? '已进入目标舱段。' }
   }
@@ -268,6 +282,25 @@ export class GameEngine {
       return { ok: false, message: '道具已匹配，但场景规则缺少后续状态。' }
     }
 
+    if (
+      next.currentSceneId === 'SCN-G01-04' &&
+      ['HS-G01-0018-A', 'HS-G01-0018-B', 'HS-G01-0018-C'].includes(targetId) &&
+      ['HS-G01-0018-A', 'HS-G01-0018-B', 'HS-G01-0018-C'].every((id) =>
+        next.completedHotspotIds.includes(id),
+      )
+    ) {
+      next.sceneState = 'S3'
+      next.sceneStates['SCN-G01-04'] = 'S3'
+      next.puzzleProgress.star_map_fragments = 'A>B>C:embedded'
+    }
+    if (targetId === 'HS-G01-0020') {
+      next.flags.g01_star_map_coordinate_locked = true
+      next.flags.g01_scn04_complete = true
+    }
+    if (targetId === 'HS-G01-0023') {
+      next.flags.g01_scn05_bypass_installed = true
+      next.puzzleProgress.garbage_route = 'node-a>node-b>bypass'
+    }
     this.#commit(next)
     return { ok: true, message: '机关响应了，场景状态已改变。' }
   }
@@ -282,6 +315,10 @@ export class GameEngine {
     if (puzzleId === 'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION') {
       next.flags.g01_scn03_evidence_pressure_reading = true
       next.puzzleProgress.pressure_reading = 'safe-window-90s'
+    } else if (puzzleId === 'TUT-MECH-002') {
+      next.flags.g01_star_map_calibrated = true
+      next.flags.g01_scn04_evidence_star_map = true
+      next.puzzleProgress.star_gate_ring = 'twelve-gates-calibrated'
     }
     const transitioned = this.#applyTransition(next, `puzzle:${puzzleId}`)
 
@@ -303,6 +340,25 @@ export class GameEngine {
     if (hotspotId === 'HS-G01-0013') {
       next.flags.g01_scn03_evidence_leak_confirmed = true
       next.flags.g01_scn03_danger_started_at = now()
+    } else if (hotspotId === 'HS-G01-0017') {
+      next.flags.g01_scn04_hos_opened = true
+    } else if (hotspotId === 'HS-G01-0019') {
+      next.flags.g01_scn04_evidence_anomaly = true
+      next.flags.g01_scn04_rust_ring_signal = true
+      next.puzzleProgress.anomaly_analysis = 'twelve-anomalies>rust-ring-self-deleting'
+    } else if (hotspotId === 'HS-G01-0021') {
+      next.flags.g01_scn05_node_a = true
+      next.puzzleProgress.garbage_route = 'node-a'
+    } else if (hotspotId === 'HS-G01-0022') {
+      next.flags.g01_scn05_node_b = true
+      next.puzzleProgress.garbage_route = 'node-a>node-b'
+    } else if (hotspotId === 'HS-G01-0024') {
+      next.flags.g01_scn05_window_confirmed = true
+      next.puzzleProgress.garbage_route = 'node-a>node-b>bypass>window'
+    } else if (hotspotId === 'RUNTIME-HS-G01-05-LANDING-CONFIRM') {
+      next.flags.g01_route_complete = true
+      next.flags.g01_scn05_complete = true
+      next.puzzleProgress.garbage_route = 'node-a>node-b>bypass>window>safe-landing'
     }
     this.#commit(next)
     return { ok: true, message: '星宇记下了这处异常。' }
@@ -319,7 +375,7 @@ export class GameEngine {
           hotspot.requiredItemId && this.#session.inventoryItemIds.includes(hotspot.requiredItemId),
         )
       }
-      return hotspot.kind === 'zoom'
+      return hotspot.kind === 'zoom' || hotspot.kind === 'inspect'
     })
 
     if (candidates.length === 0) return null
@@ -403,6 +459,63 @@ export class GameEngine {
     return { ok: true, message: '安全门已重新开启，可以从保留的进度继续修复。' }
   }
 
+  triggerPrBSoftFailure(reason: string): ActionResult {
+    const sceneId = this.#session.currentSceneId
+    if (
+      !['SCN-G01-04', 'SCN-G01-05'].includes(sceneId) ||
+      !['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState)
+    ) {
+      return { ok: false, message: '当前没有需要执行的PR-B安全回退。' }
+    }
+    const next = this.#nextSession()
+    const preFailureState = next.sceneState as Extract<
+      SceneStateId,
+      'S1' | 'S2' | 'S3' | 'S4'
+    >
+    const nodeId =
+      sceneId === 'SCN-G01-04'
+        ? 'SCN-G01-04:star-map-console-safe'
+        : 'SCN-G01-05:route-safe-node'
+    next.safeRecovery = {
+      nodeId,
+      sceneId,
+      preFailureState,
+      reason,
+      enteredAt: now(),
+    }
+    next.activeRuntimeNodeId = nodeId
+    next.flags[`${sceneId === 'SCN-G01-04' ? 'g01_scn04' : 'g01_scn05'}_safe_recovery_active`] = true
+    next.flags.g01_pr_b_last_soft_failure = reason
+    next.flags.g01_pr_b_soft_failure_count =
+      Number(next.flags.g01_pr_b_soft_failure_count ?? 0) + 1
+    this.#commit(next)
+    this.saves.saveCheckpoint(next)
+    return {
+      ok: true,
+      message: '危险窗口关闭，已返回最近安全节点；物品、证据和正确步骤全部保留。',
+    }
+  }
+
+  resumePrBAfterSoftFailure(): ActionResult {
+    const recovery = this.#session.safeRecovery
+    if (
+      !recovery ||
+      !['SCN-G01-04', 'SCN-G01-05'].includes(recovery.sceneId) ||
+      this.#session.activeRuntimeNodeId !== recovery.nodeId
+    ) {
+      return { ok: false, message: '当前不在PR-B安全恢复节点。' }
+    }
+    const next = this.#nextSession()
+    next.sceneState = recovery.preFailureState
+    next.sceneStates[recovery.sceneId] = recovery.preFailureState
+    next.activeRuntimeNodeId = null
+    next.safeRecovery = null
+    next.flags[`${recovery.sceneId === 'SCN-G01-04' ? 'g01_scn04' : 'g01_scn05'}_safe_recovery_active`] = false
+    next.flags.g01_pr_b_retry_available = true
+    this.#commit(next)
+    return { ok: true, message: '已恢复失败前的正确进度，可以继续尝试。' }
+  }
+
   reset(): void {
     this.saves.clear()
     this.#session = createSession(this.chapter)
@@ -429,6 +542,19 @@ export class GameEngine {
   #normalizeRestoredSession(): void {
     this.#session.activeRuntimeNodeId ??= null
     this.#session.safeRecovery ??= null
+    this.#session.flags.world_star_core_count = 0
+    this.#session.flags.g01_chapter_complete = false
+    this.#session.flags.g01_handoff_to_g02 = false
+    for (const ability of [
+      'ability_qima_search',
+      'ability_analysis',
+      'ability_pathfinding',
+      'ability_teleport',
+      'ability_shrink',
+      'ability_clone',
+    ]) {
+      this.#session.flags[ability] = false
+    }
 
     const leakWasInvestigated =
       this.#session.completedHotspotIds.includes('HS-G01-0013') ||
@@ -487,6 +613,12 @@ export class GameEngine {
     next.flags.world_star_core_count = 0
     next.flags.g01_chapter_complete = false
     next.flags.g01_handoff_to_g02 = false
+    next.flags.ability_qima_search = false
+    next.flags.ability_analysis = false
+    next.flags.ability_pathfinding = false
+    next.flags.ability_teleport = false
+    next.flags.ability_shrink = false
+    next.flags.ability_clone = false
     this.#session = next
     this.saves.save(this.#session)
     if (this.currentSceneDefinition.states[this.#session.sceneState].safeCheckpoint) {
