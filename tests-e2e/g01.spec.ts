@@ -89,11 +89,36 @@ const expectCollectibleAligned = async (
       return Boolean(collectibleBox && hotspotBox)
     })
     .toBe(true)
-  const collectibleBox = await collectible.boundingBox()
-  const hotspotBox = await hotspot.boundingBox()
-  expect(collectibleBox).not.toBeNull()
-  expect(hotspotBox).not.toBeNull()
-  if (!collectibleBox || !hotspotBox) return
+  const boxes = await page.evaluate(
+    ({ collectibleSelector, hotspotSelector }) => {
+      const collectibleElement = document.querySelector(collectibleSelector)
+      const hotspotElement = document.querySelector(hotspotSelector)
+      if (!collectibleElement || !hotspotElement) return null
+      const collectibleRect = collectibleElement.getBoundingClientRect()
+      const hotspotRect = hotspotElement.getBoundingClientRect()
+      return {
+        collectibleBox: {
+          x: collectibleRect.x,
+          y: collectibleRect.y,
+          width: collectibleRect.width,
+          height: collectibleRect.height,
+        },
+        hotspotBox: {
+          x: hotspotRect.x,
+          y: hotspotRect.y,
+          width: hotspotRect.width,
+          height: hotspotRect.height,
+        },
+      }
+    },
+    {
+      collectibleSelector: `[data-collectible-item="${itemId}"]`,
+      hotspotSelector: `[data-hotspot-id="${hotspotId}"]`,
+    },
+  )
+  expect(boxes).not.toBeNull()
+  if (!boxes) return
+  const { collectibleBox, hotspotBox } = boxes
 
   const centerX = collectibleBox.x + collectibleBox.width / 2
   const centerY = collectibleBox.y + collectibleBox.height / 2

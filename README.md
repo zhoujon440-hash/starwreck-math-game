@@ -1,5 +1,11 @@
 # 星骸拾荒者：十二星门
 
+当前可玩范围已扩展到 G01 PR-A：`SCN-G01-02`《船上第一张任务单》和
+`SCN-G01-03`《漏气的货舱》。运行时操作、正式来源、软失败契约和测试证据见
+[`docs/story-runtime/G01_PR_A_SCENES_02_03.md`](docs/story-runtime/G01_PR_A_SCENES_02_03.md)，
+双分辨率截图索引见
+[`docs/review/G01_PR_A_VISUAL_ACCEPTANCE.md`](docs/review/G01_PR_A_VISUAL_ACCEPTANCE.md)。
+
 这是《星骸拾荒者：十二星门》的正式开发仓库。
 
 项目定位：面向小学高年级至初中阶段的公益数学HOPA（Hidden Object Puzzle Adventure）游戏。
