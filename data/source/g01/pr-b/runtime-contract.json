@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "scope": ["SCN-G01-04", "SCN-G01-05"],
+  "formal_sources": {
+    "scene_flow": "data/source/g01/json/场景流程.json",
+    "hotspots": "data/source/g01/json/热点清单.json",
+    "hos": "data/source/g01/json/找物清单.json",
+    "inventory": "data/source/g01/json/背包道具流转.json",
+    "dialogue": "data/source/g01/json/对话脚本.json",
+    "states": "data/source/g01/json/场景状态机.json",
+    "hints": "data/source/g01/json/三级提示.json",
+    "saves": "data/source/g01/json/存档与恢复.json",
+    "variables": "data/source/g01/json/程序变量.json",
+    "assets": "data/source/g01/json/资产映射.json"
+  },
+  "frozen_invariants": {
+    "world_star_core_count": 0,
+    "g01_chapter_complete": false,
+    "g01_handoff_to_g02": false,
+    "ability_qima_search": false,
+    "ability_analysis": false,
+    "ability_pathfinding": false,
+    "ability_teleport": false,
+    "ability_shrink": false,
+    "ability_clone": false,
+    "scn_g01_06_runtime_implemented": false,
+    "g02_gameplay_implemented": false
+  },
+  "runtime_adapters": [
+    {
+      "catalog_id": "RUNTIME-ITM-G01-010-A",
+      "official_id": null,
+      "official_parent_id": "ITM-G01-010"
+    },
+    {
+      "catalog_id": "RUNTIME-ITM-G01-010-B",
+      "official_id": null,
+      "official_parent_id": "ITM-G01-010"
+    },
+    {
+      "catalog_id": "RUNTIME-ITM-G01-010-C",
+      "official_id": null,
+      "official_parent_id": "ITM-G01-010"
+    },
+    {
+      "catalog_id": "RUNTIME-HS-G01-05-BYPASS-TOOL-SLOT",
+      "official_id": null,
+      "reason": "Formal ITM-G01-012 origin has no standalone hotspot ID."
+    }
+  ],
+  "critical_item_contracts": [
+    {
+      "scene_id": "SCN-G01-04",
+      "item_id": "RUNTIME-ITM-G01-010-A",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-04",
+      "item_id": "RUNTIME-ITM-G01-010-B",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-04",
+      "item_id": "RUNTIME-ITM-G01-010-C",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-04",
+      "item_id": "ITM-G01-011",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    },
+    {
+      "scene_id": "SCN-G01-05",
+      "item_id": "ITM-G01-012",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false
+    }
+  ],
+  "hint_contracts": [
+    {
+      "task_id": "HINT-G01-004",
+      "levels": [
+        {"level": 1, "semantics": "direction"},
+        {"level": 2, "semantics": "area"},
+        {"level": 3, "semantics": "complete_one_step"}
+      ]
+    },
+    {
+      "task_id": "HINT-G01-005",
+      "levels": [
+        {"level": 1, "semantics": "direction"},
+        {"level": 2, "semantics": "area"},
+        {"level": 3, "semantics": "complete_one_step"}
+      ]
+    }
+  ],
+  "danger_contracts": [
+    {
+      "danger_id": "DANGER-G01-003",
+      "scene_id": "SCN-G01-04",
+      "safe_recovery_node": "SCN-G01-04:star-map-console-safe",
+      "failure_phases": ["S1", "S2", "S3", "S4"],
+      "retain_key_items": true,
+      "retain_hos_progress": true,
+      "retain_puzzle_progress": true,
+      "retain_evidence": true,
+      "retain_completed_correct_steps": true,
+      "duplicate_grants_forbidden": true,
+      "whole_scene_reset_forbidden": true,
+      "retry_available": true,
+      "soft_failure_creates_evidence": false
+    },
+    {
+      "danger_id": "DANGER-G01-004",
+      "scene_id": "SCN-G01-05",
+      "safe_recovery_node": "SCN-G01-05:route-safe-node",
+      "failure_phases": ["S1", "S2", "S3", "S4"],
+      "retain_key_items": true,
+      "retain_hos_progress": true,
+      "retain_puzzle_progress": true,
+      "retain_evidence": true,
+      "retain_completed_correct_steps": true,
+      "duplicate_grants_forbidden": true,
+      "whole_scene_reset_forbidden": true,
+      "retry_available": true,
+      "soft_failure_creates_evidence": false
+    }
+  ],
+  "boundary": {
+    "next_scene_id": "SCN-G01-06",
+    "runtime_implementation": false,
+    "allowed_copy": "锈环星求救信号",
+    "ability_authorization": false
+  }
+}
