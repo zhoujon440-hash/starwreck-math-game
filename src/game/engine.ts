@@ -15,6 +15,7 @@ type Listener = (session: GameSession) => void
 
 const now = () => new Date().toISOString()
 const clone = (session: GameSession): GameSession => structuredClone(session)
+export const G01_PR_B_ROUTE_WINDOW_MS = 12_000
 
 const createSession = (chapter: ChapterDefinition): GameSession => ({
   schemaVersion: 2,
@@ -191,6 +192,10 @@ export class GameEngine {
     return this.currentSceneDefinition.hotspots.filter(
       (hotspot) =>
         hotspot.activeStates.includes(this.#session.sceneState) &&
+        !(
+          hotspot.kind === 'use-target' &&
+          this.#session.completedHotspotIds.includes(hotspot.id)
+        ) &&
         (hotspot.requiredCompletedHotspotIds ?? []).every((id) =>
           this.#session.completedHotspotIds.includes(id),
         ),
@@ -300,6 +305,7 @@ export class GameEngine {
     if (targetId === 'HS-G01-0023') {
       next.flags.g01_scn05_bypass_installed = true
       next.puzzleProgress.garbage_route = 'node-a>node-b>bypass'
+      this.#openPrBRouteWindow(next)
     }
     this.#commit(next)
     return { ok: true, message: '机关响应了，场景状态已改变。' }
@@ -331,6 +337,14 @@ export class GameEngine {
   }
 
   inspect(hotspotId: string): ActionResult {
+    if (
+      hotspotId === 'HS-G01-0024' &&
+      this.#session.currentSceneId === 'SCN-G01-05' &&
+      this.prBRouteWindowRemainingMs() <= 0
+    ) {
+      this.expirePrBRouteWindow('garbage-route-window-expired-before-confirm')
+      return { ok: false, message: '通行窗口已经关闭，星宇已退回最近航线安全节点。' }
+    }
     const hotspot = this.activeHotspots().find((candidate) => candidate.id === hotspotId)
     if (!hotspot) return { ok: false, message: '这里暂时没有更多线索。' }
     const next = this.#nextSession()
@@ -348,12 +362,31 @@ export class GameEngine {
       next.puzzleProgress.anomaly_analysis = 'twelve-anomalies>rust-ring-self-deleting'
     } else if (hotspotId === 'HS-G01-0021') {
       next.flags.g01_scn05_node_a = true
+      next.flags.g01_scn05_collision_active = false
       next.puzzleProgress.garbage_route = 'node-a'
     } else if (hotspotId === 'HS-G01-0022') {
       next.flags.g01_scn05_node_b = true
+      next.flags.g01_scn05_collision_active = false
       next.puzzleProgress.garbage_route = 'node-a>node-b'
+    } else if (
+      ['RUNTIME-HS-G01-05-COLLISION-NODE-A', 'RUNTIME-HS-G01-05-COLLISION-NODE-B'].includes(
+        hotspotId,
+      )
+    ) {
+      next.flags.g01_scn05_collision_active = true
+      next.flags.g01_scn05_last_collision_node = hotspotId
+      next.flags.g01_scn05_collision_stepback_count =
+        Number(next.flags.g01_scn05_collision_stepback_count ?? 0) + 1
+      next.puzzleProgress.garbage_route_last_rejected =
+        hotspotId === 'RUNTIME-HS-G01-05-COLLISION-NODE-A'
+          ? 'collision-before-node-a'
+          : 'collision-after-node-a'
+    } else if (hotspotId === 'RUNTIME-HS-G01-05-REOPEN-WINDOW') {
+      this.#openPrBRouteWindow(next)
     } else if (hotspotId === 'HS-G01-0024') {
       next.flags.g01_scn05_window_confirmed = true
+      next.flags.g01_scn05_window_open = false
+      next.flags.g01_scn05_window_closed_at = now()
       next.puzzleProgress.garbage_route = 'node-a>node-b>bypass>window'
     } else if (hotspotId === 'RUNTIME-HS-G01-05-LANDING-CONFIRM') {
       next.flags.g01_route_complete = true
@@ -361,6 +394,15 @@ export class GameEngine {
       next.puzzleProgress.garbage_route = 'node-a>node-b>bypass>window>safe-landing'
     }
     this.#commit(next)
+    if (hotspotId.startsWith('RUNTIME-HS-G01-05-COLLISION-')) {
+      return {
+        ok: true,
+        message: '碰撞预警：本次错误航段已撤销一步；更早的安全节点、物品和证据全部保留。',
+      }
+    }
+    if (hotspotId === 'RUNTIME-HS-G01-05-REOPEN-WINDOW') {
+      return { ok: true, message: '旁路板重新启动，新的短时通行窗口已经打开。' }
+    }
     return { ok: true, message: '星宇记下了这处异常。' }
   }
 
@@ -389,6 +431,69 @@ export class GameEngine {
     next.hintCount += 1
     this.#commit(next)
     return { hotspot: hint, level }
+  }
+
+  completeHintStep(hint: HintResult): ActionResult {
+    if (hint.level !== 3) {
+      return { ok: false, message: '只有第三级提示会代为完成一个合法步骤。' }
+    }
+    const sceneId = this.#session.currentSceneId
+    if (!['SCN-G01-04', 'SCN-G01-05'].includes(sceneId)) {
+      return { ok: false, message: '当前场景继续使用原有提示行为。' }
+    }
+
+    if (hint.hotspot.kind === 'hidden-item' && hint.hotspot.itemId) {
+      return this.findItem(hint.hotspot.itemId)
+    }
+    if (hint.hotspot.kind === 'use-target' && hint.hotspot.requiredItemId) {
+      return this.useItem(hint.hotspot.requiredItemId, hint.hotspot.id)
+    }
+    if (hint.hotspot.kind === 'inspect') {
+      return this.inspect(hint.hotspot.id)
+    }
+    if (hint.hotspot.zoomId === 'TUT-MECH-002') {
+      return this.completePuzzle('TUT-MECH-002')
+    }
+    return { ok: false, message: '当前没有可由提示完成的合法步骤。' }
+  }
+
+  prBRouteWindowRemainingMs(): number {
+    const raw = this.#session.flags.g01_scn05_window_deadline_at
+    if (typeof raw !== 'string') return 0
+    const deadline = Date.parse(raw)
+    return Number.isFinite(deadline) ? Math.max(0, deadline - Date.now()) : 0
+  }
+
+  expirePrBRouteWindow(reason = 'garbage-route-window-expired'): ActionResult {
+    if (
+      this.#session.currentSceneId !== 'SCN-G01-05' ||
+      this.#session.sceneState !== 'S4' ||
+      this.#session.safeRecovery
+    ) {
+      return { ok: false, message: '当前没有正在关闭的垃圾雨通行窗口。' }
+    }
+    const next = this.#nextSession()
+    next.safeRecovery = {
+      nodeId: 'SCN-G01-05:route-safe-node',
+      sceneId: 'SCN-G01-05',
+      preFailureState: 'S4',
+      resumeState: 'S3',
+      reason,
+      enteredAt: now(),
+    }
+    next.activeRuntimeNodeId = next.safeRecovery.nodeId
+    next.flags.g01_scn05_safe_recovery_active = true
+    next.flags.g01_scn05_window_open = false
+    next.flags.g01_scn05_window_expired = true
+    next.flags.g01_scn05_window_expired_at = now()
+    next.flags.g01_pr_b_last_soft_failure = reason
+    next.flags.g01_pr_b_soft_failure_count =
+      Number(next.flags.g01_pr_b_soft_failure_count ?? 0) + 1
+    this.#commit(next)
+    return {
+      ok: true,
+      message: '短时窗口已关闭。星宇回到最近有效安全步骤；已安装旁路板与此前路线全部保留。',
+    }
   }
 
   rollbackToCheckpoint(): ActionResult {
@@ -489,7 +594,6 @@ export class GameEngine {
     next.flags.g01_pr_b_soft_failure_count =
       Number(next.flags.g01_pr_b_soft_failure_count ?? 0) + 1
     this.#commit(next)
-    this.saves.saveCheckpoint(next)
     return {
       ok: true,
       message: '危险窗口关闭，已返回最近安全节点；物品、证据和正确步骤全部保留。',
@@ -506,14 +610,21 @@ export class GameEngine {
       return { ok: false, message: '当前不在PR-B安全恢复节点。' }
     }
     const next = this.#nextSession()
-    next.sceneState = recovery.preFailureState
-    next.sceneStates[recovery.sceneId] = recovery.preFailureState
+    const resumeState = recovery.resumeState ?? recovery.preFailureState
+    next.sceneState = resumeState
+    next.sceneStates[recovery.sceneId] = resumeState
     next.activeRuntimeNodeId = null
     next.safeRecovery = null
     next.flags[`${recovery.sceneId === 'SCN-G01-04' ? 'g01_scn04' : 'g01_scn05'}_safe_recovery_active`] = false
     next.flags.g01_pr_b_retry_available = true
     this.#commit(next)
-    return { ok: true, message: '已恢复失败前的正确进度，可以继续尝试。' }
+    return {
+      ok: true,
+      message:
+        recovery.resumeState && recovery.resumeState !== recovery.preFailureState
+          ? '已回到最近有效步骤，可以用已安装的旁路板重新打开窗口。'
+          : '已恢复失败前的正确进度，可以继续尝试。',
+    }
   }
 
   reset(): void {
@@ -591,6 +702,39 @@ export class GameEngine {
       }
       this.#session.activeRuntimeNodeId = this.#session.safeRecovery.nodeId
     }
+
+    if (
+      this.#session.currentSceneId === 'SCN-G01-05' &&
+      this.#session.sceneState === 'S4' &&
+      !this.#session.safeRecovery &&
+      this.#session.flags.g01_scn05_bypass_installed === true &&
+      this.prBRouteWindowRemainingMs() <= 0
+    ) {
+      this.#session.safeRecovery = {
+        nodeId: 'SCN-G01-05:route-safe-node',
+        sceneId: 'SCN-G01-05',
+        preFailureState: 'S4',
+        resumeState: 'S3',
+        reason: 'garbage-route-window-expired-during-reload',
+        enteredAt: now(),
+      }
+      this.#session.activeRuntimeNodeId = this.#session.safeRecovery.nodeId
+      this.#session.flags.g01_scn05_safe_recovery_active = true
+      this.#session.flags.g01_scn05_window_open = false
+      this.#session.flags.g01_scn05_window_expired = true
+      this.#session.flags.g01_scn05_window_expired_at = now()
+    }
+  }
+
+  #openPrBRouteWindow(next: GameSession): void {
+    const startedAt = now()
+    next.flags.g01_scn05_window_started_at = startedAt
+    next.flags.g01_scn05_window_deadline_at = new Date(
+      Date.parse(startedAt) + G01_PR_B_ROUTE_WINDOW_MS,
+    ).toISOString()
+    next.flags.g01_scn05_window_open = true
+    next.flags.g01_scn05_window_expired = false
+    next.flags.g01_scn05_collision_active = false
   }
 
   #applyTransition(next: GameSession, event: GameEvent): boolean {

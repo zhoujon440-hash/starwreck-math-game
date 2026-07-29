@@ -61,12 +61,14 @@ export class GameView {
   #profileOpen = false
   #puzzleOpen = false
   #activeZoomId: string | null = null
+  #pendingZoomId: string | null = null
   #toast = ''
   #toastTimer: number | undefined
   #hintTimer: number | undefined
   #bootTimer: number | undefined
   #recoveryDialogueTimer: number | undefined
   #cargoDangerTimer: number | undefined
+  #routeWindowTimer: number | undefined
   #unsubscribe: (() => void) | undefined
 
   constructor(
@@ -128,6 +130,7 @@ export class GameView {
     if (this.#bootTimer) window.clearTimeout(this.#bootTimer)
     if (this.#recoveryDialogueTimer) window.clearTimeout(this.#recoveryDialogueTimer)
     if (this.#cargoDangerTimer) window.clearTimeout(this.#cargoDangerTimer)
+    if (this.#routeWindowTimer) window.clearTimeout(this.#routeWindowTimer)
   }
 
   #render(): void {
@@ -459,6 +462,33 @@ export class GameView {
               : ''
           }
 
+          ${
+            isScn05 &&
+            !isPrBRecovery &&
+            this.#session.sceneState === 'S4' &&
+            this.#session.flags.g01_scn05_window_open === true
+              ? `
+                <div class="route-window-status" aria-live="assertive" data-route-window="active">
+                  <span>垃圾雨通行窗口</span>
+                  <strong>${this.#routeWindowSecondsRemaining()} 秒</strong>
+                  <small>到期将自动退回最近有效安全步骤</small>
+                </div>
+              `
+              : ''
+          }
+
+          ${
+            isScn05 && this.#session.flags.g01_scn05_collision_active === true
+              ? `
+                <div class="route-collision-status" data-route-stepback="one-step" role="status">
+                  <span>碰撞路线已撤销</span>
+                  <strong>仅退回本次尝试</strong>
+                  <small>已确认安全节点、物品与证据均保留</small>
+                </div>
+              `
+              : ''
+          }
+
           <footer class="inventory-hud">
             <div class="inventory-heading">
               <span>背包</span>
@@ -523,6 +553,17 @@ export class GameView {
     } else if (this.#cargoDangerTimer) {
       window.clearTimeout(this.#cargoDangerTimer)
       this.#cargoDangerTimer = undefined
+    }
+    if (
+      isScn05 &&
+      this.#session.sceneState === 'S4' &&
+      this.#session.flags.g01_scn05_window_open === true &&
+      !isPrBRecovery
+    ) {
+      this.#scheduleRouteWindow()
+    } else if (this.#routeWindowTimer) {
+      window.clearTimeout(this.#routeWindowTimer)
+      this.#routeWindowTimer = undefined
     }
   }
 
@@ -608,6 +649,7 @@ export class GameView {
       `
     }
     if (
+      DEBUG_UI &&
       ['SCN-G01-04', 'SCN-G01-05'].includes(this.#session.currentSceneId) &&
       ['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState) &&
       !this.#session.safeRecovery
@@ -795,7 +837,7 @@ export class GameView {
             ['g01_scn05_node_a', '/assets/g01/pr-b/scn-g01-05/states/route-node-a.png'],
             ['g01_scn05_node_b', '/assets/g01/pr-b/scn-g01-05/states/route-node-b.png'],
             ['g01_scn05_bypass_installed', '/assets/g01/pr-b/scn-g01-05/states/bypass-installed.png'],
-            ['g01_scn05_window_confirmed', '/assets/g01/pr-b/scn-g01-05/states/route-window-open.png'],
+            ['g01_scn05_window_open', '/assets/g01/pr-b/scn-g01-05/states/route-window-open.png'],
             ['g01_route_complete', '/assets/g01/pr-b/scn-g01-05/states/safe-landing.png'],
           ]
     return layers
@@ -1180,10 +1222,10 @@ export class GameView {
         data-pre-failure-state="${recovery.preFailureState}" style="--safe-node-art:url('${sceneArt}')"
         aria-labelledby="pr-b-recovery-title">
         <div class="cargo-recovery-panel">
-          <span class="eyebrow">安全恢复节点 · 失败前 ${recovery.preFailureState}</span>
+          <span class="eyebrow">安全恢复节点${DEBUG_UI ? ` · 失败前 ${recovery.preFailureState}` : ''}</span>
           <h2 id="pr-b-recovery-title">${recovery.sceneId === 'SCN-G01-04' ? '已退回星图台安全位置' : '已退回最近航线安全节点'}</h2>
           <p>危险只中断当前确认动作；背包、找物、谜题、证据和正确步骤均保持失败前状态。</p>
-          <ul><li>关键物：${this.#session.inventoryItemIds.length} 件保留</li><li>证据：${evidenceCount} 条保留</li><li>已确认热点：${this.#session.completedHotspotIds.length} 个</li><li>场景重置：未发生</li></ul>
+          <ul><li>关键物：${this.#session.inventoryItemIds.length} 件保留</li><li>证据：${evidenceCount} 条保留</li><li>已确认热点：${this.#session.completedHotspotIds.length} 个</li><li>继续位置：${recovery.resumeState === 'S3' ? '旁路重启步骤' : '失败前操作步骤'}</li><li>场景重置：未发生</li></ul>
           <button class="primary-action" data-action="resume-pr-b">保留进度继续</button>
         </div>
       </section>
@@ -1385,6 +1427,36 @@ export class GameView {
     }, 1_000)
   }
 
+  #routeWindowSecondsRemaining(): number {
+    return Math.max(0, Math.ceil(this.engine.prBRouteWindowRemainingMs() / 1_000))
+  }
+
+  #scheduleRouteWindow(): void {
+    if (this.#routeWindowTimer) return
+    this.#routeWindowTimer = window.setTimeout(() => {
+      this.#routeWindowTimer = undefined
+      if (
+        this.#session.currentSceneId !== 'SCN-G01-05' ||
+        this.#session.sceneState !== 'S4' ||
+        this.#session.safeRecovery ||
+        this.#session.flags.g01_scn05_window_open !== true
+      ) {
+        return
+      }
+      if (this.engine.prBRouteWindowRemainingMs() <= 0) {
+        this.#handleResult(
+          this.engine.expirePrBRouteWindow('garbage-route-window-expired'),
+        )
+        return
+      }
+      const countdown = this.root.querySelector<HTMLElement>(
+        '.route-window-status strong',
+      )
+      if (countdown) countdown.textContent = `${this.#routeWindowSecondsRemaining()} 秒`
+      this.#scheduleRouteWindow()
+    }, 250)
+  }
+
   #scheduleBootSequence(): void {
     if (this.#bootTimer) return
     this.#bootTimer = window.setTimeout(() => {
@@ -1462,7 +1534,16 @@ export class GameView {
         break
       }
       case 'advance-dialogue':
-        this.#dialogueRunner.advance()
+        {
+          const dialogueId = this.#dialogueRunner.current?.dialogue_id
+          this.#dialogueRunner.advance()
+          if (dialogueId === 'DLG-G01-0013' && this.#pendingZoomId) {
+            this.#activeZoomId = this.#pendingZoomId
+            this.#pendingZoomId = null
+            this.#cabinetOpen = true
+            this.#render()
+          }
+        }
         break
       case 'enter-scn01':
         this.#selectedItemId = null
@@ -1501,7 +1582,6 @@ export class GameView {
         this.#puzzleOpen = false
         this.#activeZoomId = null
         this.#handleResult(this.engine.enterScene('SCN-G01-05'))
-        this.#dialogueRunner.startTrigger('SCN-G01-05', '进入驾驶舱')
         break
       case 'open-history':
         this.#historyOpen = true
@@ -1702,8 +1782,16 @@ export class GameView {
             this.#session.currentSceneId === 'SCN-G01-04' &&
             hotspotId === 'HS-G01-0017'
           ) {
-            this.#activeZoomId = 'HOS-G01-004'
-            this.#cabinetOpen = true
+            const dialogueStarted = this.#dialogueRunner.startTrigger(
+              'SCN-G01-04',
+              '开始星图机制',
+            )
+            if (dialogueStarted) {
+              this.#pendingZoomId = 'HOS-G01-004'
+            } else {
+              this.#activeZoomId = 'HOS-G01-004'
+              this.#cabinetOpen = true
+            }
             this.#render()
           }
           if (
@@ -1711,7 +1799,14 @@ export class GameView {
             this.#session.currentSceneId === 'SCN-G01-04' &&
             hotspotId === 'HS-G01-0019'
           ) {
-            this.#dialogueRunner.startTrigger('SCN-G01-04', '完成异常分析')
+            this.#dialogueRunner.startTrigger('SCN-G01-04', '分析完成')
+          }
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-05' &&
+            hotspotId === 'HS-G01-0021'
+          ) {
+            this.#dialogueRunner.startTrigger('SCN-G01-05', '打开航线')
           }
           if (
             result.ok &&
@@ -1818,6 +1913,12 @@ export class GameView {
           this.#dialogueRunner.startTrigger('SCN-G01-03', '复压完成')
         }
       }
+      if (
+        this.#session.currentSceneId === 'SCN-G01-05' &&
+        targetId === 'HS-G01-0023'
+      ) {
+        this.#dialogueRunner.startTrigger('SCN-G01-05', '旁路片安装')
+      }
     }
     this.#handleResult(result)
   }
@@ -1836,7 +1937,25 @@ export class GameView {
     this.#render()
     this.#showToast(this.#hintCopy(result))
 
-    if (result.level === 3 && this.#session.currentSceneId !== 'SCN-G01-00') {
+    if (
+      result.level === 3 &&
+      ['SCN-G01-04', 'SCN-G01-05'].includes(this.#session.currentSceneId)
+    ) {
+      window.setTimeout(() => {
+        const step = this.engine.completeHintStep(result)
+        this.#handleResult(step)
+        if (!step.ok) return
+        if (result.hotspot.id === 'HS-G01-0017') {
+          this.#dialogueRunner.startTrigger('SCN-G01-04', '开始星图机制')
+        } else if (result.hotspot.id === 'HS-G01-0019') {
+          this.#dialogueRunner.startTrigger('SCN-G01-04', '分析完成')
+        } else if (result.hotspot.id === 'HS-G01-0021') {
+          this.#dialogueRunner.startTrigger('SCN-G01-05', '打开航线')
+        } else if (result.hotspot.id === 'HS-G01-0023') {
+          this.#dialogueRunner.startTrigger('SCN-G01-05', '旁路片安装')
+        }
+      }, 450)
+    } else if (result.level === 3 && this.#session.currentSceneId !== 'SCN-G01-00') {
       if (result.hotspot.kind === 'hidden-item' && result.hotspot.itemId) {
         window.setTimeout(() => this.#handleResult(this.engine.findItem(result.hotspot.itemId!)), 450)
       } else if (

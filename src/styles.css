@@ -2268,6 +2268,51 @@ i.inventory-art {
   font: 700 15px/1.2 ui-monospace, monospace;
 }
 
+.route-window-status,
+.route-collision-status {
+  position: absolute;
+  z-index: 18;
+  top: 88px;
+  right: 24px;
+  display: grid;
+  min-width: 220px;
+  gap: 3px;
+  padding: 11px 14px;
+  border-right: 2px solid #f0b65b;
+  color: #bdc8ca;
+  text-align: right;
+  background: rgb(5 12 18 / 88%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(8px);
+}
+
+.route-window-status span,
+.route-collision-status span {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.route-window-status strong {
+  color: #ffd47e;
+  font: 800 18px/1.2 ui-monospace, monospace;
+}
+
+.route-window-status small,
+.route-collision-status small {
+  color: #94a6ab;
+  font-size: 10px;
+}
+
+.route-collision-status {
+  top: 152px;
+  border-color: #e46c63;
+}
+
+.route-collision-status strong {
+  color: #ff9e91;
+  font-size: 13px;
+}
+
 .pr-a-complete {
   width: min(520px, 43vw);
 }

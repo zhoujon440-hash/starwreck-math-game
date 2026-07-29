@@ -105,6 +105,7 @@ export type SafeRecoveryState = {
   nodeId: string
   sceneId: string
   preFailureState: Extract<SceneStateId, 'S1' | 'S2' | 'S3' | 'S4'>
+  resumeState?: Extract<SceneStateId, 'S1' | 'S2' | 'S3' | 'S4'>
   reason: string
   enteredAt: string
 }

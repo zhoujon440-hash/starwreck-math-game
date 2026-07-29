@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "scope": ["SCN-G01-04", "SCN-G01-05"],
   "formal_sources": {
     "scene_flow": "data/source/g01/json/场景流程.json",
@@ -46,6 +46,61 @@
       "catalog_id": "RUNTIME-HS-G01-05-BYPASS-TOOL-SLOT",
       "official_id": null,
       "reason": "Formal ITM-G01-012 origin has no standalone hotspot ID."
+    },
+    {
+      "catalog_id": "RUNTIME-HS-G01-05-COLLISION-NODE-A",
+      "official_id": null,
+      "official_parent_id": "HS-G01-0021",
+      "reason": "Runtime-operable rejected branch adapting the formal HS-G01-0021 collision step-back feedback."
+    },
+    {
+      "catalog_id": "RUNTIME-HS-G01-05-COLLISION-NODE-B",
+      "official_id": null,
+      "official_parent_id": "HS-G01-0022",
+      "reason": "Runtime-operable rejected branch adapting the formal HS-G01-0022 collision step-back feedback."
+    },
+    {
+      "catalog_id": "RUNTIME-HS-G01-05-REOPEN-WINDOW",
+      "official_id": null,
+      "official_parent_id": "HS-G01-0023",
+      "reason": "Retry interaction for an already installed bypass plate after a persisted window expiry."
+    }
+  ],
+  "dialogue_contracts": [
+    {
+      "dialogue_id": "DLG-G01-0012",
+      "scene_id": "SCN-G01-04",
+      "trigger": "进入星图室",
+      "first_play_skippable": false,
+      "next_dialogue_id": null
+    },
+    {
+      "dialogue_id": "DLG-G01-0013",
+      "scene_id": "SCN-G01-04",
+      "trigger": "开始星图机制",
+      "first_play_skippable": false,
+      "next_dialogue_id": null
+    },
+    {
+      "dialogue_id": "DLG-G01-0014",
+      "scene_id": "SCN-G01-04",
+      "trigger": "分析完成",
+      "first_play_skippable": false,
+      "next_dialogue_id": null
+    },
+    {
+      "dialogue_id": "DLG-G01-0015",
+      "scene_id": "SCN-G01-05",
+      "trigger": "打开航线",
+      "first_play_skippable": false,
+      "next_dialogue_id": null
+    },
+    {
+      "dialogue_id": "DLG-G01-0016",
+      "scene_id": "SCN-G01-05",
+      "trigger": "旁路片安装",
+      "first_play_skippable": false,
+      "next_dialogue_id": null
     }
   ],
   "critical_item_contracts": [
@@ -83,6 +138,7 @@
   "hint_contracts": [
     {
       "task_id": "HINT-G01-004",
+      "behavior_states": ["S1", "S2", "S3"],
       "levels": [
         {"level": 1, "semantics": "direction"},
         {"level": 2, "semantics": "area"},
@@ -91,6 +147,7 @@
     },
     {
       "task_id": "HINT-G01-005",
+      "behavior_states": ["S0", "S1", "S2", "S3", "S4", "S5"],
       "levels": [
         {"level": 1, "semantics": "direction"},
         {"level": 2, "semantics": "area"},
@@ -98,6 +155,47 @@
       ]
     }
   ],
+  "checkpoint_contracts": [
+    {
+      "scene_id": "SCN-G01-04",
+      "persistent_states": ["S0", "S2", "S5", "S6"],
+      "temporary_states": ["S1", "S3", "S4"]
+    },
+    {
+      "scene_id": "SCN-G01-05",
+      "persistent_states": ["S0", "S2", "S5", "S6"],
+      "temporary_states": ["S1", "S3", "S4"]
+    }
+  ],
+  "route_window_contract": {
+    "tutorial_id": "TUT-MECH-003",
+    "scene_id": "SCN-G01-05",
+    "duration_ms": 12000,
+    "start_field": "g01_scn05_window_started_at",
+    "deadline_field": "g01_scn05_window_deadline_at",
+    "visible_countdown": true,
+    "automatic_expiry": true,
+    "safe_recovery_node": "SCN-G01-05:route-safe-node",
+    "expired_resume_state": "S3",
+    "refresh_restores_remaining_time": true,
+    "expired_refresh_enters_safe_node": true,
+    "hidden_test_hotspot_is_production_trigger": false,
+    "preserves_bypass_installation": true,
+    "preserves_confirmed_route_nodes": true
+  },
+  "wrong_route_contract": {
+    "tutorial_id": "TUT-MECH-003",
+    "runtime_hotspot_ids": [
+      "RUNTIME-HS-G01-05-COLLISION-NODE-A",
+      "RUNTIME-HS-G01-05-COLLISION-NODE-B"
+    ],
+    "stepback_scope": "attempted_step_only",
+    "retain_confirmed_route_nodes": true,
+    "retain_key_items": true,
+    "retain_evidence": true,
+    "retain_completed_correct_steps": true,
+    "whole_scene_reset_forbidden": true
+  },
   "danger_contracts": [
     {
       "danger_id": "DANGER-G01-003",
