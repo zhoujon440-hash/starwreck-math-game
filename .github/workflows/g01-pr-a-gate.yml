@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/g01-scenes-02-03-v1
+      - codex/g01-pr-a-corrective-v1
   pull_request:
     branches:
       - main
@@ -39,11 +40,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: g01-pr-a-visual-acceptance-${{ github.run_number }}
+          name: g01-pr-a-corrective-visual-acceptance-${{ github.run_number }}
           path: |
             test-results/g01-pr-a-visual/**
             playwright-report/**
             docs/review/G01_PR_A_VISUAL_ACCEPTANCE.md
+            docs/review/G01_PR_A_CORRECTIVE_REPORT.md
             docs/story-runtime/G01_PR_A_SCENES_02_03.md
             docs/art/G01_PR_A_RUNTIME_ASSET_PROVENANCE.json
             docs/art/G01_PR_A_RUNTIME_ASSET_SHA256.txt
