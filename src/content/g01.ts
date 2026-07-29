@@ -5,6 +5,8 @@ import type {
   ItemDefinition,
   SceneDefinition,
 } from '../game/types'
+import { G01_SCN02 } from '../scenes/g01/scn02'
+import { G01_SCN03 } from '../scenes/g01/scn03'
 
 const publicPath = (path: string): string => `/${path.replace(/^public\//, '')}`
 
@@ -414,7 +416,7 @@ export const G01: ChapterDefinition = {
     { from: 'S4', event: 'inspect:HS-G01-0005', to: 'S5' },
     { from: 'S5', event: 'inspect:HS-G01-0006', to: 'S6' },
   ],
-  scenes: [G01_SCN01],
+  scenes: [G01_SCN01, G01_SCN02, G01_SCN03],
 }
 
 export const G01_SCENE_ART = '/assets/g01-cockpit.png'

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "issue": 3,
-  "branch": "codex/g01-character-story-v2",
+  "issue": 9,
+  "branch": "codex/g01-scenes-02-03-v1",
   "runtime_technology": "HTML5/PWA + Vite + TypeScript",
   "characters": {
     "xingyu": {
@@ -68,8 +68,21 @@
       }
     ],
     "completion_boundary": "SCN-G01-02",
-    "completion_boundary_only": true,
+    "completion_boundary_only": false,
     "world_star_core_count": 0
+  },
+  "active_scope": {
+    "phase": "Issue #9 PR-A",
+    "implemented_scenes": [
+      "SCN-G01-02",
+      "SCN-G01-03"
+    ],
+    "maximum_runtime_scene": "SCN-G01-03",
+    "next_boundary": "SCN-G01-04",
+    "next_boundary_only": true,
+    "g01_chapter_complete": false,
+    "g01_handoff_to_g02": false,
+    "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5114041966"
   },
   "formal_source": {
     "package_id": "PKG-G01-V3.0",

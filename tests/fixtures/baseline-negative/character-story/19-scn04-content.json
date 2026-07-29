@@ -1,0 +1,6 @@
+{
+  "mutation": {
+    "type": "scn04_content"
+  },
+  "expected_rule": "CS-036-SCOPE"
+}
