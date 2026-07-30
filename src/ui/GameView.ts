@@ -505,28 +505,16 @@ export class GameView {
                   data-world-star-core-count="${Number(this.#session.flags.world_star_core_count ?? 0)}">
                   <span class="eyebrow">G01 Demo · 0.1.0</span>
                   <h2 id="demo-complete-title">序章《拾光号：坠落之前》完成</h2>
-                  <p>星宇与七码已经抵达旧屏幕谷外缘。这里仅展示G01→G02交接，不包含G02热点、找物、谜题或剧情流程。</p>
+                  <h3>旧屏幕谷外缘</h3>
+                  <p>星宇与七码已经抵达旧屏幕谷外缘。落点存档通过校验后，可继续进入锈环星正式开场。</p>
                   <div class="completion-stats"><span><b>8</b> 连续场景</span><span><b>0</b> 序章星核</span><span><b>3</b> 基础能力</span></div>
+                  <button class="primary-action" data-action="enter-g02-slice">进入旧屏幕谷</button>
                   <button class="secondary-action" data-action="open-journal">查看任务与证据</button>
                   <button class="text-action" data-action="restart">开始新游戏</button>
                 </section>
               `
               : ''
           }
-
-          ${
-            isG02Boundary
-              ? `
-                <section class="story-panel complete-panel g02-entry-panel" aria-labelledby="g02-entry-title">
-                  <span class="eyebrow">第一星球 · 锈环星</span>
-                  <h2 id="g02-entry-title">旧屏幕谷外缘</h2>
-                  <p>落点存档已通过校验。沿画面中的外缘通道进入正式开场；不会重播七码恢复或基础能力教学。</p>
-                  <button class="primary-action" data-action="enter-g02-slice">进入旧屏幕谷</button>
-                </section>
-              `
-              : ''
-          }
-
           ${
             isG02Scene && this.#session.sceneState === 'S6' && !dialogue
               ? `
