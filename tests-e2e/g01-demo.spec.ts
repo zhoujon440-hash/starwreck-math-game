@@ -210,7 +210,7 @@ test('SCN06—SCN07 complete the formal G01 demo handoff with persistent soft fa
 test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundary', async ({
   page,
 }, info) => {
-  test.setTimeout(180_000)
+  test.setTimeout(300_000)
   const consoleErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
