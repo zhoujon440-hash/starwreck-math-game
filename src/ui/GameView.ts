@@ -5,6 +5,7 @@ import hosManifest from '../../data/source/g01/scn-g01-01/hos_manifest.json'
 import scn02Art from '../../data/source/g01/pr-a/scn-g01-02-art-manifest.json'
 import scn03Art from '../../data/source/g01/pr-a/scn-g01-03-art-manifest.json'
 import prBArt from '../../data/source/g01/pr-b/runtime-art-manifest.json'
+import prCArt from '../../data/source/g01/pr-c/runtime-art-manifest.json'
 import { DEBUG_UI } from '../config'
 import { CharacterPortrait } from '../components/characters/CharacterPortrait'
 import { characterData } from '../data/characters'
@@ -59,6 +60,8 @@ export class GameView {
   #hintAvailableAt = 0
   #historyOpen = false
   #profileOpen = false
+  #journalOpen = false
+  #menuOpen = false
   #puzzleOpen = false
   #activeZoomId: string | null = null
   #pendingZoomId: string | null = null
@@ -141,6 +144,9 @@ export class GameView {
     const isScn03 = scene.id === 'SCN-G01-03'
     const isScn04 = scene.id === 'SCN-G01-04'
     const isScn05 = scene.id === 'SCN-G01-05'
+    const isScn06 = scene.id === 'SCN-G01-06'
+    const isScn07 = scene.id === 'SCN-G01-07'
+    const isG02Boundary = scene.id === 'G02-BOUNDARY'
     const isCargoRecovery =
       isScn03 &&
       this.#session.activeRuntimeNodeId === 'SCN-G01-03:cargo-safety-door' &&
@@ -149,10 +155,18 @@ export class GameView {
       (isScn04 || isScn05) &&
       this.#session.safeRecovery?.sceneId === scene.id &&
       Boolean(this.#session.activeRuntimeNodeId)
-    const state = isCargoRecovery || isPrBRecovery
+    const isPrCRecovery =
+      isScn07 &&
+      this.#session.safeRecovery?.sceneId === scene.id &&
+      this.#session.activeRuntimeNodeId === 'SCN-G01-07:orbit-safe-node'
+    const state = isCargoRecovery || isPrBRecovery || isPrCRecovery
       ? {
           id: this.#session.sceneState,
-          title: isCargoRecovery ? '货舱安全门' : '航行安全节点',
+          title: isCargoRecovery
+            ? '货舱安全门'
+            : isPrCRecovery
+              ? '近地轨道安全节点'
+              : '航行安全节点',
           objective: '确认保留内容，并从失败前进度继续',
           narrative: '当前位于独立保存的安全恢复节点，正确进度未被回滚。',
         }
@@ -177,9 +191,9 @@ export class GameView {
         ? '/assets/g01-cockpit-cabinet-closed-v2.png'
         : scene.art
 
-    this.root.innerHTML = `
+    this.root.innerHTML = this.#withBaseAssets(`
       <main
-        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery ? 'is-cargo-safe-recovery' : ''}"
+        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery || isPrCRecovery ? 'is-cargo-safe-recovery' : ''}"
         data-debug-ui="${DEBUG_UI}"
         data-scene-id="${scene.id}"
         data-runtime-node-id="${escapeHtml(this.#session.activeRuntimeNodeId ?? 'scene-active')}"
@@ -214,6 +228,8 @@ export class GameView {
             <span>${DEBUG_UI ? `已自动保存 · schema v${this.#session.schemaVersion}` : '已自动保存'}</span>
           </div>
           <nav class="story-tools" aria-label="剧情工具">
+            <button data-action="open-menu">主菜单</button>
+            <button data-action="open-journal">任务与证据</button>
             <button data-action="open-history">对话历史</button>
             <button data-action="open-profile">角色档案</button>
           </nav>
@@ -236,7 +252,11 @@ export class GameView {
                         ? '结霜的拾光号货舱，右侧外壳裂口正在漏气'
                         : isScn04
                           ? '布满导航零件的星图室，中央十二星门环有三处缺口'
-                          : '拾光号驾驶舱外是密集垃圾雨与一条狭窄安全航线',
+                          : isScn05
+                            ? '拾光号驾驶舱外是密集垃圾雨与一条狭窄安全航线'
+                            : isScn06
+                              ? '拾光号远距观测舱正接收来自锈环星的破碎求救波形'
+                              : '拾光号正在锈环星旧屏幕谷外缘上空完成落点交接',
               )}"
             ></div>
             <div class="state-layer distribution-box-layer" aria-hidden="true"></div>
@@ -244,6 +264,7 @@ export class GameView {
             ${isScn01 ? this.#scn01SceneLayersTemplate() : ''}
             ${isScn02 || (isScn03 && !isCargoRecovery) ? this.#prASceneLayersTemplate() : ''}
             ${isScn04 || isScn05 ? this.#prBSceneLayersTemplate() : ''}
+            ${isScn06 || isScn07 || isG02Boundary ? this.#prCSceneLayersTemplate() : ''}
             <div class="scene-treatment" aria-hidden="true"></div>
             <div class="foreground-layer" aria-hidden="true"></div>
             ${this.#collectibleLayersTemplate('scene')}
@@ -426,8 +447,56 @@ export class GameView {
                   <span class="eyebrow">垃圾雨航线完成</span>
                   <h2 id="scn05-complete-title">安全落点已保存</h2>
                   <p>两个安全节点、旁路板和短时窗口已经连成完整路线。</p>
-                  <p data-next-boundary="scn-g01-06">下一边界：锈环星求救信号。本PR未加载求救信号、能力授权或后续剧情。</p>
-                  <div class="completion-stats"><span><b>0</b> 序章星核</span><span><b>6</b> 永久能力仍锁定</span></div>
+                  <p data-next-boundary="scn-g01-06">远距观测舱捕获到一段来自锈环星的自删除求救信号。</p>
+                  <div class="completion-stats"><span><b>0</b> 序章星核</span><span><b>3</b> 高级能力仍锁定</span></div>
+                  <button class="secondary-action" data-action="enter-scn06">追踪锈环星求救信号</button>
+                </section>
+              `
+              : ''
+          }
+
+          ${
+            isScn06 && this.#session.sceneState === 'S6' && !dialogue
+              ? `
+                <section class="story-panel complete-panel pr-c-complete" aria-labelledby="scn06-complete-title">
+                  <span class="eyebrow">求救源锁定</span>
+                  <h2 id="scn06-complete-title">三项基础能力已授权</h2>
+                  <p>七码搜寻、分析与已探索节点寻路已经按顺序授权；高级能力仍然锁定。</p>
+                  <p data-evidence-summary="distress,search,analysis,pathfinding">求救记录与能力授权已写入任务和证据档案。</p>
+                  <div class="completion-stats"><span><b>3</b> 基础能力</span><span><b>0</b> 序章星核</span></div>
+                  <button class="secondary-action" data-action="enter-scn07">进入锈环星近地轨道</button>
+                </section>
+              `
+              : ''
+          }
+
+          ${
+            isScn07 && this.#session.sceneState === 'S6' && !dialogue
+              ? `
+                <section class="story-panel complete-panel pr-c-complete" aria-labelledby="scn07-complete-title">
+                  <span class="eyebrow">坠落之前</span>
+                  <h2 id="scn07-complete-title">旧屏幕谷外缘已抵达</h2>
+                  <p>落点扫描、冲击缓冲与离舰存档已经完成。确认后结束G01序章并进入只读交接画面。</p>
+                  <div class="completion-stats"><span><b>8</b> 完成场景</span><span><b>0</b> 序章星核</span></div>
+                  <button class="primary-action" data-action="enter-g02-boundary">完成G01序章</button>
+                </section>
+              `
+              : ''
+          }
+
+          ${
+            isG02Boundary
+              ? `
+                <section class="story-panel complete-panel demo-complete" aria-labelledby="demo-complete-title"
+                  data-g01-chapter-complete="${this.#session.flags.g01_chapter_complete === true}"
+                  data-g01-handoff-to-g02="${this.#session.flags.g01_handoff_to_g02 === true}"
+                  data-world-star-core-count="${Number(this.#session.flags.world_star_core_count ?? 0)}">
+                  <span class="eyebrow">G01 Demo · 0.1.0</span>
+                  <h2 id="demo-complete-title">序章《拾光号：坠落之前》完成</h2>
+                  <p>星宇与七码已经抵达旧屏幕谷外缘。这里仅展示G01→G02交接，不包含G02热点、找物、谜题或剧情流程。</p>
+                  <div class="completion-stats"><span><b>8</b> 连续场景</span><span><b>0</b> 序章星核</span><span><b>3</b> 基础能力</span></div>
+                  <button class="secondary-action" data-action="open-journal">查看任务与证据</button>
+                  <button class="text-action" data-action="restart">开始新游戏</button>
                 </section>
               `
               : ''
@@ -438,7 +507,9 @@ export class GameView {
               ? this.#cargoRecoveryTemplate(sceneArt)
               : isPrBRecovery
                 ? this.#prBRecoveryTemplate(sceneArt)
-              : ''
+                : isPrCRecovery
+                  ? this.#prCRecoveryTemplate(sceneArt)
+                : ''
           }
 
           <div class="scene-counter" aria-live="polite">
@@ -517,6 +588,8 @@ export class GameView {
         ${this.#puzzleOpen ? this.#activePuzzleTemplate() : ''}
         ${this.#historyOpen ? this.#historyTemplate() : ''}
         ${this.#profileOpen ? this.#profileTemplate() : ''}
+        ${this.#journalOpen ? this.#journalTemplate() : ''}
+        ${this.#menuOpen ? this.#menuTemplate() : ''}
 
         <div class="toast ${this.#toast ? 'is-visible' : ''}" role="status" aria-live="polite">
           ${escapeHtml(this.#toast)}
@@ -528,7 +601,7 @@ export class GameView {
           <p>横屏能保留完整的场景细节与背包操作区。</p>
         </div>
       </main>
-    `
+    `)
     if (isScn01 && this.#session.sceneState === 'S5') {
       this.#scheduleBootSequence()
     } else if (this.#bootTimer) {
@@ -606,6 +679,13 @@ export class GameView {
         aria-label="${escapeHtml(hotspot.ariaLabel)}"
       ><span class="sr-only">${escapeHtml(hotspot.ariaLabel)}</span></button>
     `
+  }
+
+  #withBaseAssets(markup: string): string {
+    const base = import.meta.env.BASE_URL
+    return base === '/'
+      ? markup
+      : markup.replaceAll('/assets/', `${base}assets/`)
   }
 
   #collectibleLayersTemplate(scope: 'scene' | 'zoom'): string {
@@ -809,6 +889,7 @@ export class GameView {
     if (this.#session.currentSceneId === 'SCN-G01-02') return this.#shipMapCloseupTemplate()
     if (this.#session.currentSceneId === 'SCN-G01-03') return this.#cargoHosTemplate()
     if (this.#session.currentSceneId === 'SCN-G01-04') return this.#starMapHosTemplate()
+    if (this.#session.currentSceneId === 'SCN-G01-06') return this.#signalHosTemplate()
     return ''
   }
 
@@ -822,7 +903,39 @@ export class GameView {
     if (this.#session.currentSceneId === 'SCN-G01-04') {
       return this.#starMapPuzzleTemplate()
     }
+    if (this.#session.currentSceneId === 'SCN-G01-06') {
+      return this.#signalAlignmentPuzzleTemplate()
+    }
+    if (this.#session.currentSceneId === 'SCN-G01-07') {
+      return this.#session.sceneState === 'S1'
+        ? this.#landingScannerPuzzleTemplate()
+        : this.#impactDampingPuzzleTemplate()
+    }
     return this.#chipPuzzleTemplate()
+  }
+
+  #prCSceneLayersTemplate(): string {
+    const layers =
+      this.#session.currentSceneId === 'SCN-G01-06'
+        ? [
+            ['g01_scn06_signal_receiver_opened', '/assets/g01/pr-c/scn-g01-06/states/signal-detected.png'],
+            ['g01_scn06_signal_verified', '/assets/g01/pr-c/scn-g01-06/states/signal-aligned.png'],
+            ['ability_qima_search', '/assets/g01/pr-c/scn-g01-06/states/authorization-search.png'],
+            ['ability_analysis', '/assets/g01/pr-c/scn-g01-06/states/authorization-analysis.png'],
+            ['ability_pathfinding', '/assets/g01/pr-c/scn-g01-06/states/authorization-pathfinding.png'],
+          ]
+        : [
+            ['g01_scn07_landing_scanner_opened', '/assets/g01/pr-c/scn-g01-07/states/landing-scan-active.png'],
+            ['g01_scn07_corridor_confirmed', '/assets/g01/pr-c/scn-g01-07/states/landing-route-confirmed.png'],
+            ['g01_scn07_landing_scanner_opened', '/assets/g01/pr-c/scn-g01-07/states/impact-warning.png'],
+            ['g01_scn07_impact_stabilized', '/assets/g01/pr-c/scn-g01-07/states/impact-stabilized.png'],
+            ['g01_scn07_autosave_confirmed', '/assets/g01/pr-c/scn-g01-07/states/save-beacon-active.png'],
+            ['g01_scn07_exit_ready', '/assets/g01/pr-c/scn-g01-07/states/handoff-ready.png'],
+          ]
+    return layers
+      .filter(([flag]) => this.#session.flags[flag] === true)
+      .map(([, path]) => `<img class="pr-a-state-layer pr-c-state-layer" src="${path}" alt="" aria-hidden="true">`)
+      .join('')
   }
 
   #prBSceneLayersTemplate(): string {
@@ -1077,6 +1190,122 @@ export class GameView {
     `
   }
 
+  #signalHosTemplate(): string {
+    const targets = prCArt.hos.targets
+    const foundCount = targets.filter((target) =>
+      this.#session.foundItemIds.includes(target.item_id),
+    ).length
+    const activeTargets = this.engine
+      .activeHotspots()
+      .filter(
+        (hotspot) =>
+          hotspot.hosId === 'RUNTIME-HOS-G01-06-SIGNAL-TRACE' &&
+          hotspot.itemId &&
+          !this.#session.foundItemIds.includes(hotspot.itemId),
+      )
+    return `
+      <div class="modal-backdrop" data-action="close-cabinet"></div>
+      <section class="zoom-modal pr-a-hos-modal pr-c-hos-modal" role="dialog" aria-modal="true" aria-labelledby="signal-hos-title">
+        <header>
+          <div><span class="eyebrow">求救接收器 · 局部放大</span><h2 id="signal-hos-title">复原自删除的求救记录</h2></div>
+          <div class="zoom-progress">${foundCount} / ${targets.length}</div>
+          <button class="icon-button" data-action="close-cabinet" aria-label="关闭求救接收器近景">×</button>
+        </header>
+        <div class="qima-hos-content">
+          <div class="qima-hos-art pr-c-signal-hos" role="img" aria-label="布满旧线圈、信号零件和破损记录壳的求救接收器"
+            style="background-image:url('/assets/g01/pr-c/scn-g01-06/closeups/signal-receiver.webp')">
+            ${this.#collectibleLayersTemplate('zoom')}
+            ${prCArt.hos.distractors
+              .map(
+                (item) => `
+                  <img class="hos-distractor-object" src="/${item.runtime_path.replace(/^public\//, '')}"
+                    style="${areaStyle(item.position)}" alt="" aria-hidden="true">
+                  <button class="scene-hotspot hos-distractor-hotspot" style="${hotspotStyle({
+                    area: item.position,
+                  } as HotspotDefinition)}" data-action="signal-distractor"
+                    aria-label="检查${escapeHtml(item.name)}"><span class="sr-only">${escapeHtml(item.name)}</span></button>
+                `,
+              )
+              .join('')}
+            ${activeTargets.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}
+          </div>
+          <aside class="hos-list qima-hos-list">
+            <span>波形复原清单</span><h3>观察材质、接点与记录纹理</h3>
+            <ul>${targets
+              .map(
+                (target) => `<li class="${this.#session.foundItemIds.includes(target.item_id) ? 'is-found' : ''}"><i aria-hidden="true"></i>${escapeHtml(target.name)}<small>${target.item_id === 'ITM-G01-013' ? '证据' : '校准件'}</small></li>`,
+              )
+              .join('')}</ul>
+            <p>烧毁线圈、空记录壳和弯曲相位针会留在原处；目标物拾取后从近景独立消失。</p>
+          </aside>
+        </div>
+      </section>
+    `
+  }
+
+  #signalAlignmentPuzzleTemplate(): string {
+    const step = Number(this.#session.puzzleProgress.signal_alignment_step ?? 0)
+    const stages = ['锁定求救频段', '同步重复相位', '提升弱信号增益']
+    return `
+      <div class="modal-backdrop"></div>
+      <section class="zoom-modal pr-a-puzzle-modal" role="dialog" aria-modal="true" aria-labelledby="signal-puzzle-title">
+        <header><div><span class="eyebrow">求救波形 · 近景</span><h2 id="signal-puzzle-title">校准频段、相位与增益</h2></div>
+          <button class="icon-button" data-action="close-puzzle" aria-label="关闭求救波形校准">×</button>
+        </header>
+        <div class="pr-c-puzzle-console" style="background-image:url('/assets/g01/pr-c/scn-g01-06/closeups/authorization-console.webp')">
+          ${stages
+            .map(
+              (label, index) => `<button data-action="signal-step" data-step-index="${index}" class="${index < step ? 'is-complete' : ''}"><span>${index + 1}</span>${label}</button>`,
+            )
+            .join('')}
+        </div>
+        <div class="pr-a-detail-copy"><p>每次只校准一个物理参数；错误顺序不会消耗求救记录或清除已完成步骤。</p></div>
+      </section>
+    `
+  }
+
+  #landingScannerPuzzleTemplate(): string {
+    const step = Number(this.#session.puzzleProgress.landing_scan_step ?? 0)
+    const stages = ['七码搜寻：缩小落点范围', '分析：比对已取得证据', '寻路：连接已探索安全节点']
+    return `
+      <div class="modal-backdrop"></div>
+      <section class="zoom-modal pr-a-puzzle-modal" role="dialog" aria-modal="true" aria-labelledby="landing-puzzle-title">
+        <header><div><span class="eyebrow">近地落点扫描 · 近景</span><h2 id="landing-puzzle-title">三项基础能力三角定位</h2></div>
+          <button class="icon-button" data-action="close-puzzle" aria-label="关闭落点扫描">×</button>
+        </header>
+        <div class="pr-c-puzzle-console landing-scanner-console" style="background-image:url('/assets/g01/pr-c/scn-g01-07/closeups/landing-scanner.webp')">
+          ${stages
+            .map(
+              (label, index) => `<button data-action="landing-scan-step" data-step-index="${index}" class="${index < step ? 'is-complete' : ''}"><span>${index + 1}</span>${label}</button>`,
+            )
+            .join('')}
+        </div>
+        <div class="pr-a-detail-copy"><p>三项能力必须按正式授权边界使用；瞬移、缩小和复制体不会出现在本机制中。</p></div>
+      </section>
+    `
+  }
+
+  #impactDampingPuzzleTemplate(): string {
+    const step = Number(this.#session.puzzleProgress.impact_damping_step ?? 0)
+    const stages = ['锁定船体姿态', '接通冲击缓冲', '闭合着陆锁']
+    return `
+      <div class="modal-backdrop"></div>
+      <section class="zoom-modal pr-a-puzzle-modal" role="dialog" aria-modal="true" aria-labelledby="impact-puzzle-title">
+        <header><div><span class="eyebrow">垃圾雨冲击 · 近景</span><h2 id="impact-puzzle-title">稳定拾光号着陆姿态</h2></div>
+          <button class="icon-button" data-action="close-puzzle" aria-label="关闭冲击缓冲机关">×</button>
+        </header>
+        <div class="pr-c-puzzle-console impact-console">
+          ${stages
+            .map(
+              (label, index) => `<button data-action="impact-step" data-step-index="${index}" class="${index < step ? 'is-complete' : ''}"><span>${index + 1}</span>${label}</button>`,
+            )
+            .join('')}
+        </div>
+        <div class="pr-a-detail-copy"><p>错误顺序只撤销当前尝试；最近安全节点、求救证据和落点扫描保持不变。</p></div>
+      </section>
+    `
+  }
+
   #starMapPuzzleTemplate(): string {
     return `
       <div class="modal-backdrop"></div>
@@ -1227,6 +1456,33 @@ export class GameView {
           <p>危险只中断当前确认动作；背包、找物、谜题、证据和正确步骤均保持失败前状态。</p>
           <ul><li>关键物：${this.#session.inventoryItemIds.length} 件保留</li><li>证据：${evidenceCount} 条保留</li><li>已确认热点：${this.#session.completedHotspotIds.length} 个</li><li>继续位置：${recovery.resumeState === 'S3' ? '旁路重启步骤' : '失败前操作步骤'}</li><li>场景重置：未发生</li></ul>
           <button class="primary-action" data-action="resume-pr-b">保留进度继续</button>
+        </div>
+      </section>
+    `
+  }
+
+  #prCRecoveryTemplate(sceneArt: string): string {
+    const recovery = this.#session.safeRecovery
+    if (!recovery) return ''
+    const evidenceCount = Object.entries(this.#session.flags).filter(
+      ([key, value]) => key.includes('evidence') && value === true,
+    ).length
+    return `
+      <section class="cargo-safe-recovery-node" data-safe-recovery-node="${escapeHtml(recovery.nodeId)}"
+        data-pre-failure-state="${recovery.preFailureState}" data-resume-state="${recovery.resumeState ?? recovery.preFailureState}"
+        style="--safe-node-art:url('${sceneArt}')" aria-labelledby="pr-c-recovery-title">
+        <div class="cargo-recovery-panel">
+          <span class="eyebrow">近地轨道安全恢复节点</span>
+          <h2 id="pr-c-recovery-title">不稳定垃圾雨走廊已关闭</h2>
+          <p>拾光号只回退到最近有效步骤。刷新后仍停留在这里，继续时恢复失败前的有效进度。</p>
+          <ul>
+            <li>背包：${this.#session.inventoryItemIds.length} 件保留</li>
+            <li>证据：${evidenceCount} 条保留</li>
+            <li>HOS：${this.#session.hosProgress['RUNTIME-HOS-G01-06-SIGNAL-TRACE']?.length ?? 0} / 4 保留</li>
+            <li>谜题：${this.#session.completedPuzzleIds.length} 项保留</li>
+            <li>落点扫描：${this.#session.flags.g01_landing_scanned === true ? '已确认并保留' : '尚未确认'}</li>
+          </ul>
+          <button class="primary-action" data-action="resume-pr-c">从安全节点继续</button>
         </div>
       </section>
     `
@@ -1523,7 +1779,7 @@ export class GameView {
           }
           if (
             result.ok &&
-            ['SCN-G01-03', 'SCN-G01-04'].includes(this.#session.currentSceneId) &&
+            ['SCN-G01-03', 'SCN-G01-04', 'SCN-G01-06'].includes(this.#session.currentSceneId) &&
             this.#session.sceneState !== 'S1'
           ) {
             this.#cabinetOpen = false
@@ -1542,6 +1798,12 @@ export class GameView {
             this.#pendingZoomId = null
             this.#cabinetOpen = true
             this.#render()
+          }
+          if (
+            dialogueId === 'DLG-G01-0017' &&
+            !this.#session.dialogue.readDialogueIds.includes('DLG-G01-0018')
+          ) {
+            this.#dialogueRunner.startTrigger('SCN-G01-06', '求救记录完成')
           }
         }
         break
@@ -1583,6 +1845,43 @@ export class GameView {
         this.#activeZoomId = null
         this.#handleResult(this.engine.enterScene('SCN-G01-05'))
         break
+      case 'enter-scn06':
+        this.#selectedItemId = null
+        this.#cabinetOpen = false
+        this.#puzzleOpen = false
+        this.#activeZoomId = null
+        this.#handleResult(this.engine.enterScene('SCN-G01-06'))
+        break
+      case 'enter-scn07': {
+        this.#selectedItemId = null
+        this.#cabinetOpen = false
+        this.#puzzleOpen = false
+        this.#activeZoomId = null
+        const result = this.engine.enterScene('SCN-G01-07')
+        this.#handleResult(result)
+        if (result.ok) this.#dialogueRunner.startTrigger('SCN-G01-07', '进入近地轨道')
+        break
+      }
+      case 'enter-g02-boundary':
+        this.#handleResult(this.engine.completeG01Handoff())
+        break
+      case 'open-menu':
+        this.#menuOpen = true
+        this.#render()
+        break
+      case 'close-menu':
+      case 'continue-game':
+        this.#menuOpen = false
+        this.#render()
+        break
+      case 'open-journal':
+        this.#journalOpen = true
+        this.#render()
+        break
+      case 'close-journal':
+        this.#journalOpen = false
+        this.#render()
+        break
       case 'open-history':
         this.#historyOpen = true
         this.#render()
@@ -1620,6 +1919,9 @@ export class GameView {
             'RUNTIME-PUZ-G01-TASK-DEPENDENCY',
             'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION',
             'TUT-MECH-002',
+            'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT',
+            'RUNTIME-PUZ-G01-LANDING-TRIANGULATION',
+            'RUNTIME-PUZ-G01-IMPACT-DAMPING',
           ].includes(this.#activeZoomId ?? '')
         ) {
           this.#puzzleOpen = true
@@ -1713,6 +2015,61 @@ export class GameView {
         this.#puzzleOpen = false
         this.#handleResult(this.engine.completePuzzle('TUT-MECH-002'))
         break
+      case 'signal-step': {
+        const selected = Number(actionElement.dataset.stepIndex)
+        const expected = Number(this.#session.puzzleProgress.signal_alignment_step ?? 0)
+        if (selected !== expected) {
+          this.#showToast('波形顺序不匹配；求救记录与已校准参数保持不变。')
+          break
+        }
+        const nextStep = expected + 1
+        this.engine.updateStory((draft) => {
+          draft.puzzleProgress.signal_alignment_step = nextStep
+        })
+        if (nextStep === 3) {
+          this.#puzzleOpen = false
+          const result = this.engine.completePuzzle('RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT')
+          this.#handleResult(result)
+          if (result.ok) this.#dialogueRunner.startTrigger('SCN-G01-06', '波形解析')
+        }
+        break
+      }
+      case 'landing-scan-step': {
+        const selected = Number(actionElement.dataset.stepIndex)
+        const expected = Number(this.#session.puzzleProgress.landing_scan_step ?? 0)
+        if (selected !== expected) {
+          this.#showToast('能力顺序错误；已确认的扫描数据没有丢失。')
+          break
+        }
+        const nextStep = expected + 1
+        this.engine.updateStory((draft) => {
+          draft.puzzleProgress.landing_scan_step = nextStep
+        })
+        if (nextStep === 3) {
+          this.#puzzleOpen = false
+          const result = this.engine.completePuzzle('RUNTIME-PUZ-G01-LANDING-TRIANGULATION')
+          this.#handleResult(result)
+          if (result.ok) this.#dialogueRunner.startTrigger('SCN-G01-07', '落点扫描完成')
+        }
+        break
+      }
+      case 'impact-step': {
+        const selected = Number(actionElement.dataset.stepIndex)
+        const expected = Number(this.#session.puzzleProgress.impact_damping_step ?? 0)
+        if (selected !== expected) {
+          this.#showToast('缓冲顺序错误；当前尝试已撤销，落点证据仍然保留。')
+          break
+        }
+        const nextStep = expected + 1
+        this.engine.updateStory((draft) => {
+          draft.puzzleProgress.impact_damping_step = nextStep
+        })
+        if (nextStep === 3) {
+          this.#puzzleOpen = false
+          this.#handleResult(this.engine.completePuzzle('RUNTIME-PUZ-G01-IMPACT-DAMPING'))
+        }
+        break
+      }
       case 'dismiss-complete':
         this.#completionPanelDismissed = true
         this.#render()
@@ -1728,6 +2085,9 @@ export class GameView {
         break
       case 'star-map-distractor':
         this.#showToast('边缘与缺口不匹配，这不是本次修复目标。')
+        break
+      case 'signal-distractor':
+        this.#showToast('这件零件无法复原求救波形，会留在接收器中。')
         break
       case 'inspect': {
         const hotspotId = actionElement.dataset.hotspotId
@@ -1815,6 +2175,29 @@ export class GameView {
           ) {
             this.#showToast('时间窗口已确认，安全落点保持可用。')
           }
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-06' &&
+            hotspotId === 'HS-G01-0025'
+          ) {
+            this.#activeZoomId = 'RUNTIME-HOS-G01-06-SIGNAL-TRACE'
+            this.#cabinetOpen = true
+            this.#render()
+          }
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-06' &&
+            hotspotId === 'HS-G01-0028'
+          ) {
+            this.#dialogueRunner.startTrigger('SCN-G01-06', '三项授权完成')
+          }
+          if (
+            result.ok &&
+            this.#session.currentSceneId === 'SCN-G01-07' &&
+            hotspotId === 'HS-G01-0030'
+          ) {
+            this.#dialogueRunner.startTrigger('SCN-G01-07', '自动存档完成')
+          }
         }
         break
       }
@@ -1838,6 +2221,9 @@ export class GameView {
       case 'resume-pr-b':
         this.#handleResult(this.engine.resumePrBAfterSoftFailure())
         break
+      case 'resume-pr-c':
+        this.#handleResult(this.engine.resumePrCAfterSoftFailure())
+        break
       case 'hint':
         this.#requestHint()
         break
@@ -1847,6 +2233,8 @@ export class GameView {
         this.#puzzleOpen = false
         this.#introDismissed = false
         this.#completionPanelDismissed = false
+        this.#menuOpen = false
+        this.#journalOpen = false
         this.engine.reset()
         this.#showToast('已返回领航舱熄灯时刻。')
         break
@@ -1939,7 +2327,9 @@ export class GameView {
 
     if (
       result.level === 3 &&
-      ['SCN-G01-04', 'SCN-G01-05'].includes(this.#session.currentSceneId)
+      ['SCN-G01-04', 'SCN-G01-05', 'SCN-G01-06', 'SCN-G01-07'].includes(
+        this.#session.currentSceneId,
+      )
     ) {
       window.setTimeout(() => {
         const step = this.engine.completeHintStep(result)
@@ -1953,6 +2343,14 @@ export class GameView {
           this.#dialogueRunner.startTrigger('SCN-G01-05', '打开航线')
         } else if (result.hotspot.id === 'HS-G01-0023') {
           this.#dialogueRunner.startTrigger('SCN-G01-05', '旁路片安装')
+        } else if (result.hotspot.zoomId === 'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT') {
+          this.#dialogueRunner.startTrigger('SCN-G01-06', '波形解析')
+        } else if (result.hotspot.id === 'HS-G01-0028') {
+          this.#dialogueRunner.startTrigger('SCN-G01-06', '三项授权完成')
+        } else if (result.hotspot.zoomId === 'RUNTIME-PUZ-G01-LANDING-TRIANGULATION') {
+          this.#dialogueRunner.startTrigger('SCN-G01-07', '落点扫描完成')
+        } else if (result.hotspot.id === 'HS-G01-0030') {
+          this.#dialogueRunner.startTrigger('SCN-G01-07', '自动存档完成')
         }
       }, 450)
     } else if (result.level === 3 && this.#session.currentSceneId !== 'SCN-G01-00') {
@@ -2023,6 +2421,16 @@ export class GameView {
       if (level === 2) return '二级提示：第三航段需要驾驶舱工具槽中的旁路板。'
       return '三级提示：七码会替你完成第一段航线确认。'
     }
+    if (this.#session.currentSceneId === 'SCN-G01-06') {
+      if (level === 1) return '一级提示：先从中央接收器还原求救波形。'
+      if (level === 2) return '二级提示：完成波形后，在下方三个实体槽依次授权。'
+      return '三级提示：七码会完成当前求救追踪任务的一步。'
+    }
+    if (this.#session.currentSceneId === 'SCN-G01-07') {
+      if (level === 1) return '一级提示：使用已经授权的三项基础能力确认落点。'
+      if (level === 2) return '二级提示：避开右上方不稳定走廊，选择舷窗中央安全路线。'
+      return '三级提示：七码会完成当前落点任务的一步。'
+    }
     const horizontal =
       hotspot.area.x < 34 ? '左侧' : hotspot.area.x > 66 ? '右侧' : '中央区域'
     const vertical =
@@ -2032,6 +2440,8 @@ export class GameView {
       'SCN-G01-01': { scene: '导航核心舱', zoom: '导航零件堆' },
       'SCN-G01-02': { scene: '中控任务台', zoom: '任务屏近景' },
       'SCN-G01-03': { scene: '漏气货舱', zoom: '应急工具箱' },
+      'SCN-G01-06': { scene: '远距观测舱', zoom: '求救接收器' },
+      'SCN-G01-07': { scene: '锈环星近地轨道', zoom: '落点扫描台' },
     }
     const currentArea = areaNames[this.#session.currentSceneId] ?? {
       scene: '当前舱段',
@@ -2058,12 +2468,15 @@ export class GameView {
   }
 
   #dialogueSpeakerName(speakerId: string): string {
-    return speakerId === 'SYSTEM' ? '拾光号系统' : characterData.get(speakerId).name
+    if (speakerId === 'SYSTEM') return '拾光号系统'
+    if (speakerId === 'DISTRESS_SIGNAL') return '锈环星求救信号'
+    return characterData.get(speakerId).name
   }
 
   #dialoguePortraitTemplate(speakerId: string, portraitState: string): string {
-    if (speakerId === 'SYSTEM') {
-      return '<div class="system-portrait" aria-label="拾光号系统"><i></i><i></i><i></i></div>'
+    if (speakerId === 'SYSTEM' || speakerId === 'DISTRESS_SIGNAL') {
+      const label = speakerId === 'SYSTEM' ? '拾光号系统' : '锈环星求救信号'
+      return `<div class="system-portrait ${speakerId === 'DISTRESS_SIGNAL' ? 'distress-signal-portrait' : ''}" aria-label="${label}"><i></i><i></i><i></i></div>`
     }
     return this.#portrait.render(speakerId, portraitState, 'dialogue-portrait')
   }
@@ -2152,6 +2565,70 @@ export class GameView {
                   .join('')
               : '<p class="profile-empty">在剧情中正式遇见角色后，档案会在这里解锁。</p>'
           }
+        </div>
+      </section>
+    `
+  }
+
+  #journalTemplate(): string {
+    const tasks = [
+      ['恢复拾光号应急照明', this.#session.sceneStates['SCN-G01-00'] === 'S6'],
+      ['修复七码导航核心', this.#session.sceneStates['SCN-G01-01'] === 'S6'],
+      ['建立船上第一张任务单', this.#session.sceneStates['SCN-G01-02'] === 'S6'],
+      ['封堵漏气货舱', this.#session.sceneStates['SCN-G01-03'] === 'S6'],
+      ['补全星图缺口', this.#session.sceneStates['SCN-G01-04'] === 'S6'],
+      ['穿过垃圾雨航线', this.#session.sceneStates['SCN-G01-05'] === 'S6'],
+      ['锁定锈环星求救源', this.#session.sceneStates['SCN-G01-06'] === 'S6'],
+      ['抵达旧屏幕谷外缘', this.#session.flags.g01_scn07_complete === true],
+    ] as const
+    const evidence = [
+      ['货舱漏气记录', this.#session.flags.g01_scn03_evidence_leak_confirmed === true],
+      ['货舱测压读数', this.#session.flags.g01_scn03_evidence_pressure_reading === true],
+      ['锈环星异常信号', this.#session.flags.g01_scn04_evidence_anomaly === true],
+      ['锈环星求救记录', this.#session.flags.g01_scn06_evidence_distress_record === true],
+      ['旧屏幕谷落点扫描', this.#session.flags.g01_scn07_evidence_landing_scan === true],
+    ] as const
+    return `
+      <div class="modal-backdrop" data-action="close-journal"></div>
+      <section class="story-modal journal-modal" role="dialog" aria-modal="true" aria-labelledby="journal-title">
+        <header><div><span class="eyebrow">星宇的序章记录</span><h2 id="journal-title">任务与证据</h2></div>
+          <button class="icon-button" data-action="close-journal" aria-label="关闭任务与证据">×</button>
+        </header>
+        <div class="journal-grid">
+          <article><h3>任务进度</h3><ol>${tasks
+            .map(([label, done]) => `<li class="${done ? 'is-complete' : ''}"><i></i>${escapeHtml(label)}<small>${done ? '完成' : '进行中'}</small></li>`)
+            .join('')}</ol></article>
+          <article><h3>已取得证据</h3><ul>${evidence
+            .filter(([, found]) => found)
+            .map(([label]) => `<li>${escapeHtml(label)}</li>`)
+            .join('') || '<li>尚未取得证据</li>'}</ul>
+            <h3>七码能力</h3>
+            <ul class="ability-record">
+              <li>搜寻：${this.#session.flags.ability_qima_search === true ? '已授权' : '未授权'}</li>
+              <li>分析：${this.#session.flags.ability_analysis === true ? '已授权' : '未授权'}</li>
+              <li>寻路：${this.#session.flags.ability_pathfinding === true ? '已授权' : '未授权'}</li>
+              <li>瞬移 / 缩小 / 复制体：保持锁定</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    `
+  }
+
+  #menuTemplate(): string {
+    return `
+      <div class="modal-backdrop" data-action="close-menu"></div>
+      <section class="story-modal demo-menu-modal" role="dialog" aria-modal="true" aria-labelledby="demo-menu-title">
+        <header><div><span class="eyebrow">G01 Demo · 0.1.0</span><h2 id="demo-menu-title">拾光号：坠落之前</h2></div>
+          <button class="icon-button" data-action="close-menu" aria-label="关闭主菜单">×</button>
+        </header>
+        <div class="demo-menu-copy">
+          <p>连续探索八个场景：观察高清场景、局部放大找物、把背包道具拖到正确机关，并在危险时从安全节点继续。</p>
+          <ul><li>进度会自动保存在本设备。</li><li>三级提示会完成当前合法步骤。</li><li>安装PWA后，首次完整加载完成即可离线继续。</li></ul>
+          <div class="demo-menu-actions">
+            <button class="primary-action" data-action="continue-game">继续游戏</button>
+            <button class="secondary-action" data-action="restart">开始新游戏并清除存档</button>
+          </div>
         </div>
       </section>
     `

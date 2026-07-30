@@ -2344,3 +2344,149 @@ i.inventory-art {
     width: min(430px, 52vw);
   }
 }
+
+.pr-c-signal-hos {
+  background-position: center;
+  background-size: cover;
+}
+
+.pr-c-signal-hos::after {
+  background:
+    linear-gradient(110deg, rgb(5 16 22 / 28%), transparent 44%),
+    radial-gradient(circle at 52% 42%, transparent 0 34%, rgb(2 8 12 / 22%) 78%);
+  pointer-events: none;
+}
+
+.pr-c-puzzle-console {
+  min-height: 380px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 1rem;
+  padding: clamp(7rem, 22vh, 13rem) clamp(1rem, 5vw, 4rem) 2rem;
+  background-position: center;
+  background-size: cover;
+}
+
+.pr-c-puzzle-console button {
+  min-height: 76px;
+  border: 1px solid rgb(112 226 230 / 42%);
+  border-radius: 10px;
+  color: #e9ffff;
+  background: linear-gradient(160deg, rgb(10 31 37 / 94%), rgb(8 17 25 / 95%));
+  box-shadow: 0 12px 24px rgb(0 0 0 / 35%);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pr-c-puzzle-console button span {
+  display: inline-grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  margin-right: 0.55rem;
+  border-radius: 50%;
+  color: #061217;
+  background: #6cdce2;
+}
+
+.pr-c-puzzle-console button.is-complete {
+  border-color: #dfb36c;
+  color: #fff3d3;
+  background: linear-gradient(160deg, rgb(62 44 22 / 96%), rgb(22 19 18 / 96%));
+}
+
+.impact-console {
+  min-height: 330px;
+  padding-top: 5rem;
+  background:
+    radial-gradient(circle at 50% 38%, rgb(208 79 54 / 22%), transparent 34%),
+    linear-gradient(135deg, #101b20, #231913 62%, #0a1319);
+}
+
+.journal-modal,
+.demo-menu-modal {
+  width: min(900px, 92vw);
+}
+
+.journal-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 1.25rem;
+  padding: 1.25rem;
+}
+
+.journal-grid article,
+.demo-menu-copy {
+  padding: 1rem 1.2rem;
+  border: 1px solid rgb(125 204 212 / 20%);
+  border-radius: 12px;
+  background: rgb(7 20 27 / 72%);
+}
+
+.journal-grid ol,
+.journal-grid ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journal-grid li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #c4d8dd;
+}
+
+.journal-grid li i {
+  width: 0.72rem;
+  height: 0.72rem;
+  border: 1px solid #62848d;
+  border-radius: 50%;
+}
+
+.journal-grid li.is-complete i {
+  border-color: #71d6b4;
+  background: #71d6b4;
+  box-shadow: 0 0 12px rgb(113 214 180 / 58%);
+}
+
+.journal-grid li small {
+  margin-left: auto;
+  color: #7fa4ac;
+}
+
+.demo-menu-copy {
+  margin: 1.25rem;
+}
+
+.demo-menu-copy ul {
+  color: #b9cdd2;
+  line-height: 1.7;
+}
+
+.demo-menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.distress-signal-portrait {
+  border-color: rgb(225 153 91 / 55%);
+  filter: sepia(0.32) saturate(1.35);
+}
+
+@media (max-width: 760px) {
+  .journal-grid,
+  .pr-c-puzzle-console {
+    grid-template-columns: 1fr;
+  }
+
+  .pr-c-puzzle-console {
+    padding-top: 2rem;
+  }
+}

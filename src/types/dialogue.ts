@@ -1,7 +1,7 @@
 import type { CharacterId, PortraitState } from './character'
 import type { SceneStateId } from '../game/types'
 
-export type DialogueSpeakerId = CharacterId | 'SYSTEM'
+export type DialogueSpeakerId = CharacterId | 'SYSTEM' | 'DISTRESS_SIGNAL'
 
 export type DialogueNode = {
   dialogue_id: string
