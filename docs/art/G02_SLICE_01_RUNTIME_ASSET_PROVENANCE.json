@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "authorization": "project_owner_authorized_runtime_production",
+  "implementation_plan": "docs/plan/G02_VERTICAL_SLICE_01_IMPLEMENTATION_PLAN.md",
+  "status": "pending_project_owner_visual_review",
+  "production_tool": "OpenAI built-in image generation plus deterministic Pillow 2D runtime preparation",
+  "formal_sources": [
+    {
+      "package_id": "PKG-CHARACTERS-V2.1",
+      "package_sha256": "a31f21fbe0348be6ff1b9f7b21f53715ccf9dccf59d487cda2296fa4fdd0fceb",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_人物形象设计全集_V2.1_补齐版.zip",
+      "entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/01_十二星球人物三视图/G02_锈环星_人物三视图.png",
+      "entry_sha256": "c549fe94157daea3606a1b7b32562e28108c9e54f2dac1b156b38c8097c0a0b3",
+      "purpose": "阿铆、郑身份与造型约束"
+    },
+    {
+      "package_id": "PKG-SCENES-V1.0",
+      "package_sha256": "731cc680ee98eba1bf27474d4d613476dbbe02ca7fff7dfb1beb4b2bb0595de0",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_场景美术设计全集_V1.0.zip",
+      "entry": "星骸拾荒者_场景美术设计全集_V1.0/01_十二星球场景设定板/G02_锈环星_场景设定板.png",
+      "entry_sha256": "977812ad694f15b6e58a11bc780bc17edab214f06d8ece2e07fe7a76dfa9a0af",
+      "purpose": "G02旧屏幕谷环境、材质和色彩约束"
+    },
+    {
+      "package_id": "PKG-PROPS-V3.0",
+      "package_sha256": "f712245f25945b234fd73d794b3ff6d6be39744da3a56324a34706ee85f6aa2d",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_道具美术正式包_V3.0.zip",
+      "entry": "星骸拾荒者_道具美术正式包_V3.0/01_正式道具设定板/G02_锈环星_PROP-001-012_已确认基准.png",
+      "entry_sha256": "2698ab60ce208213328017cfff519c865d919cfb1d6d512251d756609e9e6b4c",
+      "purpose": "G02关键物轮廓、材料和编号约束"
+    },
+    {
+      "package_id": "PKG-MECH-V2.0",
+      "package_sha256": "de7367d1ec06f97d3b8cca3c671ca9680f522f714929997d4a60fd9af1678b2f",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_机制可视化HOPA正式包_V2.0.zip",
+      "entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/01_MECH-A_G02-G04/01_MECH-A详细机制设计板/MECH-002_参数诊断_HOPA机制详细设计板.png",
+      "entry_sha256": "671909498c3253dad376c7a9752b22ec9108945f3132c53598dbcca9d231d149",
+      "purpose": "MECH-002电视墙档案修复约束"
+    },
+    {
+      "package_id": "PKG-DANGER-V2.0",
+      "package_sha256": "981d9069efbc7627d4d64dbabd5795acb85f2a4098d9061ba7717d924669181b",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_危险视觉HOPA正式包_V2.0.zip",
+      "entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/01_DANGER-A_G02-G04/01_DANGER-A详细危险设计板/DANGER-001_裸露电缆放电_HOPA危险视觉详细设计板.png",
+      "entry_sha256": "ec994d944a27a69210104f84836d0d77add4c6c4354fa9aa9319963de9e1fb33",
+      "purpose": "电视墙漏电软失败约束"
+    },
+    {
+      "package_id": "PKG-DANGER-V2.0",
+      "package_sha256": "981d9069efbc7627d4d64dbabd5795acb85f2a4098d9061ba7717d924669181b",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_危险视觉HOPA正式包_V2.0.zip",
+      "entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/01_DANGER-A_G02-G04/01_DANGER-A详细危险设计板/DANGER-002_吊臂落物区_HOPA危险视觉详细设计板.png",
+      "entry_sha256": "f8fb1e1cf4497057191a433b44933100f49177f74166d0b5a4ca72b352825670",
+      "purpose": "吊臂落物软失败约束"
+    },
+    {
+      "package_id": "PKG-DANGER-V2.0",
+      "package_sha256": "981d9069efbc7627d4d64dbabd5795acb85f2a4098d9061ba7717d924669181b",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_危险视觉HOPA正式包_V2.0.zip",
+      "entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/01_DANGER-A_G02-G04/01_DANGER-A详细危险设计板/DANGER-004_磁性碎片风_HOPA危险视觉详细设计板.png",
+      "entry_sha256": "068dfbddf20bc1a192823edf9fcfeda3fee9d0fff36ab00493fb7ea952a73f22",
+      "purpose": "磁性碎片风软失败约束"
+    }
+  ],
+  "generated_inputs": [
+    {
+      "path": "art/runtime-production/g02-slice-01/source/G02_characters_source.png",
+      "sha256": "171868b57faccf8ce92a84dcc3392127d1ccedd8680daa121eadca098858d82d",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    },
+    {
+      "path": "art/runtime-production/g02-slice-01/source/G02_props_source.png",
+      "sha256": "65abc72f768ec4f48cebd2e59756a29e969704a5fe14ff22f9fc893edce51d20",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    },
+    {
+      "path": "art/runtime-production/g02-slice-01/source/SCN-G02-00_source.png",
+      "sha256": "c19f3d403d5b764bac97f3c368edb0d01d0cb7f5b7a4162bdb5776f747ba71ca",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    },
+    {
+      "path": "art/runtime-production/g02-slice-01/source/SCN-G02-01_source.png",
+      "sha256": "152bd041562fd060e72697eb7f8871627d3945821969db1c3d9681810129c4d1",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    },
+    {
+      "path": "art/runtime-production/g02-slice-01/source/SCN-G02-02_source.png",
+      "sha256": "b0b573dc183b908de729206168dabab2587f4adc3ceaf435c809f9b356041cef",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    }
+  ],
+  "runtime_manifest": "data/source/g02/slice-01/runtime-art-manifest.json",
+  "runtime_asset_count": 35,
+  "production_notes": [
+    "Design sources constrain IDs, silhouettes, materials, palette and story semantics.",
+    "Generated source canvases are separated from runtime assets and retain SHA-256 provenance.",
+    "Pillow performs deterministic 16:9 crops, transparency extraction, sizing and state-layer preparation.",
+    "No PR #5 asset, third-party download, direct design-board enlargement, CSS art, SVG placeholder, emoji or web icon is used."
+  ]
+}

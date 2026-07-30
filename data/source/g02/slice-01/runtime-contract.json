@@ -1,0 +1,319 @@
+{
+  "contract_id": "G02-SLICE-01",
+  "version": "G02-SLICE-0.1.0",
+  "base_sha": "648ad396ea02f5d519f8ab9699c63486ba405720",
+  "formal_source_priority": [
+    "docs/baseline/source_text/g01/G02_OPENING_BOUNDARY_V2.2.md",
+    "data/source/g02-g13/G02/json/G02_MasterData.json",
+    "docs/story/G01-G13/G02.md",
+    "docs/baseline/source_text/g02-freeze/G-SCR-01_V1.0.md",
+    "docs/baseline/source_text/g02-freeze/G-SCR-02_V1.0.md"
+  ],
+  "runtime_scope": [
+    "G02-BOUNDARY",
+    "SCN-G02-00",
+    "SCN-G02-01",
+    "SCN-G02-02",
+    "RUNTIME-G02-ENERGY-SEARCH-BOUNDARY"
+  ],
+  "read_only_boundary": {
+    "runtime_id": "RUNTIME-G02-ENERGY-SEARCH-BOUNDARY",
+    "formal_next": "SCN-G02-03A/B/C/D",
+    "interactive": false,
+    "grants_items": false,
+    "writes_formal_variables": false
+  },
+  "scenes": [
+    {
+      "scene_id": "SCN-G02-00",
+      "title": "垃圾雨之前",
+      "states": ["S0", "S1", "S2", "S3", "S4", "S5", "S6"],
+      "hotspots": ["HS-G02-0001", "HS-G02-0002"],
+      "evidence": ["EVD-G02-001"],
+      "danger": "DANGER-004",
+      "ui": ["UI-005"],
+      "autosave": "AUTO-G02-001",
+      "formal_variables": ["g02_intro_scan_done"],
+      "safe_node": "SCN-G02-00:satellite-axle-cover"
+    },
+    {
+      "scene_id": "SCN-G02-01",
+      "title": "五尾清算",
+      "states": ["S0", "S1", "S2", "S3", "S4", "S5", "S6"],
+      "hotspots": [
+        "HS-G02-0003",
+        "HS-G02-0004",
+        "HS-G02-0005",
+        "HS-G02-0006",
+        "HS-G02-0007"
+      ],
+      "evidence": ["EVD-G02-002", "EVD-G02-003", "EVD-G02-004"],
+      "danger": "DANGER-002",
+      "ui": ["UI-005", "UI-006"],
+      "autosave": "AUTO-G02-002",
+      "formal_variables": ["g02_almao_rescued", "g02_resource_labels"],
+      "safe_node": "SCN-G02-01:old-screen-valley-safe"
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "title": "谁说这是无主之物",
+      "states": ["S0", "S1", "S2", "S3", "S4", "S5", "S6"],
+      "hotspots": [
+        "HS-G02-0008",
+        "HS-G02-0009",
+        "HS-G02-0010",
+        "HS-G02-0011"
+      ],
+      "hos": "HOS-G02-001",
+      "items": [
+        "ITM-G02-002",
+        "ITM-G02-003",
+        "ITM-G02-004",
+        "ITM-G02-005",
+        "ITM-G02-006"
+      ],
+      "evidence": ["EVD-G02-005"],
+      "danger": "DANGER-001",
+      "mechanism": "MECH-002",
+      "ui": ["UI-007", "UI-010", "UI-014"],
+      "hints": ["HINT-G02-001-1", "HINT-G02-001-2", "HINT-G02-001-3"],
+      "autosave": "AUTO-G02-003",
+      "formal_variables": ["g02_archive_restored"],
+      "safe_node": "SCN-G02-02:tv-wall-safe"
+    }
+  ],
+  "dialogue_ids": [
+    "DLG-G02-0001",
+    "DLG-G02-0002",
+    "DLG-G02-0003",
+    "DLG-G02-0004",
+    "DLG-G02-0005",
+    "DLG-G02-0006",
+    "DLG-G02-0007",
+    "DLG-G02-0008",
+    "DLG-G02-0009"
+  ],
+  "hint_contracts": [
+    {
+      "scene_id": "SCN-G02-00",
+      "task_id": "RUNTIME-HINT-G02-00",
+      "levels": [
+        {"level": 1, "semantics": "direction"},
+        {"level": 2, "semantics": "area"},
+        {"level": 3, "semantics": "complete_one_step"}
+      ],
+      "level_three_changes_exactly_one_legal_step": true
+    },
+    {
+      "scene_id": "SCN-G02-01",
+      "task_id": "RUNTIME-HINT-G02-01",
+      "levels": [
+        {"level": 1, "semantics": "direction"},
+        {"level": 2, "semantics": "area"},
+        {"level": 3, "semantics": "complete_one_step"}
+      ],
+      "level_three_changes_exactly_one_legal_step": true
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "task_id": "HINT-G02-001",
+      "levels": [
+        {"level": 1, "semantics": "direction"},
+        {"level": 2, "semantics": "area"},
+        {"level": 3, "semantics": "complete_one_step"}
+      ],
+      "level_three_changes_exactly_one_legal_step": true
+    }
+  ],
+  "critical_item_contracts": [
+    {
+      "scene_id": "SCN-G02-01",
+      "item_id": "RUNTIME-ITM-G02-MAGNETIC-GRAPNEL",
+      "correct_target_id": "HS-G02-0003",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false,
+      "duplicate_grant_forbidden": true
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "item_id": "ITM-G02-002",
+      "correct_target_id": "RUNTIME-HS-G02-0008-KEY",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false,
+      "duplicate_grant_forbidden": true
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "item_id": "RUNTIME-ITM-G02-005-A",
+      "correct_target_id": "HS-G02-0008",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false,
+      "duplicate_grant_forbidden": true
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "item_id": "ITM-G02-003",
+      "correct_target_id": "RUNTIME-HS-G02-0009-KEY",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false,
+      "duplicate_grant_forbidden": true
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "item_id": "RUNTIME-ITM-G02-005-B",
+      "correct_target_id": "HS-G02-0009",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false,
+      "duplicate_grant_forbidden": true
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "item_id": "ITM-G02-004",
+      "correct_target_id": "HS-G02-0010",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false,
+      "duplicate_grant_forbidden": true
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "item_id": "ITM-G02-006",
+      "correct_target_id": "RUNTIME-G02-ENERGY-SEARCH-BOUNDARY",
+      "wrong_use_consumes": false,
+      "wrong_use_changes_progress": false,
+      "duplicate_grant_forbidden": true,
+      "must_remain_in_inventory_at_slice_boundary": true
+    }
+  ],
+  "danger_contracts": [
+    {
+      "scene_id": "SCN-G02-00",
+      "danger_id": "DANGER-004",
+      "failure_phases": ["S1", "S2", "S3", "S4"],
+      "safe_recovery_node": "SCN-G02-00:satellite-axle-cover",
+      "retain_key_items": true,
+      "retain_hos_progress": true,
+      "retain_puzzle_progress": true,
+      "retain_evidence": true,
+      "retain_completed_correct_steps": true,
+      "duplicate_grants_forbidden": true,
+      "whole_scene_reset_forbidden": true,
+      "retry_available": true,
+      "soft_failure_creates_evidence": false
+    },
+    {
+      "scene_id": "SCN-G02-01",
+      "danger_id": "DANGER-002",
+      "failure_phases": ["S1", "S2"],
+      "safe_recovery_node": "SCN-G02-01:old-screen-valley-safe",
+      "retain_key_items": true,
+      "retain_hos_progress": true,
+      "retain_puzzle_progress": true,
+      "retain_evidence": true,
+      "retain_completed_correct_steps": true,
+      "duplicate_grants_forbidden": true,
+      "whole_scene_reset_forbidden": true,
+      "retry_available": true,
+      "soft_failure_creates_evidence": false
+    },
+    {
+      "scene_id": "SCN-G02-02",
+      "danger_id": "DANGER-001",
+      "failure_phases": ["S2", "S3", "S4"],
+      "safe_recovery_node": "SCN-G02-02:tv-wall-safe",
+      "retain_key_items": true,
+      "retain_hos_progress": true,
+      "retain_puzzle_progress": true,
+      "retain_evidence": true,
+      "retain_completed_correct_steps": true,
+      "duplicate_grants_forbidden": true,
+      "whole_scene_reset_forbidden": true,
+      "retry_available": true,
+      "soft_failure_creates_evidence": false
+    }
+  ],
+  "save_contract": {
+    "cross_chapter_migration": "schema_v2_in_place",
+    "preserves_g01_completion": true,
+    "preserves_inventory": true,
+    "preserves_hos": true,
+    "preserves_puzzles": true,
+    "preserves_evidence": true,
+    "preserves_dialogue_history": true,
+    "persists_safe_recovery_node": true,
+    "resume_restores_pre_failure_state": true
+  },
+  "runtime_adapters": [
+    {
+      "runtime_id": "RUNTIME-HS-G02-HANDOFF",
+      "official_id": null,
+      "formal_parent": "G02-BOUNDARY",
+      "reason": "V2.2 defines a read-only landing handoff but no direct hotspot id"
+    },
+    {
+      "runtime_id": "RUNTIME-STATE-G02-00-S4",
+      "official_id": null,
+      "formal_parent": "SCN-G02-00",
+      "reason": "V2.1 state table omits S4 while the runtime contract requires S0-S6"
+    },
+    {
+      "runtime_id": "RUNTIME-STATE-G02-00-S6",
+      "official_id": null,
+      "formal_parent": "SCN-G02-00",
+      "reason": "V2.1 state table omits S6 while the runtime contract requires S0-S6"
+    },
+    {
+      "runtime_id": "RUNTIME-ITM-G02-MAGNETIC-GRAPNEL",
+      "official_id": null,
+      "formal_parent": "HS-G02-0003",
+      "reason": "The formal scene requires a magnetic grappling line but assigns no item id"
+    },
+    {
+      "runtime_id": "RUNTIME-ITM-G02-005-A",
+      "official_id": null,
+      "formal_parent": "ITM-G02-005",
+      "reason": "The formal item row groups two independently collectible short cables"
+    },
+    {
+      "runtime_id": "RUNTIME-ITM-G02-005-B",
+      "official_id": null,
+      "formal_parent": "ITM-G02-005",
+      "reason": "The formal item row groups two independently collectible short cables"
+    },
+    {
+      "runtime_id": "RUNTIME-PUZ-G02-PULSE-SCAN",
+      "official_id": null,
+      "formal_parent": "HS-G02-0002",
+      "reason": "Runtime interaction adapter for the formal Qima scan operation"
+    },
+    {
+      "runtime_id": "RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION",
+      "official_id": null,
+      "formal_parent": "OBJ-G02-003",
+      "reason": "Runtime interaction adapter for classifying three formal evidence labels"
+    }
+  ],
+  "allowed_completed_formal_variables": [
+    "g02_intro_scan_done",
+    "g02_almao_rescued",
+    "g02_resource_labels",
+    "g02_archive_restored"
+  ],
+  "locked_variables": [
+    "g02_stable_core_a",
+    "g02_wave_core",
+    "g02_stable_core_b",
+    "g02_heating_replaced",
+    "g02_heating_core_borrowed",
+    "g02_safe_wire_route",
+    "g02_magnetic_glove_owned",
+    "g02_glove_polarity_fixed",
+    "g02_doubao_backup_authorized",
+    "g02_permission_recycle",
+    "g02_permission_tracking",
+    "g02_permission_storage",
+    "g02_permission_powercut",
+    "g02_permission_punish",
+    "g02_admin_unlocked",
+    "g02_chapter_complete"
+  ]
+}

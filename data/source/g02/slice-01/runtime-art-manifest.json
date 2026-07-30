@@ -1,0 +1,539 @@
+{
+  "schema_version": 1,
+  "slice_id": "G02-SLICE-01",
+  "version": "G02-SLICE-0.1.0",
+  "authorization": "project_owner_authorized_runtime_production",
+  "runtime_asset": true,
+  "formal_sources": [
+    {
+      "package_id": "PKG-CHARACTERS-V2.1",
+      "package_sha256": "a31f21fbe0348be6ff1b9f7b21f53715ccf9dccf59d487cda2296fa4fdd0fceb",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_人物形象设计全集_V2.1_补齐版.zip",
+      "entry": "星骸拾荒者_人物形象设计全集_V2.1_补齐版/01_十二星球人物三视图/G02_锈环星_人物三视图.png",
+      "entry_sha256": "c549fe94157daea3606a1b7b32562e28108c9e54f2dac1b156b38c8097c0a0b3",
+      "purpose": "阿铆、郑身份与造型约束"
+    },
+    {
+      "package_id": "PKG-SCENES-V1.0",
+      "package_sha256": "731cc680ee98eba1bf27474d4d613476dbbe02ca7fff7dfb1beb4b2bb0595de0",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_场景美术设计全集_V1.0.zip",
+      "entry": "星骸拾荒者_场景美术设计全集_V1.0/01_十二星球场景设定板/G02_锈环星_场景设定板.png",
+      "entry_sha256": "977812ad694f15b6e58a11bc780bc17edab214f06d8ece2e07fe7a76dfa9a0af",
+      "purpose": "G02旧屏幕谷环境、材质和色彩约束"
+    },
+    {
+      "package_id": "PKG-PROPS-V3.0",
+      "package_sha256": "f712245f25945b234fd73d794b3ff6d6be39744da3a56324a34706ee85f6aa2d",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_道具美术正式包_V3.0.zip",
+      "entry": "星骸拾荒者_道具美术正式包_V3.0/01_正式道具设定板/G02_锈环星_PROP-001-012_已确认基准.png",
+      "entry_sha256": "2698ab60ce208213328017cfff519c865d919cfb1d6d512251d756609e9e6b4c",
+      "purpose": "G02关键物轮廓、材料和编号约束"
+    },
+    {
+      "package_id": "PKG-MECH-V2.0",
+      "package_sha256": "de7367d1ec06f97d3b8cca3c671ca9680f522f714929997d4a60fd9af1678b2f",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_机制可视化HOPA正式包_V2.0.zip",
+      "entry": "星骸拾荒者_机制可视化HOPA正式包_V2.0/01_MECH-A_G02-G04/01_MECH-A详细机制设计板/MECH-002_参数诊断_HOPA机制详细设计板.png",
+      "entry_sha256": "671909498c3253dad376c7a9752b22ec9108945f3132c53598dbcca9d231d149",
+      "purpose": "MECH-002电视墙档案修复约束"
+    },
+    {
+      "package_id": "PKG-DANGER-V2.0",
+      "package_sha256": "981d9069efbc7627d4d64dbabd5795acb85f2a4098d9061ba7717d924669181b",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_危险视觉HOPA正式包_V2.0.zip",
+      "entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/01_DANGER-A_G02-G04/01_DANGER-A详细危险设计板/DANGER-001_裸露电缆放电_HOPA危险视觉详细设计板.png",
+      "entry_sha256": "ec994d944a27a69210104f84836d0d77add4c6c4354fa9aa9319963de9e1fb33",
+      "purpose": "电视墙漏电软失败约束"
+    },
+    {
+      "package_id": "PKG-DANGER-V2.0",
+      "package_sha256": "981d9069efbc7627d4d64dbabd5795acb85f2a4098d9061ba7717d924669181b",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_危险视觉HOPA正式包_V2.0.zip",
+      "entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/01_DANGER-A_G02-G04/01_DANGER-A详细危险设计板/DANGER-002_吊臂落物区_HOPA危险视觉详细设计板.png",
+      "entry_sha256": "f8fb1e1cf4497057191a433b44933100f49177f74166d0b5a4ca72b352825670",
+      "purpose": "吊臂落物软失败约束"
+    },
+    {
+      "package_id": "PKG-DANGER-V2.0",
+      "package_sha256": "981d9069efbc7627d4d64dbabd5795acb85f2a4098d9061ba7717d924669181b",
+      "source_package_path": "source_packages/originals-or-release-links/星骸拾荒者_危险视觉HOPA正式包_V2.0.zip",
+      "entry": "星骸拾荒者_危险视觉HOPA正式包_V2.0/01_DANGER-A_G02-G04/01_DANGER-A详细危险设计板/DANGER-004_磁性碎片风_HOPA危险视觉详细设计板.png",
+      "entry_sha256": "068dfbddf20bc1a192823edf9fcfeda3fee9d0fff36ab00493fb7ea952a73f22",
+      "purpose": "磁性碎片风软失败约束"
+    }
+  ],
+  "generated_inputs": [
+    {
+      "path": "art/runtime-production/g02-slice-01/source/G02_characters_source.png",
+      "sha256": "171868b57faccf8ce92a84dcc3392127d1ccedd8680daa121eadca098858d82d",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    },
+    {
+      "path": "art/runtime-production/g02-slice-01/source/G02_props_source.png",
+      "sha256": "65abc72f768ec4f48cebd2e59756a29e969704a5fe14ff22f9fc893edce51d20",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    },
+    {
+      "path": "art/runtime-production/g02-slice-01/source/SCN-G02-00_source.png",
+      "sha256": "c19f3d403d5b764bac97f3c368edb0d01d0cb7f5b7a4162bdb5776f747ba71ca",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    },
+    {
+      "path": "art/runtime-production/g02-slice-01/source/SCN-G02-01_source.png",
+      "sha256": "152bd041562fd060e72697eb7f8871627d3945821969db1c3d9681810129c4d1",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    },
+    {
+      "path": "art/runtime-production/g02-slice-01/source/SCN-G02-02_source.png",
+      "sha256": "b0b573dc183b908de729206168dabab2587f4adc3ceaf435c809f9b356041cef",
+      "production_role": "owner-authorized generation input; never shipped directly"
+    }
+  ],
+  "runtime_assets": [
+    {
+      "asset_id": "ITM-G02-002_inventory",
+      "formal_parent_id": "ITM-G02-002",
+      "category": "inventory_item",
+      "runtime_path": "public/assets/g02/slice-01/items/ITM-G02-002_inventory.png",
+      "width": 384,
+      "height": 384,
+      "rgba_or_transparency": true,
+      "sha256": "7c725a1d4d4efd87902c1267b8f1266ca3cbf2f961903299521d330dd006f871",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "ITM-G02-002_scene",
+      "formal_parent_id": "ITM-G02-002",
+      "category": "scene_item",
+      "runtime_path": "public/assets/g02/slice-01/items/ITM-G02-002_scene.png",
+      "width": 640,
+      "height": 640,
+      "rgba_or_transparency": true,
+      "sha256": "50c26b08361fb8f7234586032b3bd2c8a35c052fdd2fa109bd323d533cc857ae",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "ITM-G02-003_inventory",
+      "formal_parent_id": "ITM-G02-003",
+      "category": "inventory_item",
+      "runtime_path": "public/assets/g02/slice-01/items/ITM-G02-003_inventory.png",
+      "width": 384,
+      "height": 384,
+      "rgba_or_transparency": true,
+      "sha256": "7a0d09bee973b0b3d851a01d59649330ca10c234340a5ea81b706ff730cff716",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "ITM-G02-003_scene",
+      "formal_parent_id": "ITM-G02-003",
+      "category": "scene_item",
+      "runtime_path": "public/assets/g02/slice-01/items/ITM-G02-003_scene.png",
+      "width": 640,
+      "height": 640,
+      "rgba_or_transparency": true,
+      "sha256": "3739d0ae01dc1d76553d296b9acb49d9201bd980b90d14136017ecb1f8247552",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "ITM-G02-004_inventory",
+      "formal_parent_id": "ITM-G02-004",
+      "category": "inventory_item",
+      "runtime_path": "public/assets/g02/slice-01/items/ITM-G02-004_inventory.png",
+      "width": 384,
+      "height": 384,
+      "rgba_or_transparency": true,
+      "sha256": "777cdcc7a130561ff39f5406ca9108fb69575ad0064493eb5f960dc058a95fa4",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "ITM-G02-004_scene",
+      "formal_parent_id": "ITM-G02-004",
+      "category": "scene_item",
+      "runtime_path": "public/assets/g02/slice-01/items/ITM-G02-004_scene.png",
+      "width": 640,
+      "height": 640,
+      "rgba_or_transparency": true,
+      "sha256": "10899b8caabe2fa56646912fa65c20e3687b19839081cffde2a0b765fd808a01",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "ITM-G02-006_inventory",
+      "formal_parent_id": "ITM-G02-006",
+      "category": "inventory_item",
+      "runtime_path": "public/assets/g02/slice-01/items/ITM-G02-006_inventory.png",
+      "width": 384,
+      "height": 384,
+      "rgba_or_transparency": true,
+      "sha256": "66d47119a6017a7bbd30c6f0d7d94bf1274f5d9ad27f75728b1dd322bddb9e17",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "ITM-G02-006_scene",
+      "formal_parent_id": "ITM-G02-006",
+      "category": "scene_item",
+      "runtime_path": "public/assets/g02/slice-01/items/ITM-G02-006_scene.png",
+      "width": 640,
+      "height": 640,
+      "rgba_or_transparency": true,
+      "sha256": "6071cb23fd23e37fb906d1823d3c627a69d25dbcb1507bf2c8abe0b4952bf11e",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "RUNTIME-ITM-G02-005-A_inventory",
+      "formal_parent_id": "RUNTIME-ITM-G02-005-A",
+      "category": "inventory_item",
+      "runtime_path": "public/assets/g02/slice-01/items/RUNTIME-ITM-G02-005-A_inventory.png",
+      "width": 384,
+      "height": 384,
+      "rgba_or_transparency": true,
+      "sha256": "5ca8a5f9297971efb19430c1930cbb9012dca03eab3eb88f11ec99413d8cb82a",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "RUNTIME-ITM-G02-005-A_scene",
+      "formal_parent_id": "RUNTIME-ITM-G02-005-A",
+      "category": "scene_item",
+      "runtime_path": "public/assets/g02/slice-01/items/RUNTIME-ITM-G02-005-A_scene.png",
+      "width": 640,
+      "height": 640,
+      "rgba_or_transparency": true,
+      "sha256": "49c1e6359cc9ad64d052f9940e16d0630e31f7f46e23b7f6f6cd0e8d6c7fa491",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "RUNTIME-ITM-G02-005-B_inventory",
+      "formal_parent_id": "RUNTIME-ITM-G02-005-B",
+      "category": "inventory_item",
+      "runtime_path": "public/assets/g02/slice-01/items/RUNTIME-ITM-G02-005-B_inventory.png",
+      "width": 384,
+      "height": 384,
+      "rgba_or_transparency": true,
+      "sha256": "faeadc04a60852c298c381ede70df7ac5209b3a7a194b165c06eeeddcec7ed18",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "RUNTIME-ITM-G02-005-B_scene",
+      "formal_parent_id": "RUNTIME-ITM-G02-005-B",
+      "category": "scene_item",
+      "runtime_path": "public/assets/g02/slice-01/items/RUNTIME-ITM-G02-005-B_scene.png",
+      "width": 640,
+      "height": 640,
+      "rgba_or_transparency": true,
+      "sha256": "24b899ff8a8cd8896bb4d9c586daec17371a2bff9438eb147e1545af446c93d9",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "RUNTIME-ITM-G02-MAGNETIC-GRAPNEL_inventory",
+      "formal_parent_id": "RUNTIME-ITM-G02-MAGNETIC-GRAPNEL",
+      "category": "inventory_item",
+      "runtime_path": "public/assets/g02/slice-01/items/RUNTIME-ITM-G02-MAGNETIC-GRAPNEL_inventory.png",
+      "width": 384,
+      "height": 384,
+      "rgba_or_transparency": true,
+      "sha256": "b611aa6f9f8aabef32bccac2a52747f1998849304dce940d76bbf0b5e5ddc24f",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "RUNTIME-ITM-G02-MAGNETIC-GRAPNEL_scene",
+      "formal_parent_id": "RUNTIME-ITM-G02-MAGNETIC-GRAPNEL",
+      "category": "scene_item",
+      "runtime_path": "public/assets/g02/slice-01/items/RUNTIME-ITM-G02-MAGNETIC-GRAPNEL_scene.png",
+      "width": 640,
+      "height": 640,
+      "rgba_or_transparency": true,
+      "sha256": "99c1f0bc41d51ff03cb65c7ed63731be4551fe1455c83e17395d27db399270ce",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "SCENE-G02-001_old-screen-valley-pulse",
+      "formal_parent_id": "SCENE-G02-001",
+      "category": "scene_background",
+      "runtime_path": "public/assets/g02/slice-01/scn00/SCENE-G02-001_old-screen-valley-pulse.webp",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": false,
+      "sha256": "cba597d730da17c702ef8e1599d023bee5874d82265619d5f2b11cefa0259335",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "sealed-pulse-located",
+      "formal_parent_id": "scn00",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn00/states/sealed-pulse-located.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "285ef401f98be11c06ffe0df65a058ebcfe37da8a4fb7576d146b0a9be306e02",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "sealed-pulse-scanned",
+      "formal_parent_id": "scn00",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn00/states/sealed-pulse-scanned.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "633d74b7a5e474bcfe3be2a5dfc26eebd24e43b6e93986203dd644d77a89baeb",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "SCENE-G02-002_five-tail-rescue",
+      "formal_parent_id": "SCENE-G02-002",
+      "category": "scene_background",
+      "runtime_path": "public/assets/g02/slice-01/scn01/SCENE-G02-002_five-tail-rescue.webp",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": false,
+      "sha256": "fe5b37a08a9bee2e6142d005bf4894d7ab6fc6e6b636c5c4858d90bd91f23baf",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "almao-rescued",
+      "formal_parent_id": "scn01",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn01/states/almao-rescued.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "c6eed1b54b397afe3cfe2336cd6faafa95b0d4cb656b8c3a01cb63a1c7f10bd6",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "grapnel-installed",
+      "formal_parent_id": "scn01",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn01/states/grapnel-installed.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "b6c6d2470ebd333686172ffed5473dce68845c4bd1da19cd02eb01df8ba5a119",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "label-abandoned-scanned",
+      "formal_parent_id": "scn01",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn01/states/label-abandoned-scanned.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "64aadfc79749f73d49580304e34dfb80f053dd913fda7be23ec58ef50adf387b",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "label-private-scanned",
+      "formal_parent_id": "scn01",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn01/states/label-private-scanned.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "eaa26d0fc063c5abb6f1dbef2bec3266d7ad6d845bcd423c1d91090b8de08579",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "label-public-scanned",
+      "formal_parent_id": "scn01",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn01/states/label-public-scanned.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "8246a9603c706e6e4be58ad1bf33e9c549cac58e3e15a0c71cfefa9f740caa03",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "HOS-G02-001_screen-scrap-closeup",
+      "formal_parent_id": "HOS-G02-001",
+      "category": "hos_background",
+      "runtime_path": "public/assets/g02/slice-01/scn02/HOS-G02-001_screen-scrap-closeup.webp",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": false,
+      "sha256": "d84c3a95d8f6c4bccab940ea49662ca9c25ff077b07342677021cb3b00900135",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "SCENE-G02-003_tv-wall-archive",
+      "formal_parent_id": "SCENE-G02-003",
+      "category": "scene_background",
+      "runtime_path": "public/assets/g02/slice-01/scn02/SCENE-G02-003_tv-wall-archive.webp",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": false,
+      "sha256": "5ec475641e2aa4d357faf1e6f95c16d04d647cd0a17bdca67e6bbafb7937baca",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "archive-restored",
+      "formal_parent_id": "scn02",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn02/states/archive-restored.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "c617129998a25b7dca91d70bcb389481a5d735ab50431ee14e78e067bd5d27ea",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "screen-a-restored",
+      "formal_parent_id": "scn02",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn02/states/screen-a-restored.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "263b91476b3c9630ca5e6090fde3447b99b00325989947041b55f6d71bcb481c",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "screen-b-restored",
+      "formal_parent_id": "scn02",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn02/states/screen-b-restored.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "ac822e6c1b1cfbb8331c78c9a6403ef894bdaac8df66b23a93b33ae0b060d464",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "screen-c-restored",
+      "formal_parent_id": "scn02",
+      "category": "scene_state_layer",
+      "runtime_path": "public/assets/g02/slice-01/scn02/states/screen-c-restored.png",
+      "width": 2560,
+      "height": 1440,
+      "rgba_or_transparency": true,
+      "sha256": "1a497a163cc54d2ceb88803480e4a8c2993e9dd99c1dbbc6ee14123636a2db99",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "almao_concerned",
+      "formal_parent_id": "CHAR-G02-RUNTIME",
+      "category": "character_state",
+      "runtime_path": "public/assets/characters/almao/almao_concerned.png",
+      "width": 1600,
+      "height": 2000,
+      "rgba_or_transparency": true,
+      "sha256": "cabfb4bab587f86bce700213166e7696acfcf7ef0052088a0acaec018f3acc44",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "almao_relieved",
+      "formal_parent_id": "CHAR-G02-RUNTIME",
+      "category": "character_state",
+      "runtime_path": "public/assets/characters/almao/almao_relieved.png",
+      "width": 1600,
+      "height": 2000,
+      "rgba_or_transparency": true,
+      "sha256": "7dece47bccae6edd1c073f3f369f93e7bf6e56eb5bfd46618e94c1267fa49a03",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "almao_trapped",
+      "formal_parent_id": "CHAR-G02-RUNTIME",
+      "category": "character_state",
+      "runtime_path": "public/assets/characters/almao/almao_trapped.png",
+      "width": 1600,
+      "height": 2000,
+      "rgba_or_transparency": true,
+      "sha256": "c9dee02baa7853776f4849ae2e757afd8f6f228377f14c287845f4c5ff50bd8b",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "zheng_measured",
+      "formal_parent_id": "CHAR-G02-RUNTIME",
+      "category": "character_state",
+      "runtime_path": "public/assets/characters/zheng/zheng_measured.png",
+      "width": 1600,
+      "height": 2000,
+      "rgba_or_transparency": true,
+      "sha256": "43c78bd1af7e269bebbb9bbe0a37d53f4583534f210dfeb0dc620afc94cb3630",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "zheng_silent",
+      "formal_parent_id": "CHAR-G02-RUNTIME",
+      "category": "character_state",
+      "runtime_path": "public/assets/characters/zheng/zheng_silent.png",
+      "width": 1600,
+      "height": 2000,
+      "rgba_or_transparency": true,
+      "sha256": "6a49359f8259981ed965f67c3022e0c035adb021328fab7ea9bf4aee56082554",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    },
+    {
+      "asset_id": "zheng_warning",
+      "formal_parent_id": "CHAR-G02-RUNTIME",
+      "category": "character_state",
+      "runtime_path": "public/assets/characters/zheng/zheng_warning.png",
+      "width": 1600,
+      "height": 2000,
+      "rgba_or_transparency": true,
+      "sha256": "e2c7e234f031b76d24c68c4dedac2ff0cce85336e733551850ba924828814d29",
+      "runtime_asset": true,
+      "source": "project_owner_authorized_runtime_production"
+    }
+  ],
+  "hos": {
+    "hos_id": "HOS-G02-001",
+    "target_item_ids": [
+      "ITM-G02-002",
+      "ITM-G02-003",
+      "ITM-G02-004",
+      "RUNTIME-ITM-G02-005-A",
+      "RUNTIME-ITM-G02-005-B",
+      "ITM-G02-006"
+    ],
+    "distractor_ids": [
+      "RUNTIME-DECOY-G02-BROKEN-REMOTE",
+      "RUNTIME-DECOY-G02-KEYCAP",
+      "RUNTIME-DECOY-G02-SCREWS",
+      "RUNTIME-DECOY-G02-OLD-TAG",
+      "RUNTIME-DECOY-G02-BURNT-CONNECTOR"
+    ],
+    "pickup_layers_independently_hide": true
+  },
+  "forbidden_inputs": {
+    "pr_5_assets": false,
+    "third_party_network_assets": false,
+    "design_board_used_directly_at_runtime": false,
+    "css_or_svg_placeholder_art": false
+  }
+}
