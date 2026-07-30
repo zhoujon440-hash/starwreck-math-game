@@ -306,6 +306,7 @@ const runtimeCode = [
   'data/source/g01/pr-a/runtime-adapter.json',
 ].map((path) => readFileSync(resolve(root, path), 'utf8')).join('\n')
 const scn02Runtime = readFileSync(resolve(root, 'src/scenes/g01/scn02.ts'), 'utf8')
+const scn03Runtime = readFileSync(resolve(root, 'src/scenes/g01/scn03.ts'), 'utf8')
 const engineRuntime = readFileSync(resolve(root, 'src/game/engine.ts'), 'utf8')
 check(
   !/id:\s*['"]HS-G01-0012['"]/.test(scn02Runtime) &&
@@ -333,12 +334,16 @@ check(
   'soft failure does not enter a persisted runtime recovery node',
 )
 check(
-  !/g01_chapter_complete\s*[:=]\s*true/.test(runtimeCode),
+  !/g01_chapter_complete\s*[:=]\s*true/.test(
+    [scn02Runtime, scn03Runtime].join('\n'),
+  ),
   'PRA-SCOPE-004',
   'PR-A writes g01_chapter_complete=true',
 )
 check(
-  !/g01_handoff_to_g02\s*[:=]\s*true/.test(runtimeCode),
+  !/g01_handoff_to_g02\s*[:=]\s*true/.test(
+    [scn02Runtime, scn03Runtime].join('\n'),
+  ),
   'PRA-SCOPE-005',
   'PR-A writes g01_handoff_to_g02=true',
 )

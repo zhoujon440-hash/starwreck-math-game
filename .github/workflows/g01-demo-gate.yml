@@ -1,0 +1,66 @@
+name: G01 Demo Gate
+
+on:
+  push:
+    branches:
+      - codex/g01-scenes-06-07-demo-v1
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  g01-demo-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:sources
+      - run: npm run validate:baseline
+      - run: npm run test:baseline
+      - run: npm run validate:characters
+      - run: npm run test:characters
+      - run: npm run validate:character-story
+      - run: npm run test:character-story
+      - run: npm run validate:g01-pr-a
+      - run: npm run test:g01-pr-a
+      - run: npm run validate:g01-pr-b
+      - run: npm run test:g01-pr-b
+      - run: npm run validate:g01-demo
+      - run: npm run test:g01-demo
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run test:pwa
+      - run: npm run package:g01-demo
+      - name: Upload G01 full-demo visual acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: g01-demo-visual-acceptance-${{ github.run_number }}
+          path: |
+            test-results/**
+            playwright-report/**
+            playwright-pwa-report/**
+            docs/review/G01_DEMO_VISUAL_ACCEPTANCE.md
+            docs/story-runtime/G01_DEMO_SCENES_06_07.md
+            docs/art/G01_PR_C_RUNTIME_ASSET_PROVENANCE.json
+            docs/art/G01_PR_C_RUNTIME_ASSET_SHA256.txt
+            data/source/g01/pr-c/**
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload deployable production ZIP
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: starwreck-g01-demo-0.1.0-${{ github.run_number }}
+          path: release/starwreck-g01-demo-0.1.0.zip
+          if-no-files-found: error
+          retention-days: 30

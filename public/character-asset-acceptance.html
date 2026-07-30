@@ -50,8 +50,8 @@
         <h2>冻结母版提取 · 双角色运行时预览</h2>
         <span class="tag">非最终剧情UI</span>
         <div class="preview-stage">
-          <article><h3>星宇 · normal</h3><img src="/assets/characters/xingyu/xingyu_normal.png" alt="星宇正常状态" /></article>
-          <article><h3>七码 · EDU-0077 · normal</h3><img src="/assets/characters/qima/qima_normal.png" alt="七码正常状态" /></article>
+          <article><h3>星宇 · normal</h3><img src="./assets/characters/xingyu/xingyu_normal.png" alt="星宇正常状态" /></article>
+          <article><h3>七码 · EDU-0077 · normal</h3><img src="./assets/characters/qima/qima_normal.png" alt="七码正常状态" /></article>
         </div>
       </section>
       <div class="full-only">
@@ -66,22 +66,22 @@
         <section>
           <h2>母版与 normal 并排</h2>
           <div class="master">
-            <img src="/acceptance/character-assets/xingyu_master_panel.png" alt="G02正式人物母版星宇区域" />
-            <img src="/assets/characters/xingyu/xingyu_normal.png" alt="星宇透明normal状态" />
-            <img src="/acceptance/character-assets/qima_master_panel.png" alt="G02正式人物母版七码区域" />
-            <img src="/assets/characters/qima/qima_normal.png" alt="七码透明normal状态" />
+            <img src="./acceptance/character-assets/xingyu_master_panel.png" alt="G02正式人物母版星宇区域" />
+            <img src="./assets/characters/xingyu/xingyu_normal.png" alt="星宇透明normal状态" />
+            <img src="./acceptance/character-assets/qima_master_panel.png" alt="G02正式人物母版七码区域" />
+            <img src="./assets/characters/qima/qima_normal.png" alt="七码透明normal状态" />
           </div>
         </section>
         <section>
           <h2>透明边缘 · 深色 / 浅色</h2>
           <div class="edge">
-            <div class="edge-card dark"><img src="/assets/characters/xingyu/xingyu_normal.png" alt="" /><img src="/assets/characters/qima/qima_normal.png" alt="" /></div>
-            <div class="edge-card light"><img src="/assets/characters/xingyu/xingyu_normal.png" alt="" /><img src="/assets/characters/qima/qima_normal.png" alt="" /></div>
+            <div class="edge-card dark"><img src="./assets/characters/xingyu/xingyu_normal.png" alt="" /><img src="./assets/characters/qima/qima_normal.png" alt="" /></div>
+            <div class="edge-card light"><img src="./assets/characters/xingyu/xingyu_normal.png" alt="" /><img src="./assets/characters/qima/qima_normal.png" alt="" /></div>
           </div>
         </section>
         <section>
           <h2>50% / 75% / 100% / 150% 缩放</h2>
-          <div class="scale-row"><img data-scale="50" src="/assets/characters/xingyu/xingyu_normal.png" alt="50%" /><img data-scale="75" src="/assets/characters/xingyu/xingyu_normal.png" alt="75%" /><img data-scale="100" src="/assets/characters/xingyu/xingyu_normal.png" alt="100%" /><img data-scale="150" src="/assets/characters/xingyu/xingyu_normal.png" alt="150%" /></div>
+          <div class="scale-row"><img data-scale="50" src="./assets/characters/xingyu/xingyu_normal.png" alt="50%" /><img data-scale="75" src="./assets/characters/xingyu/xingyu_normal.png" alt="75%" /><img data-scale="100" src="./assets/characters/xingyu/xingyu_normal.png" alt="100%" /><img data-scale="150" src="./assets/characters/xingyu/xingyu_normal.png" alt="150%" /></div>
         </section>
         <section>
           <h2>身份锁定与来源</h2>
@@ -96,7 +96,7 @@
     </main>
     <script>
       const groups={xingyu:["normal","alert","thinking","nervous","determined"],qima:["offline","damaged","booting","normal","question","warning","proud","awkward","scanning"]};
-      for(const [name,states] of Object.entries(groups)){const root=document.getElementById(name);for(const state of states){const f=document.createElement("figure");f.innerHTML=`<img src="/assets/characters/${name}/${name}_${state}.png" alt="${name} ${state}"><figcaption>${state}</figcaption>`;root.append(f)}}
+      for(const [name,states] of Object.entries(groups)){const root=document.getElementById(name);for(const state of states){const f=document.createElement("figure");f.innerHTML=`<img src="./assets/characters/${name}/${name}_${state}.png" alt="${name} ${state}"><figcaption>${state}</figcaption>`;root.append(f)}}
     </script>
   </body>
 </html>

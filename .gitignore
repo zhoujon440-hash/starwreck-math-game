@@ -5,6 +5,8 @@ dev-dist
 coverage
 playwright-report
 test-results
+playwright-pwa-report
+release/*.zip
 *.local
 *.log
 .DS_Store
