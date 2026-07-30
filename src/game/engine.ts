@@ -45,6 +45,10 @@ const createSession = (chapter: ChapterDefinition): GameSession => ({
     ability_teleport: false,
     ability_shrink: false,
     ability_clone: false,
+    g02_intro_scan_done: false,
+    g02_almao_rescued: false,
+    g02_resource_labels: 0,
+    g02_archive_restored: false,
   },
   dialogue: {
     currentDialogueId: null,
@@ -140,7 +144,25 @@ export class GameEngine {
       next.activeRuntimeNodeId = null
       next.safeRecovery = null
     }
-    if (sceneId === 'SCN-G01-01') {
+    if (sceneId === 'SCN-G02-01') {
+      if (next.flags.g02_intro_scan_done !== true) {
+        return { ok: false, message: '必须先完成封存脉冲扫描，才能进入旧屏幕谷外场。' }
+      }
+      next.flags.g02_scn01_entered = true
+    } else if (sceneId === 'SCN-G02-02') {
+      if (
+        next.flags.g02_almao_rescued !== true ||
+        Number(next.flags.g02_resource_labels ?? 0) !== 3
+      ) {
+        return { ok: false, message: '必须先救下阿铆并取得三类资源标签证据。' }
+      }
+      next.flags.g02_scn02_entered = true
+    } else if (sceneId === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY') {
+      if (next.flags.g02_archive_restored !== true) {
+        return { ok: false, message: '必须先恢复旧电视墙借用规则档案。' }
+      }
+      next.flags.g02_slice_01_complete = true
+    } else if (sceneId === 'SCN-G01-01') {
       next.characterStates['CHAR-QIMA'] = 'offline'
       next.flags.g01_scn01_entered = true
     } else if (sceneId === 'SCN-G01-02') {
@@ -178,6 +200,11 @@ export class GameEngine {
     this.#commit(next)
     this.saves.saveCheckpoint(next)
     const messages: Record<string, string> = {
+      'SCN-G02-00': '星宇与七码从旧屏幕谷外缘进入锈环星正式开场。',
+      'SCN-G02-01': '星宇沿断卫星轴掩体进入五尾吊臂落物区。',
+      'SCN-G02-02': '救援记录已保存，星宇和阿铆来到旧电视墙。',
+      'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY':
+        '借用规则档案已恢复；后续能源搜索分支保持只读。',
       'SCN-G01-00': '星宇返回领航舱。',
       'SCN-G01-01': '星宇进入导航核心舱。',
       'SCN-G01-02': '星宇和七码来到中控任务台。',
@@ -212,6 +239,11 @@ export class GameEngine {
         !(
           hotspot.kind === 'use-target' &&
           this.#session.completedHotspotIds.includes(hotspot.id)
+        ) &&
+        !(
+          hotspot.kind === 'hidden-item' &&
+          hotspot.itemId &&
+          this.#session.foundItemIds.includes(hotspot.itemId)
         ) &&
         (hotspot.requiredCompletedHotspotIds ?? []).every((id) =>
           this.#session.completedHotspotIds.includes(id),
@@ -267,6 +299,10 @@ export class GameEngine {
 
     if (remaining.length === 0) {
       this.#applyTransition(next, 'found:all')
+      if (next.currentSceneId === 'SCN-G02-02') {
+        next.flags.g02_hos_001_complete = true
+        next.flags.g02_hos_001_granted = true
+      }
     }
 
     this.#commit(next)
@@ -323,6 +359,18 @@ export class GameEngine {
       next.flags.g01_scn05_bypass_installed = true
       next.puzzleProgress.garbage_route = 'node-a>node-b>bypass'
       this.#openPrBRouteWindow(next)
+    } else if (targetId === 'HS-G02-0003') {
+      next.flags.g02_grapnel_installed = true
+    } else if (targetId === 'RUNTIME-HS-G02-0008-KEY') {
+      next.flags.g02_screen_a_key_installed = true
+    } else if (targetId === 'HS-G02-0008') {
+      next.flags.g02_screen_a_restored = true
+    } else if (targetId === 'RUNTIME-HS-G02-0009-KEY') {
+      next.flags.g02_screen_b_key_installed = true
+    } else if (targetId === 'HS-G02-0009') {
+      next.flags.g02_screen_b_restored = true
+    } else if (targetId === 'HS-G02-0010') {
+      next.flags.g02_screen_c_restored = true
     }
     this.#commit(next)
     return { ok: true, message: '机关响应了，场景状态已改变。' }
@@ -363,6 +411,29 @@ export class GameEngine {
     } else if (puzzleId === 'RUNTIME-PUZ-G01-IMPACT-DAMPING') {
       next.flags.g01_scn07_impact_stabilized = true
       next.puzzleProgress.impact_damping = 'attitude>buffer>landing-lock'
+    } else if (puzzleId === 'RUNTIME-PUZ-G02-PULSE-SCAN') {
+      if (
+        next.currentSceneId !== 'SCN-G02-00' ||
+        next.sceneState !== 'S2' ||
+        next.flags.ability_qima_search !== true ||
+        next.flags.ability_analysis !== true ||
+        next.flags.ability_pathfinding !== true
+      ) {
+        return { ok: false, message: '扫描必须在断卫星轴掩体后，并使用已授权的七码能力。' }
+      }
+      next.flags.g02_pulse_scan_sampled = true
+      next.puzzleProgress.g02_pulse_scan = '3-2-3:sealed-sample'
+    } else if (puzzleId === 'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION') {
+      if (
+        next.currentSceneId !== 'SCN-G02-01' ||
+        next.sceneState !== 'S5' ||
+        Number(next.flags.g02_resource_labels ?? 0) !== 3
+      ) {
+        return { ok: false, message: '需要先真实扫描私人、公共供暖和废弃三类标签。' }
+      }
+      next.flags.g02_resource_classification_complete = true
+      next.puzzleProgress.g02_resource_classification =
+        'private:2-ring>public:3-connection>abandoned:broken-mark'
     }
     const transitioned = this.#applyTransition(next, `puzzle:${puzzleId}`)
 
@@ -375,6 +446,43 @@ export class GameEngine {
   }
 
   inspect(hotspotId: string): ActionResult {
+    if (
+      hotspotId === 'RUNTIME-HS-G02-HANDOFF' &&
+      this.#session.currentSceneId === 'G02-BOUNDARY'
+    ) {
+      const hotspot = this.activeHotspots().find((candidate) => candidate.id === hotspotId)
+      if (!hotspot) return { ok: false, message: '交接通道当前不可用。' }
+      const next = this.#nextSession()
+      next.completedHotspotIds.push(hotspotId)
+      next.flags.g02_boundary_handoff_done = true
+      next.currentSceneId = 'SCN-G02-00'
+      next.sceneState = 'S0'
+      next.sceneStates['G02-BOUNDARY'] = 'S1'
+      next.sceneStates['SCN-G02-00'] = 'S0'
+      next.activeRuntimeNodeId = null
+      next.safeRecovery = null
+      this.#commit(next)
+      this.saves.saveCheckpoint(this.#session)
+      return { ok: true, message: '交接完成。星宇与七码正式进入旧屏幕谷外缘。' }
+    }
+    if (
+      ['HS-G02-0005', 'HS-G02-0006', 'HS-G02-0007'].includes(hotspotId) &&
+      this.#session.completedHotspotIds.includes(hotspotId)
+    ) {
+      return { ok: false, message: '这项资源标签证据已经记录，不会重复计数。' }
+    }
+    if (
+      [
+        'RUNTIME-HS-G02-00-DANGER',
+        'RUNTIME-HS-G02-01-DANGER',
+        'RUNTIME-HS-G02-02-DANGER',
+      ].includes(hotspotId)
+    ) {
+      if (!this.activeHotspots().some((candidate) => candidate.id === hotspotId)) {
+        return { ok: false, message: '当前没有需要触发的危险回退。' }
+      }
+      return this.triggerG02SoftFailure(`danger:${hotspotId}`)
+    }
     if (
       hotspotId === 'HS-G01-0024' &&
       this.#session.currentSceneId === 'SCN-G01-05' &&
@@ -467,6 +575,89 @@ export class GameEngine {
       next.flags.g01_scn07_autosave_confirmed = true
     } else if (hotspotId === 'HS-G01-0031') {
       next.flags.g01_scn07_exit_ready = true
+    } else if (hotspotId === 'HS-G02-0001') {
+      next.flags.g02_satellite_axle_investigated = true
+    } else if (hotspotId === 'HS-G02-0002') {
+      next.flags.g02_sealed_pulse_located = true
+    } else if (hotspotId === 'RUNTIME-HS-G02-00-SAMPLE') {
+      next.flags.g02_pulse_sample_reviewed = true
+    } else if (hotspotId === 'RUNTIME-HS-G02-00-VERIFY') {
+      if (next.flags.g02_pulse_scan_sampled !== true) {
+        return { ok: false, message: '没有真实扫描样本，不能生成封存脉冲证据。' }
+      }
+      next.flags.g02_intro_scan_done = true
+      next.flags.g02_evidence_001 = true
+      next.characterDiscoveries['CHAR-QIMA'] = [
+        ...new Set([
+          ...(next.characterDiscoveries['CHAR-QIMA'] ?? []),
+          'EVD-G02-001 封存脉冲',
+        ]),
+      ]
+    } else if (hotspotId === 'RUNTIME-HS-G02-00-EXIT') {
+      next.flags.g02_auto_001_saved = true
+    } else if (hotspotId === 'RUNTIME-HS-G02-01-OBSERVE') {
+      next.flags.g02_rescue_area_investigated = true
+      if (!next.inventoryItemIds.includes('RUNTIME-ITM-G02-MAGNETIC-GRAPNEL')) {
+        next.inventoryItemIds.push('RUNTIME-ITM-G02-MAGNETIC-GRAPNEL')
+      }
+      next.flags.g02_grapnel_granted = true
+      next.unlockedCharacterIds = [
+        ...new Set([...next.unlockedCharacterIds, 'CHAR-ALMAO']),
+      ]
+      next.characterStates['CHAR-ALMAO'] = 'trapped'
+    } else if (hotspotId === 'RUNTIME-HS-G02-01-RESCUE-CONFIRM') {
+      if (next.flags.g02_grapnel_installed !== true) {
+        return { ok: false, message: '挂索尚未受力，不能完成救援。' }
+      }
+      next.flags.g02_almao_rescued = true
+      next.characterStates['CHAR-ALMAO'] = 'relieved'
+      next.unlockedCharacterIds = [
+        ...new Set([...next.unlockedCharacterIds, 'CHAR-ALMAO', 'CHAR-ZHENG']),
+      ]
+    } else if (['HS-G02-0005', 'HS-G02-0006', 'HS-G02-0007'].includes(hotspotId)) {
+      if (next.flags.g02_almao_rescued !== true) {
+        return { ok: false, message: '必须先救下阿铆，才能靠近资源箱扫描。' }
+      }
+      const evidenceByHotspot: Record<string, string> = {
+        'HS-G02-0005': 'EVD-G02-002',
+        'HS-G02-0006': 'EVD-G02-003',
+        'HS-G02-0007': 'EVD-G02-004',
+      }
+      const evidenceId = evidenceByHotspot[hotspotId]
+      next.flags[`g02_evidence_${evidenceId.slice(-3)}`] = true
+      const labels = ['HS-G02-0005', 'HS-G02-0006', 'HS-G02-0007'].filter((id) =>
+        next.completedHotspotIds.includes(id),
+      ).length
+      next.flags.g02_resource_labels = labels
+      next.characterDiscoveries['CHAR-ALMAO'] = [
+        ...new Set([...(next.characterDiscoveries['CHAR-ALMAO'] ?? []), evidenceId]),
+      ]
+      if (labels === 3) {
+        next.sceneState = 'S5'
+        next.sceneStates['SCN-G02-01'] = 'S5'
+        next.flags.g02_auto_002_ready = true
+      }
+    } else if (hotspotId === 'HS-G02-0004') {
+      next.flags.g02_magnetic_glove_boundary_seen = true
+    } else if (hotspotId === 'HS-G02-0011') {
+      next.flags.g02_tv_wall_investigated = true
+    } else if (hotspotId === 'RUNTIME-HS-G02-02-ARCHIVE') {
+      if (
+        next.flags.g02_screen_a_restored !== true ||
+        next.flags.g02_screen_b_restored !== true ||
+        next.flags.g02_screen_c_restored !== true
+      ) {
+        return { ok: false, message: '三块主屏尚未全部恢复，不能生成档案证据。' }
+      }
+      next.flags.g02_archive_restored = true
+      next.flags.g02_evidence_005 = true
+      next.flags.g02_auto_003_saved = true
+      next.characterDiscoveries['CHAR-ALMAO'] = [
+        ...new Set([
+          ...(next.characterDiscoveries['CHAR-ALMAO'] ?? []),
+          'EVD-G02-005 借用规则档案',
+        ]),
+      ]
     }
     this.#commit(next)
     if (hotspotId.startsWith('RUNTIME-HS-G01-05-COLLISION-')) {
@@ -513,7 +704,17 @@ export class GameEngine {
       return { ok: false, message: '只有第三级提示会代为完成一个合法步骤。' }
     }
     const sceneId = this.#session.currentSceneId
-    if (!['SCN-G01-04', 'SCN-G01-05', 'SCN-G01-06', 'SCN-G01-07'].includes(sceneId)) {
+    if (
+      ![
+        'SCN-G01-04',
+        'SCN-G01-05',
+        'SCN-G01-06',
+        'SCN-G01-07',
+        'SCN-G02-00',
+        'SCN-G02-01',
+        'SCN-G02-02',
+      ].includes(sceneId)
+    ) {
       return { ok: false, message: '当前场景继续使用原有提示行为。' }
     }
 
@@ -535,11 +736,88 @@ export class GameEngine {
         'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT',
         'RUNTIME-PUZ-G01-LANDING-TRIANGULATION',
         'RUNTIME-PUZ-G01-IMPACT-DAMPING',
+        'RUNTIME-PUZ-G02-PULSE-SCAN',
+        'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION',
       ].includes(hint.hotspot.zoomId)
     ) {
       return this.completePuzzle(hint.hotspot.zoomId)
     }
     return { ok: false, message: '当前没有可由提示完成的合法步骤。' }
+  }
+
+  advanceG02Slice(): ActionResult {
+    const sceneId = this.#session.currentSceneId
+    if (sceneId === 'SCN-G02-00' && this.#session.sceneState === 'S6') {
+      return this.enterScene('SCN-G02-01')
+    }
+    if (sceneId === 'SCN-G02-01' && this.#session.sceneState === 'S6') {
+      return this.enterScene('SCN-G02-02')
+    }
+    if (sceneId === 'SCN-G02-02' && this.#session.sceneState === 'S6') {
+      return this.enterScene('RUNTIME-G02-ENERGY-SEARCH-BOUNDARY')
+    }
+    return { ok: false, message: '当前场景尚未达到正式出口状态。' }
+  }
+
+  triggerG02SoftFailure(reason: string): ActionResult {
+    const sceneId = this.#session.currentSceneId
+    const allowed =
+      (sceneId === 'SCN-G02-00' &&
+        ['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState)) ||
+      (sceneId === 'SCN-G02-01' && ['S1', 'S2'].includes(this.#session.sceneState)) ||
+      (sceneId === 'SCN-G02-02' && ['S2', 'S3', 'S4'].includes(this.#session.sceneState))
+    if (!allowed || this.#session.safeRecovery) {
+      return { ok: false, message: '当前没有可触发的 G02 安全回退。' }
+    }
+    const nodes: Record<string, string> = {
+      'SCN-G02-00': 'SCN-G02-00:satellite-axle-cover',
+      'SCN-G02-01': 'SCN-G02-01:old-screen-valley-safe',
+      'SCN-G02-02': 'SCN-G02-02:tv-wall-safe',
+    }
+    const next = this.#nextSession()
+    const preFailureState = next.sceneState as Extract<
+      SceneStateId,
+      'S1' | 'S2' | 'S3' | 'S4'
+    >
+    next.safeRecovery = {
+      nodeId: nodes[sceneId],
+      sceneId,
+      preFailureState,
+      resumeState: preFailureState,
+      reason,
+      enteredAt: now(),
+    }
+    next.activeRuntimeNodeId = nodes[sceneId]
+    next.flags.g02_safe_recovery_active = true
+    next.flags.g02_last_soft_failure = reason
+    next.flags.g02_soft_failure_count =
+      Number(next.flags.g02_soft_failure_count ?? 0) + 1
+    this.#commit(next)
+    return {
+      ok: true,
+      message: '危险操作已中止。星宇返回最近安全节点；物品、证据、HOS 和正确修复步骤全部保留。',
+    }
+  }
+
+  resumeG02AfterSoftFailure(): ActionResult {
+    const recovery = this.#session.safeRecovery
+    if (
+      !recovery ||
+      !['SCN-G02-00', 'SCN-G02-01', 'SCN-G02-02'].includes(recovery.sceneId) ||
+      this.#session.activeRuntimeNodeId !== recovery.nodeId
+    ) {
+      return { ok: false, message: '当前不在 G02 安全恢复节点。' }
+    }
+    const next = this.#nextSession()
+    const resumeState = recovery.resumeState ?? recovery.preFailureState
+    next.sceneState = resumeState
+    next.sceneStates[recovery.sceneId] = resumeState
+    next.activeRuntimeNodeId = null
+    next.safeRecovery = null
+    next.flags.g02_safe_recovery_active = false
+    next.flags.g02_retry_available = true
+    this.#commit(next)
+    return { ok: true, message: '已从安全节点继续，并恢复失败前全部正确进度。' }
   }
 
   triggerPrCSoftFailure(reason: string): ActionResult {
@@ -831,6 +1109,17 @@ export class GameEngine {
     this.#session.safeRecovery ??= null
     this.#session.flags.world_star_core_count = 0
     this.#enforceFrozenInvariants(this.#session)
+    const resourceLabels = Number(this.#session.flags.g02_resource_labels ?? 0)
+    this.#session.flags.g02_resource_labels = Number.isFinite(resourceLabels)
+      ? Math.max(0, Math.min(3, Math.trunc(resourceLabels)))
+      : 0
+    if (
+      this.#session.safeRecovery &&
+      this.#session.safeRecovery.sceneId.startsWith('SCN-G02-')
+    ) {
+      this.#session.activeRuntimeNodeId = this.#session.safeRecovery.nodeId
+      this.#session.flags.g02_safe_recovery_active = true
+    }
 
     const leakWasInvestigated =
       this.#session.completedHotspotIds.includes('HS-G01-0013') ||
@@ -949,11 +1238,40 @@ export class GameEngine {
     session.flags.ability_clone = false
 
     const reachedBoundary =
-      session.currentSceneId === 'G02-BOUNDARY' &&
+      (session.currentSceneId === 'G02-BOUNDARY' ||
+        session.currentSceneId.startsWith('SCN-G02-') ||
+        session.currentSceneId === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY') &&
       session.flags.g01_scn07_complete === true &&
       session.flags.g01_landing_scanned === true
     session.flags.g01_chapter_complete = reachedBoundary
     session.flags.g01_handoff_to_g02 = reachedBoundary
+    session.flags.g02_intro_scan_done = session.flags.g02_intro_scan_done === true
+    session.flags.g02_almao_rescued = session.flags.g02_almao_rescued === true
+    const labelCount = Number(session.flags.g02_resource_labels ?? 0)
+    session.flags.g02_resource_labels = Number.isFinite(labelCount)
+      ? Math.max(0, Math.min(3, Math.trunc(labelCount)))
+      : 0
+    session.flags.g02_archive_restored = session.flags.g02_archive_restored === true
+    for (const key of [
+      'g02_stable_core_a',
+      'g02_wave_core',
+      'g02_stable_core_b',
+      'g02_heating_replaced',
+      'g02_heating_core_borrowed',
+      'g02_safe_wire_route',
+      'g02_magnetic_glove_owned',
+      'g02_glove_polarity_fixed',
+      'g02_doubao_backup_authorized',
+      'g02_permission_recycle',
+      'g02_permission_tracking',
+      'g02_permission_storage',
+      'g02_permission_powercut',
+      'g02_permission_punish',
+      'g02_admin_unlocked',
+      'g02_chapter_complete',
+    ]) {
+      session.flags[key] = false
+    }
   }
 
   #notify(): void {

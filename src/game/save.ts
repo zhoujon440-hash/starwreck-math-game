@@ -40,10 +40,14 @@ const parseSession = (value: string | null): GameSession | null => {
       analysis &&
       restoredFlags.g01_scn06_pathfinding_authorized === true &&
       restoredFlags.ability_pathfinding === true
+    const restoredSceneId = parsed.currentSceneId ?? 'SCN-G01-00'
     const reachedG02Boundary =
-      (parsed.currentSceneId ?? 'SCN-G01-00') === 'G02-BOUNDARY' &&
+      (restoredSceneId === 'G02-BOUNDARY' ||
+        restoredSceneId.startsWith('SCN-G02-') ||
+        restoredSceneId === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY') &&
       restoredFlags.g01_scn07_complete === true &&
       restoredFlags.g01_landing_scanned === true
+    const g02ResourceLabels = Number(restoredFlags.g02_resource_labels ?? 0)
 
     return {
       schemaVersion: SAVE_SCHEMA_VERSION,
@@ -75,6 +79,15 @@ const parseSession = (value: string | null): GameSession | null => {
         ability_teleport: false,
         ability_shrink: false,
         ability_clone: false,
+        g02_intro_scan_done: restoredFlags.g02_intro_scan_done === true,
+        g02_almao_rescued: restoredFlags.g02_almao_rescued === true,
+        g02_resource_labels: Number.isFinite(g02ResourceLabels)
+          ? Math.max(0, Math.min(3, Math.trunc(g02ResourceLabels)))
+          : 0,
+        g02_archive_restored: restoredFlags.g02_archive_restored === true,
+        g02_magnetic_glove_owned: false,
+        g02_admin_unlocked: false,
+        g02_chapter_complete: false,
       },
       dialogue: parsed.dialogue ?? {
         currentDialogueId: null,

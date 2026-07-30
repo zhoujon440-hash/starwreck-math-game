@@ -38,6 +38,8 @@ const qimaStates = [
   'awkward',
   'scanning',
 ] as const
+const almaoStates = ['trapped', 'relieved', 'concerned'] as const
+const zhengStates = ['warning', 'measured', 'silent'] as const
 
 export const CHARACTERS: Record<CharacterId, CharacterDefinition> = {
   'CHAR-XINGYU': {
@@ -70,6 +72,40 @@ export const CHARACTERS: Record<CharacterId, CharacterDefinition> = {
     relationship_status: '星宇的搜寻与记录搭档',
     introduction: '旧显示屏样式的导航机器人，认真记录每一次修复和每一句回答。',
     discoveries: ['编号 EDU-0077', '当前导航核心离线'],
+    source_package: 'PKG-CHARACTERS-V2.1',
+    source_entry: SOURCE_ENTRY,
+    source_sha256: SOURCE_SHA256,
+  },
+  'CHAR-ALMAO': {
+    character_id: 'CHAR-ALMAO',
+    official_id: null,
+    name: '阿铆',
+    runtime_key: 'almao',
+    portrait_states: portraitMap('almao', almaoStates),
+    default_state: 'trapped',
+    available_states: [...almaoStates],
+    introduction_status: 'available',
+    archive_status: 'locked_until_introduction',
+    relationship_status: '旧屏幕谷维修居民',
+    introduction: '五尾维修工阿铆，熟悉旧屏幕谷的吊臂、线缆和借用规则。',
+    discoveries: ['被清算挂索困在吊臂落物区', '坚持先确认资源用途再拆取'],
+    source_package: 'PKG-CHARACTERS-V2.1',
+    source_entry: SOURCE_ENTRY,
+    source_sha256: SOURCE_SHA256,
+  },
+  'CHAR-ZHENG': {
+    character_id: 'CHAR-ZHENG',
+    official_id: null,
+    name: '狰',
+    runtime_key: 'zheng',
+    portrait_states: portraitMap('zheng', zhengStates),
+    default_state: 'warning',
+    available_states: [...zhengStates],
+    introduction_status: 'available',
+    archive_status: 'locked_until_introduction',
+    relationship_status: '锈环星管理员',
+    introduction: '负责封存与资源清算的管理员，以授权记录判断物品归属。',
+    discoveries: ['封存脉冲与清算回路属于同一管理体系', '对未授权拾取发出系统警告'],
     source_package: 'PKG-CHARACTERS-V2.1',
     source_entry: SOURCE_ENTRY,
     source_sha256: SOURCE_SHA256,

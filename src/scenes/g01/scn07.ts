@@ -183,6 +183,21 @@ export const G02_BOUNDARY: SceneDefinition = {
     S6: { ...boundaryState, id: 'S6' },
   },
   items: [],
-  hotspots: [],
-  transitions: [],
+  hotspots: [
+    {
+      id: 'RUNTIME-HS-G02-HANDOFF',
+      kind: 'inspect',
+      ariaLabel: '沿旧屏幕谷外缘的正式落点通道进入锈环星',
+      area: { x: 66, y: 34, width: 27, height: 46 },
+      activeStates: ['S0'],
+      scope: 'scene',
+    },
+  ],
+  transitions: [
+    {
+      from: 'S0',
+      event: 'inspect:RUNTIME-HS-G02-HANDOFF',
+      to: 'S1',
+    },
+  ],
 }
