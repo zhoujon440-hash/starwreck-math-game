@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "scope": [
+    "SCN-G01-06",
+    "SCN-G01-07",
+    "G02-BOUNDARY"
+  ],
+  "version": "G01-DEMO-0.1.0",
+  "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5117479638",
+  "formal_sources": {
+    "master": "data/source/g01/json/G01_MasterData.json",
+    "scene_flow": "data/source/g01/json/场景流程.json",
+    "hotspots": "data/source/g01/json/热点清单.json",
+    "hos": "data/source/g01/json/找物清单.json",
+    "inventory": "data/source/g01/json/背包道具流转.json",
+    "dialogue": "data/source/g01/json/对话脚本.json",
+    "states": "data/source/g01/json/场景状态机.json",
+    "hints": "data/source/g01/json/三级提示.json",
+    "saves": "data/source/g01/json/存档与恢复.json",
+    "variables": "data/source/g01/json/程序变量.json",
+    "assets": "data/source/g01/json/资产映射.json"
+  },
+  "scene_contracts": [
+    {
+      "scene_id": "SCN-G01-06",
+      "states": ["S0", "S1", "S2", "S3", "S4", "S5", "S6"],
+      "persistent_states": ["S0", "S2", "S5", "S6"],
+      "temporary_states": ["S1", "S3", "S4"],
+      "formal_hotspots": ["HS-G01-0025", "HS-G01-0026", "HS-G01-0027", "HS-G01-0028"],
+      "runtime_hos_id": "RUNTIME-HOS-G01-06-SIGNAL-TRACE",
+      "local_zoom": true,
+      "puzzle_id": "RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT",
+      "autosave_id": "AUTO-G01-007"
+    },
+    {
+      "scene_id": "SCN-G01-07",
+      "states": ["S0", "S1", "S2", "S3", "S4", "S5", "S6"],
+      "persistent_states": ["S0", "S2", "S5", "S6"],
+      "temporary_states": ["S1", "S3", "S4"],
+      "formal_hotspots": ["HS-G01-0029", "HS-G01-0030", "HS-G01-0031"],
+      "local_zoom": true,
+      "puzzle_ids": [
+        "RUNTIME-PUZ-G01-LANDING-TRIANGULATION",
+        "RUNTIME-PUZ-G01-IMPACT-DAMPING"
+      ],
+      "autosave_id": "AUTO-G01-008"
+    }
+  ],
+  "runtime_adapters": [
+    {
+      "catalog_id": "RUNTIME-HOS-G01-06-SIGNAL-TRACE",
+      "official_id": null,
+      "formal_parent_id": "HS-G01-0025",
+      "reason": "formal SCN06 evidence hotspot adapted into an observable HOS"
+    },
+    {
+      "catalog_id": "RUNTIME-HS-G01-07-UNSAFE-CORRIDOR",
+      "official_id": null,
+      "formal_parent_id": "DANGER-G01-004",
+      "reason": "visible soft-failure route branch"
+    },
+    {
+      "catalog_id": "G02-BOUNDARY",
+      "official_id": null,
+      "formal_parent_id": "G01-G02-BOUNDARY-V2.2",
+      "reason": "read-only handoff screen with no G02 gameplay"
+    }
+  ],
+  "hint_contracts": [
+    {
+      "task_id": "RUNTIME-HINT-G01-006",
+      "scene_id": "SCN-G01-06",
+      "levels": [
+        {"level": 1, "semantics": "direction"},
+        {"level": 2, "semantics": "area"},
+        {"level": 3, "semantics": "complete_one_step"}
+      ],
+      "behavior_states": ["S0", "S1", "S2", "S3", "S4", "S5"]
+    },
+    {
+      "task_id": "RUNTIME-HINT-G01-007",
+      "scene_id": "SCN-G01-07",
+      "levels": [
+        {"level": 1, "semantics": "direction"},
+        {"level": 2, "semantics": "area"},
+        {"level": 3, "semantics": "complete_one_step"}
+      ],
+      "behavior_states": ["S0", "S1", "S2", "S3", "S4", "S5"]
+    }
+  ],
+  "danger_contract": {
+    "danger_id": "DANGER-G01-004",
+    "scene_id": "SCN-G01-07",
+    "failure_phases": ["S1", "S2", "S3", "S4"],
+    "safe_recovery_node": "SCN-G01-07:orbit-safe-node",
+    "retain_key_items": true,
+    "retain_hos_progress": true,
+    "retain_puzzle_progress": true,
+    "retain_evidence": true,
+    "retain_completed_correct_steps": true,
+    "duplicate_grants_forbidden": true,
+    "whole_scene_reset_forbidden": true,
+    "retry_available": true,
+    "refresh_stays_at_safe_node": true,
+    "soft_failure_creates_evidence": false
+  },
+  "ability_contract": {
+    "ordered_unlocks": [
+      "ability_qima_search",
+      "ability_analysis",
+      "ability_pathfinding"
+    ],
+    "must_remain_locked": [
+      "ability_teleport",
+      "ability_shrink",
+      "ability_clone"
+    ]
+  },
+  "completion_contract": {
+    "write_scene": "SCN-G01-07",
+    "write_state": "S6",
+    "requires": [
+      "g01_scn06_complete",
+      "g01_landing_scanned",
+      "ability_qima_search",
+      "ability_analysis",
+      "ability_pathfinding"
+    ],
+    "writes": {
+      "g01_chapter_complete": true,
+      "g01_handoff_to_g02": true,
+      "world_star_core_count": 0
+    },
+    "g02_boundary_gameplay": {
+      "hotspots": 0,
+      "hos": 0,
+      "inventory": 0,
+      "puzzles": 0,
+      "dialogue_flow": 0
+    }
+  },
+  "pwa_contract": {
+    "manifest": true,
+    "service_worker": true,
+    "installable": true,
+    "first_load_then_offline": true,
+    "production_zip": "release/starwreck-g01-demo-0.1.0.zip"
+  }
+}

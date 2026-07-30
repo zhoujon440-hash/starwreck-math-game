@@ -159,6 +159,21 @@ export class GameEngine {
     } else if (sceneId === 'SCN-G01-05') {
       next.flags.g01_scn05_entered = true
       next.flags.g01_scn05_controlled_route = true
+    } else if (sceneId === 'SCN-G01-06') {
+      if (next.flags.g01_scn05_complete !== true) {
+        return { ok: false, message: '需要先完成垃圾雨航线，才能进入远距观测舱。' }
+      }
+      next.flags.g01_scn06_entered = true
+    } else if (sceneId === 'SCN-G01-07') {
+      if (next.flags.g01_scn06_complete !== true) {
+        return { ok: false, message: '需要先锁定求救源和基础能力，才能进入近地轨道。' }
+      }
+      next.flags.g01_scn07_entered = true
+    } else if (sceneId === 'G02-BOUNDARY') {
+      return {
+        ok: false,
+        message: '交接画面只能在完成SCN-G01-07后由正式交接动作进入。',
+      }
     }
     this.#commit(next)
     this.saves.saveCheckpoint(next)
@@ -169,6 +184,8 @@ export class GameEngine {
       'SCN-G01-03': '星宇从安全舱门进入漏气货舱。',
       'SCN-G01-04': '星宇和七码进入导航星图室。',
       'SCN-G01-05': '星宇回到驾驶舱规划垃圾雨航线。',
+      'SCN-G01-06': '星宇和七码进入远距观测舱，追踪锈环星求救信号。',
+      'SCN-G01-07': '拾光号进入锈环星近地轨道，开始落点扫描。',
     }
     return { ok: true, message: messages[sceneId] ?? '已进入目标舱段。' }
   }
@@ -325,6 +342,27 @@ export class GameEngine {
       next.flags.g01_star_map_calibrated = true
       next.flags.g01_scn04_evidence_star_map = true
       next.puzzleProgress.star_gate_ring = 'twelve-gates-calibrated'
+    } else if (puzzleId === 'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT') {
+      next.flags.g01_scn06_signal_verified = true
+      next.flags.g01_scn06_evidence_distress_record = true
+      next.puzzleProgress.signal_alignment = 'frequency>phase>gain:verified'
+    } else if (puzzleId === 'RUNTIME-PUZ-G01-LANDING-TRIANGULATION') {
+      if (
+        next.flags.ability_qima_search !== true ||
+        next.flags.ability_analysis !== true ||
+        next.flags.ability_pathfinding !== true
+      ) {
+        return {
+          ok: false,
+          message: '落点扫描需要先在远距观测舱完成搜寻、分析和寻路授权。',
+        }
+      }
+      next.flags.g01_landing_scanned = true
+      next.flags.g01_scn07_evidence_landing_scan = true
+      next.puzzleProgress.landing_triangulation = 'search>analysis>pathfinding:locked'
+    } else if (puzzleId === 'RUNTIME-PUZ-G01-IMPACT-DAMPING') {
+      next.flags.g01_scn07_impact_stabilized = true
+      next.puzzleProgress.impact_damping = 'attitude>buffer>landing-lock'
     }
     const transitioned = this.#applyTransition(next, `puzzle:${puzzleId}`)
 
@@ -350,6 +388,12 @@ export class GameEngine {
     const next = this.#nextSession()
     if (!this.#applyTransition(next, `inspect:${hotspotId}`)) {
       return { ok: false, message: '当前状态无法执行这个动作。' }
+    }
+    const isRejectedRoute =
+      hotspotId.startsWith('RUNTIME-HS-G01-05-COLLISION-') ||
+      hotspotId === 'RUNTIME-HS-G01-07-UNSAFE-CORRIDOR'
+    if (!isRejectedRoute && !next.completedHotspotIds.includes(hotspotId)) {
+      next.completedHotspotIds.push(hotspotId)
     }
     if (hotspotId === 'HS-G01-0013') {
       next.flags.g01_scn03_evidence_leak_confirmed = true
@@ -392,6 +436,37 @@ export class GameEngine {
       next.flags.g01_route_complete = true
       next.flags.g01_scn05_complete = true
       next.puzzleProgress.garbage_route = 'node-a>node-b>bypass>window>safe-landing'
+    } else if (hotspotId === 'HS-G01-0025') {
+      next.flags.g01_scn06_signal_receiver_opened = true
+    } else if (hotspotId === 'HS-G01-0026') {
+      next.flags.ability_qima_search = true
+      next.flags.g01_scn06_search_authorized = true
+    } else if (hotspotId === 'HS-G01-0027') {
+      if (next.flags.ability_qima_search !== true) {
+        return { ok: false, message: '必须先完成七码搜寻授权。' }
+      }
+      next.flags.ability_analysis = true
+      next.flags.g01_scn06_analysis_authorized = true
+    } else if (hotspotId === 'HS-G01-0028') {
+      if (next.flags.ability_analysis !== true) {
+        return { ok: false, message: '必须先完成分析授权。' }
+      }
+      next.flags.ability_pathfinding = true
+      next.flags.g01_scn06_pathfinding_authorized = true
+    } else if (hotspotId === 'RUNTIME-HS-G01-06-SAVE-OBSERVATION') {
+      next.flags.g01_scn06_complete = true
+      next.flags.g01_scn06_observation_saved = true
+    } else if (hotspotId === 'HS-G01-0029') {
+      next.flags.g01_scn07_landing_scanner_opened = true
+    } else if (hotspotId === 'RUNTIME-HS-G01-07-UNSAFE-CORRIDOR') {
+      this.#commit(next)
+      return this.triggerPrCSoftFailure('unstable-garbage-corridor')
+    } else if (hotspotId === 'RUNTIME-HS-G01-07-CORRIDOR-CONFIRM') {
+      next.flags.g01_scn07_corridor_confirmed = true
+    } else if (hotspotId === 'HS-G01-0030') {
+      next.flags.g01_scn07_autosave_confirmed = true
+    } else if (hotspotId === 'HS-G01-0031') {
+      next.flags.g01_scn07_exit_ready = true
     }
     this.#commit(next)
     if (hotspotId.startsWith('RUNTIME-HS-G01-05-COLLISION-')) {
@@ -438,7 +513,7 @@ export class GameEngine {
       return { ok: false, message: '只有第三级提示会代为完成一个合法步骤。' }
     }
     const sceneId = this.#session.currentSceneId
-    if (!['SCN-G01-04', 'SCN-G01-05'].includes(sceneId)) {
+    if (!['SCN-G01-04', 'SCN-G01-05', 'SCN-G01-06', 'SCN-G01-07'].includes(sceneId)) {
       return { ok: false, message: '当前场景继续使用原有提示行为。' }
     }
 
@@ -454,7 +529,108 @@ export class GameEngine {
     if (hint.hotspot.zoomId === 'TUT-MECH-002') {
       return this.completePuzzle('TUT-MECH-002')
     }
+    if (
+      hint.hotspot.zoomId &&
+      [
+        'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT',
+        'RUNTIME-PUZ-G01-LANDING-TRIANGULATION',
+        'RUNTIME-PUZ-G01-IMPACT-DAMPING',
+      ].includes(hint.hotspot.zoomId)
+    ) {
+      return this.completePuzzle(hint.hotspot.zoomId)
+    }
     return { ok: false, message: '当前没有可由提示完成的合法步骤。' }
+  }
+
+  triggerPrCSoftFailure(reason: string): ActionResult {
+    if (
+      this.#session.currentSceneId !== 'SCN-G01-07' ||
+      !['S1', 'S2', 'S3', 'S4'].includes(this.#session.sceneState) ||
+      this.#session.safeRecovery
+    ) {
+      return { ok: false, message: '当前没有需要执行的近地轨道安全回退。' }
+    }
+
+    const next = this.#nextSession()
+    const preFailureState = next.sceneState as Extract<
+      SceneStateId,
+      'S1' | 'S2' | 'S3' | 'S4'
+    >
+    const resumeState = (preFailureState === 'S3' ? 'S2' : preFailureState) as Extract<
+      SceneStateId,
+      'S1' | 'S2' | 'S3' | 'S4'
+    >
+    next.safeRecovery = {
+      nodeId: 'SCN-G01-07:orbit-safe-node',
+      sceneId: 'SCN-G01-07',
+      preFailureState,
+      resumeState,
+      reason,
+      enteredAt: now(),
+    }
+    next.activeRuntimeNodeId = next.safeRecovery.nodeId
+    next.flags.g01_scn07_safe_recovery_active = true
+    next.flags.g01_pr_c_last_soft_failure = reason
+    next.flags.g01_pr_c_soft_failure_count =
+      Number(next.flags.g01_pr_c_soft_failure_count ?? 0) + 1
+    this.#commit(next)
+    return {
+      ok: true,
+      message: '不稳定走廊已关闭。拾光号返回最近安全节点；物品、证据与正确步骤全部保留。',
+    }
+  }
+
+  resumePrCAfterSoftFailure(): ActionResult {
+    const recovery = this.#session.safeRecovery
+    if (
+      !recovery ||
+      recovery.sceneId !== 'SCN-G01-07' ||
+      recovery.nodeId !== 'SCN-G01-07:orbit-safe-node' ||
+      this.#session.activeRuntimeNodeId !== recovery.nodeId
+    ) {
+      return { ok: false, message: '当前不在近地轨道安全恢复节点。' }
+    }
+    const next = this.#nextSession()
+    const resumeState = recovery.resumeState ?? recovery.preFailureState
+    next.sceneState = resumeState
+    next.sceneStates['SCN-G01-07'] = resumeState
+    next.activeRuntimeNodeId = null
+    next.safeRecovery = null
+    next.flags.g01_scn07_safe_recovery_active = false
+    next.flags.g01_pr_c_retry_available = true
+    this.#commit(next)
+    return { ok: true, message: '已从安全节点恢复，可从保留的正确进度继续落点操作。' }
+  }
+
+  completeG01Handoff(): ActionResult {
+    if (
+      this.#session.currentSceneId !== 'SCN-G01-07' ||
+      this.#session.sceneState !== 'S6' ||
+      this.#session.flags.g01_scn06_complete !== true ||
+      this.#session.flags.g01_landing_scanned !== true ||
+      this.#session.flags.ability_qima_search !== true ||
+      this.#session.flags.ability_analysis !== true ||
+      this.#session.flags.ability_pathfinding !== true
+    ) {
+      return { ok: false, message: 'G01交接条件尚未全部完成。' }
+    }
+
+    const next = this.#nextSession()
+    next.flags.g01_scn07_complete = true
+    next.flags.g01_chapter_complete = true
+    next.flags.g01_handoff_to_g02 = true
+    next.flags.world_star_core_count = 0
+    next.currentSceneId = 'G02-BOUNDARY'
+    next.sceneState = 'S0'
+    next.sceneStates['G02-BOUNDARY'] = 'S0'
+    next.activeRuntimeNodeId = null
+    next.safeRecovery = null
+    this.#commit(next)
+    this.saves.saveCheckpoint(this.#session)
+    return {
+      ok: true,
+      message: 'G01序章完成。已进入旧屏幕谷外缘交接画面，G02玩法仍未开放。',
+    }
   }
 
   prBRouteWindowRemainingMs(): number {
@@ -654,18 +830,7 @@ export class GameEngine {
     this.#session.activeRuntimeNodeId ??= null
     this.#session.safeRecovery ??= null
     this.#session.flags.world_star_core_count = 0
-    this.#session.flags.g01_chapter_complete = false
-    this.#session.flags.g01_handoff_to_g02 = false
-    for (const ability of [
-      'ability_qima_search',
-      'ability_analysis',
-      'ability_pathfinding',
-      'ability_teleport',
-      'ability_shrink',
-      'ability_clone',
-    ]) {
-      this.#session.flags[ability] = false
-    }
+    this.#enforceFrozenInvariants(this.#session)
 
     const leakWasInvestigated =
       this.#session.completedHotspotIds.includes('HS-G01-0013') ||
@@ -754,21 +919,41 @@ export class GameEngine {
   }
 
   #commit(next: GameSession): void {
-    next.flags.world_star_core_count = 0
-    next.flags.g01_chapter_complete = false
-    next.flags.g01_handoff_to_g02 = false
-    next.flags.ability_qima_search = false
-    next.flags.ability_analysis = false
-    next.flags.ability_pathfinding = false
-    next.flags.ability_teleport = false
-    next.flags.ability_shrink = false
-    next.flags.ability_clone = false
+    this.#enforceFrozenInvariants(next)
     this.#session = next
     this.saves.save(this.#session)
     if (this.currentSceneDefinition.states[this.#session.sceneState].safeCheckpoint) {
       this.saves.saveCheckpoint(this.#session)
     }
     this.#notify()
+  }
+
+  #enforceFrozenInvariants(session: GameSession): void {
+    session.flags.world_star_core_count = 0
+    const qimaSearch =
+      session.flags.g01_scn06_search_authorized === true &&
+      session.flags.ability_qima_search === true
+    const analysis =
+      qimaSearch &&
+      session.flags.g01_scn06_analysis_authorized === true &&
+      session.flags.ability_analysis === true
+    const pathfinding =
+      analysis &&
+      session.flags.g01_scn06_pathfinding_authorized === true &&
+      session.flags.ability_pathfinding === true
+    session.flags.ability_qima_search = qimaSearch
+    session.flags.ability_analysis = analysis
+    session.flags.ability_pathfinding = pathfinding
+    session.flags.ability_teleport = false
+    session.flags.ability_shrink = false
+    session.flags.ability_clone = false
+
+    const reachedBoundary =
+      session.currentSceneId === 'G02-BOUNDARY' &&
+      session.flags.g01_scn07_complete === true &&
+      session.flags.g01_landing_scanned === true
+    session.flags.g01_chapter_complete = reachedBoundary
+    session.flags.g01_handoff_to_g02 = reachedBoundary
   }
 
   #notify(): void {

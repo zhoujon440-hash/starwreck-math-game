@@ -72,19 +72,21 @@
     "world_star_core_count": 0
   },
   "active_scope": {
-    "phase": "Issue #9 PR-B",
+    "phase": "Issue #9 PR-C / G01 Demo",
     "implemented_scenes": [
       "SCN-G01-02",
       "SCN-G01-03",
       "SCN-G01-04",
-      "SCN-G01-05"
+      "SCN-G01-05",
+      "SCN-G01-06",
+      "SCN-G01-07"
     ],
-    "maximum_runtime_scene": "SCN-G01-05",
-    "next_boundary": "SCN-G01-06",
+    "maximum_runtime_scene": "SCN-G01-07",
+    "next_boundary": "G02-BOUNDARY",
     "next_boundary_only": true,
-    "g01_chapter_complete": false,
-    "g01_handoff_to_g02": false,
-    "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5115689539"
+    "g01_chapter_complete": true,
+    "g01_handoff_to_g02": true,
+    "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5117479638"
   },
   "formal_source": {
     "package_id": "PKG-G01-V3.0",

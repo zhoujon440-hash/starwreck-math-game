@@ -174,8 +174,18 @@ for (const field of [routeWindow.start_field, routeWindow.deadline_field]) {
 check(uiCode.includes('route-window-status') && uiCode.includes('expirePrBRouteWindow'), 'PRB-ROUTE-012', 'visible automatic route-window expiry missing')
 check(!uiCode.includes("startTrigger('SCN-G01-05', '进入驾驶舱')"), 'PRB-DIALOGUE-010', 'DLG0015 must not trigger on scene entry')
 check(engineCode.includes('completeHintStep') && uiCode.includes('completeHintStep'), 'PRB-HINT-004', 'level-three behavior implementation missing')
-check(!/enterScene\(['"]SCN-G01-06/.test(code), 'PRB-SCOPE-002', 'SCN-G01-06 runtime entry implemented')
-check(!/g01_(?:chapter_complete|handoff_to_g02)\s*[:=]\s*true/.test(code), 'PRB-SCOPE-003', 'completion/handoff written true')
+check(
+  !/SCN-G01-0[67]|G02-BOUNDARY/.test([scn04Code, scn05Code].join('\n')),
+  'PRB-SCOPE-002',
+  'PR-B scene modules contain later-scene implementation',
+)
+check(
+  !/g01_(?:chapter_complete|handoff_to_g02)\s*[:=]\s*true/.test(
+    [scn04Code, scn05Code].join('\n'),
+  ),
+  'PRB-SCOPE-003',
+  'PR-B scene modules write completion/handoff true',
+)
 check(
   !provenance.inputs.some((input) => /(pull\/5|pr-?5|third.party)/i.test(input.path)),
   'PRB-ART-012',

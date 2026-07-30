@@ -33,7 +33,7 @@ export class DialogueDataLoader {
 
   #validate(): void {
     for (const node of this.#nodes.values()) {
-      if (node.speaker_id !== 'SYSTEM') {
+      if (node.speaker_id !== 'SYSTEM' && node.speaker_id !== 'DISTRESS_SIGNAL') {
         characterData.portrait(node.speaker_id, node.portrait_state)
       } else if (node.portrait_state !== 'system') {
         throw new Error(`System dialogue must use system portrait: ${node.dialogue_id}`)

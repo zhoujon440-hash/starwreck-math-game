@@ -28,6 +28,23 @@ const parseSession = (value: string | null): GameSession | null => {
     if (typeof parsed.chapterId !== 'string') return null
     if (typeof parsed.sceneState !== 'string' || typeof parsed.updatedAt !== 'string') return null
     if (!Array.isArray(parsed.inventoryItemIds) || !Array.isArray(parsed.foundItemIds)) return null
+    const restoredFlags = parsed.flags ?? {}
+    const qimaSearch =
+      restoredFlags.g01_scn06_search_authorized === true &&
+      restoredFlags.ability_qima_search === true
+    const analysis =
+      qimaSearch &&
+      restoredFlags.g01_scn06_analysis_authorized === true &&
+      restoredFlags.ability_analysis === true
+    const pathfinding =
+      analysis &&
+      restoredFlags.g01_scn06_pathfinding_authorized === true &&
+      restoredFlags.ability_pathfinding === true
+    const reachedG02Boundary =
+      (parsed.currentSceneId ?? 'SCN-G01-00') === 'G02-BOUNDARY' &&
+      restoredFlags.g01_scn07_complete === true &&
+      restoredFlags.g01_landing_scanned === true
+
     return {
       schemaVersion: SAVE_SCHEMA_VERSION,
       chapterId: parsed.chapterId,
@@ -48,13 +65,13 @@ const parseSession = (value: string | null): GameSession | null => {
       hintCount: parsed.hintCount ?? 0,
       hintLevels: parsed.hintLevels ?? {},
       flags: {
-        ...(parsed.flags ?? {}),
-        g01_chapter_complete: false,
-        g01_handoff_to_g02: false,
+        ...restoredFlags,
+        g01_chapter_complete: reachedG02Boundary,
+        g01_handoff_to_g02: reachedG02Boundary,
         world_star_core_count: 0,
-        ability_qima_search: false,
-        ability_analysis: false,
-        ability_pathfinding: false,
+        ability_qima_search: qimaSearch,
+        ability_analysis: analysis,
+        ability_pathfinding: pathfinding,
         ability_teleport: false,
         ability_shrink: false,
         ability_clone: false,

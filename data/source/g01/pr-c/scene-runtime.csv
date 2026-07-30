@@ -1,0 +1,15 @@
+scene_id,state_id,interaction,formal_or_runtime_id,persisted
+SCN-G01-06,S0,inspect distress receiver,HS-G01-0025,true
+SCN-G01-06,S1,signal receiver HOS,RUNTIME-HOS-G01-06-SIGNAL-TRACE,true
+SCN-G01-06,S2,signal alignment puzzle,RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT,true
+SCN-G01-06,S3,search authorization,HS-G01-0026,true
+SCN-G01-06,S4,analysis and pathfinding authorization,HS-G01-0027/HS-G01-0028,true
+SCN-G01-06,S5,observation autosave,RUNTIME-HS-G01-06-SAVE-OBSERVATION,true
+SCN-G01-06,S6,enter near orbit,SCN-G01-07,true
+SCN-G01-07,S0,start landing scan,HS-G01-0029,true
+SCN-G01-07,S1,three-ability landing scan,RUNTIME-PUZ-G01-LANDING-TRIANGULATION,true
+SCN-G01-07,S2,confirm safe corridor,RUNTIME-HS-G01-07-CORRIDOR-CONFIRM,true
+SCN-G01-07,S3,impact damping,RUNTIME-PUZ-G01-IMPACT-DAMPING,true
+SCN-G01-07,S4,autosave beacon,HS-G01-0030,true
+SCN-G01-07,S5,open exit hatch,HS-G01-0031,true
+SCN-G01-07,S6,complete G01 handoff,G02-BOUNDARY,true

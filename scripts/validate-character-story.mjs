@@ -181,7 +181,18 @@ if (fixturePath) {
   check(gameTypes.includes('characterStates') && gameTypes.includes('unlockedCharacterIds'), 'CS-024-SAVE-CHARACTER', 'src/game/types.ts', 'character save fields', 'states and profiles', 'Issue #3 §8', 'Persist character state and archives.')
   check(gameSave.includes('SAVE_SCHEMA_VERSION = 2'), 'CS-025-SAVE-SCHEMA', 'src/game/save.ts', 'schema version', 2, 'Issue #3 §8', 'Use the story-aware schema.')
   check(gameSave.includes('world_star_core_count: 0') && gameEngine.includes('next.flags.world_star_core_count = 0'), 'CS-026-STAR-CORE', 'src/game', 'G01 count guards', 0, '06_G01_G02_BOUNDARY.md', 'Force all G01 saves and commits to zero.')
-  check(gameSave.includes('g01_chapter_complete: false') && gameSave.includes('g01_handoff_to_g02: false'), 'CS-027-HANDOFF-FLAGS', 'src/game/save.ts', 'handoff defaults', false, '06_G01_G02_BOUNDARY.md', 'Keep both flags false in SCN-G01-00/01.')
+  check(
+    gameEngine.includes('g01_chapter_complete: false') &&
+      gameEngine.includes('g01_handoff_to_g02: false') &&
+      gameSave.includes('g01_chapter_complete: reachedG02Boundary') &&
+      gameSave.includes('g01_handoff_to_g02: reachedG02Boundary'),
+    'CS-027-HANDOFF-FLAGS',
+    'src/game/save.ts',
+    'handoff defaults and guarded restoration',
+    'false until the formal G02 boundary',
+    '06_G01_G02_BOUNDARY.md',
+    'Keep both flags false before SCN-G01-07 completion.',
+  )
   check(gameEngine.includes("currentSceneId: 'SCN-G01-00'"), 'CS-028-CURRENT-SCENE', 'src/game/engine.ts', 'initial scene', 'SCN-G01-00', '场景流程.json', 'Start at the formal first scene.')
   check(['HS-G01-0001', 'HS-G01-0002', 'HS-G01-0003', 'HS-G01-0004'].every((id) => content.includes(id) && formalHotspots.some((row) => row['热点ID'] === id)), 'CS-029-SCN00-HOTSPOTS', 'src/content/g01.ts', 'SCN-G01-00 core hotspots', 'formal ids retained', '热点清单.json', 'Restore the accepted vertical-slice hotspots.')
   check(existsSync(resolve(root, 'tests/character-story/character-data.test.ts')) && existsSync(resolve(root, 'tests/character-story/dialogue.test.ts')), 'CS-030-UNIT-TESTS', 'tests/character-story', 'unit tests', 'character and dialogue suites', 'Issue #3 §19', 'Restore the required unit suites.')
@@ -207,27 +218,28 @@ if (fixturePath) {
   check(
     contract.completion_boundary === 'SCN-G01-02' &&
       contract.completion_boundary_only === false &&
-      JSON.stringify(activeScope.implemented_scenes) === JSON.stringify(['SCN-G01-02', 'SCN-G01-03', 'SCN-G01-04', 'SCN-G01-05']) &&
-      activeScope.maximum_runtime_scene === 'SCN-G01-05' &&
-      activeScope.next_boundary === 'SCN-G01-06' &&
+      JSON.stringify(activeScope.implemented_scenes) === JSON.stringify(['SCN-G01-02', 'SCN-G01-03', 'SCN-G01-04', 'SCN-G01-05', 'SCN-G01-06', 'SCN-G01-07']) &&
+      activeScope.maximum_runtime_scene === 'SCN-G01-07' &&
+      activeScope.next_boundary === 'G02-BOUNDARY' &&
       activeScope.next_boundary_only === true &&
-      activeScope.g01_chapter_complete === false &&
-      activeScope.g01_handoff_to_g02 === false &&
+      activeScope.g01_chapter_complete === true &&
+      activeScope.g01_handoff_to_g02 === true &&
       existsSync(resolve(root, 'src/scenes/g01/scn02.ts')) &&
       existsSync(resolve(root, 'src/scenes/g01/scn03.ts')) &&
       existsSync(resolve(root, 'src/scenes/g01/scn04.ts')) &&
       existsSync(resolve(root, 'src/scenes/g01/scn05.ts')) &&
-      !existsSync(resolve(root, 'src/scenes/g01/scn06.ts')),
+      existsSync(resolve(root, 'src/scenes/g01/scn06.ts')) &&
+      existsSync(resolve(root, 'src/scenes/g01/scn07.ts')),
     'CS-036-SCOPE',
     rel(policyPath),
     activeScope,
     {
-      implemented: ['SCN-G01-02', 'SCN-G01-03', 'SCN-G01-04', 'SCN-G01-05'],
-      maximum: 'SCN-G01-05',
-      nextBoundaryOnly: 'SCN-G01-06',
+      implemented: ['SCN-G01-02', 'SCN-G01-03', 'SCN-G01-04', 'SCN-G01-05', 'SCN-G01-06', 'SCN-G01-07'],
+      maximum: 'SCN-G01-07',
+      nextBoundaryOnly: 'G02-BOUNDARY',
     },
-    'Issue #9 comment 5115689539',
-    'Keep PR-B implementation within SCN-G01-04 and SCN-G01-05, with SCN-G01-06 boundary only.',
+    'Issue #9 comment 5117479638',
+    'Keep the complete G01 demo within SCN-G01-00 through SCN-G01-07, with a read-only G02 boundary.',
   )
 
   const packagePath = resolve(root, policy.formal_source.package_path)

@@ -84,7 +84,11 @@ export class DialogueRunner {
       characterData.portrait(characterId, portraitState)
       draft.characterStates[characterId] = portraitState
     }
-    if (node.speaker_id !== 'SYSTEM' && !draft.unlockedCharacterIds.includes(node.speaker_id)) {
+    if (
+      node.speaker_id !== 'SYSTEM' &&
+      node.speaker_id !== 'DISTRESS_SIGNAL' &&
+      !draft.unlockedCharacterIds.includes(node.speaker_id)
+    ) {
       draft.unlockedCharacterIds.push(node.speaker_id)
     }
   }

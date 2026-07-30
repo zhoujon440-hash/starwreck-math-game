@@ -1,0 +1,57 @@
+{
+  "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5117479638",
+  "implementation_plan": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5128562403",
+  "source_label": "project_owner_authorized_runtime_production",
+  "package": "PKG-G01-V3.0",
+  "package_sha256": "85a20020d471e6dc77454b90e9d7792216db2555aef4e44fa729862ae9ddc043",
+  "generative_source_recorded": true,
+  "source_files": [
+    {
+      "path": "art/runtime-production/g01/pr-c/source/scn06-long-range-observation.png",
+      "sha256": "db120a6ba71868de77c60ffdc3cca18fd9d60917ca5e9f82c941259d2b184646",
+      "production_method": "openai_builtin_image_generation",
+      "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5117479638",
+      "prompt_record": {
+        "use_case": "stylized-concept",
+        "purpose": "SCENE-G01-007 recorded generation source",
+        "constraints": "16:9; no text; no characters; old salvage ship; distress receiver; three authorization sockets"
+      }
+    },
+    {
+      "path": "art/runtime-production/g01/pr-c/source/scn07-old-screen-valley-descent.png",
+      "sha256": "7ef16e6f301023e6697d253ccd0fe98b488b1d8d2a80ef22db2f3a5d7a9a58ef",
+      "production_method": "openai_builtin_image_generation",
+      "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5117479638",
+      "prompt_record": {
+        "use_case": "stylized-concept",
+        "purpose": "SCENE-G01-008 recorded generation source",
+        "constraints": "16:9; no text; no characters; old-screen valley boundary; landing scanner; save beacon"
+      }
+    },
+    {
+      "path": "art/runtime-production/g01/pr-c/source/scn06-props-magenta.png",
+      "sha256": "d6fbe1da2b043ba3ba26a200f7e438d4a3a1cfe266b3ae851b13ad13c28aec48",
+      "production_method": "openai_builtin_image_generation",
+      "authorization": "https://github.com/zhoujon440-hash/starwreck-math-game/issues/9#issuecomment-5117479638",
+      "prompt_record": {
+        "use_case": "stylized-concept",
+        "purpose": "SCN06 HOS, evidence, authorization, and distractor extraction source",
+        "constraints": "4x2 isolated prop sheet; flat #ff00ff key; no text; no characters"
+      }
+    }
+  ],
+  "processing": [
+    "4K Lanczos background fitting",
+    "deterministic console crop and 1920x1080 closeup fitting",
+    "flat-magenta chroma extraction with soft antialias matte",
+    "RGBA object fitting",
+    "deterministic raster glow/state-layer composition",
+    "SHA-256 manifest generation"
+  ],
+  "forbidden_sources": {
+    "pr_5": false,
+    "third_party_web_assets": false,
+    "unrecorded_generation": false,
+    "design_board_direct_runtime_use": false
+  }
+}
