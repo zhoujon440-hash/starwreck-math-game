@@ -1,0 +1,70 @@
+name: G02 Vertical Slice Gate
+
+on:
+  push:
+    branches:
+      - codex/g02-vertical-slice-00-02-v1
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  g02-vertical-slice-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:g02-slice-01
+      - run: npm run test:g02-slice-01
+      - run: npm run validate:sources
+      - run: npm run validate:baseline
+      - run: npm run test:baseline
+      - run: npm run validate:characters
+      - run: npm run test:characters
+      - run: npm run validate:character-story
+      - run: npm run test:character-story
+      - run: npm run validate:g01-pr-a
+      - run: npm run test:g01-pr-a
+      - run: npm run validate:g01-pr-b
+      - run: npm run test:g01-pr-b
+      - run: npm run validate:g01-demo
+      - run: npm run test:g01-demo
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run test:pwa
+      - run: npm run package:g02-slice-01
+      - name: Upload G02 visual acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: g02-slice-01-visual-acceptance-${{ github.run_number }}
+          path: |
+            test-results/**
+            playwright-report/**
+            playwright-pwa-report/**
+            docs/review/G02_VERTICAL_SLICE_VISUAL_ACCEPTANCE.md
+            docs/story-runtime/G02_VERTICAL_SLICE_00_02.md
+            docs/art/G02_SLICE_01_RUNTIME_ASSET_PROVENANCE.json
+            docs/art/G02_SLICE_01_RUNTIME_ASSET_SHA256.txt
+            data/source/g02/slice-01/**
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload production ZIP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: starwreck-g02-slice-0.1.0-${{ github.run_number }}
+          path: release/starwreck-g02-slice-0.1.0.zip
+          if-no-files-found: error
+          retention-days: 30
