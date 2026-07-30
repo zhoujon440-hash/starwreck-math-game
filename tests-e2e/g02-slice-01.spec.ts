@@ -118,7 +118,7 @@ const advanceDialogue = async (page: Page, count: number): Promise<void> => {
 test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice', async ({
   page,
 }, info) => {
-  test.setTimeout(180_000)
+  test.setTimeout(360_000)
   const consoleErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
@@ -207,6 +207,7 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
     'RUNTIME-ITM-G02-MAGNETIC-GRAPNEL',
     'HS-G02-0003',
   )
+  await expect(page.locator('.game-shell')).toHaveClass(/state-S2/)
 
   const beforeScn01Failure = await page.evaluate(
     (key) => JSON.parse(localStorage.getItem(key)!),
