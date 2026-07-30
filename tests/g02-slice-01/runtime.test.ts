@@ -41,7 +41,7 @@ const seedG02Boundary = (repository = new MemorySaveRepository()) => {
 
 const enterScn00 = (repository = new MemorySaveRepository()) => {
   const engine = seedG02Boundary(repository)
-  expect(engine.inspect('RUNTIME-HS-G02-HANDOFF').ok).toBe(true)
+  expect(engine.enterScene('SCN-G02-00').ok).toBe(true)
   expect(engine.snapshot.currentSceneId).toBe('SCN-G02-00')
   return engine
 }

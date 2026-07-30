@@ -521,7 +521,7 @@ export class GameView {
                   <span class="eyebrow">第一星球 · 锈环星</span>
                   <h2 id="g02-entry-title">旧屏幕谷外缘</h2>
                   <p>落点存档已通过校验。沿画面中的外缘通道进入正式开场；不会重播七码恢复或基础能力教学。</p>
-                  <button class="primary-action" data-action="inspect" data-hotspot-id="RUNTIME-HS-G02-HANDOFF">进入旧屏幕谷</button>
+                  <button class="primary-action" data-action="enter-g02-slice">进入旧屏幕谷</button>
                 </section>
               `
               : ''
@@ -2112,6 +2112,12 @@ export class GameView {
       case 'enter-g02-boundary':
         this.#handleResult(this.engine.completeG01Handoff())
         break
+      case 'enter-g02-slice': {
+        const result = this.engine.enterScene('SCN-G02-00')
+        this.#handleResult(result)
+        if (result.ok) this.#dialogueRunner.startTrigger('SCN-G02-00', '无')
+        break
+      }
       case 'open-menu':
         this.#menuOpen = true
         this.#render()
@@ -2615,7 +2621,6 @@ export class GameView {
 
   #handleG02InspectDialogue(hotspotId: string): void {
     const triggerByHotspot: Record<string, [string, string]> = {
-      'RUNTIME-HS-G02-HANDOFF': ['SCN-G02-00', '无'],
       'RUNTIME-HS-G02-01-OBSERVE': ['SCN-G02-01', '进入救援区'],
       'RUNTIME-HS-G02-01-RESCUE-CONFIRM': ['SCN-G02-01', '救援完成'],
       'HS-G02-0011': ['SCN-G02-02', '点击主屏'],

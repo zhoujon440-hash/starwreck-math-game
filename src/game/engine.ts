@@ -135,6 +135,17 @@ export class GameEngine {
           }
         : this.chapter.scenes?.find((candidate) => candidate.id === sceneId)
     if (!scene) return { ok: false, message: '目标舱段尚未开放。' }
+    if (
+      sceneId === 'SCN-G02-00' &&
+      (this.#session.currentSceneId !== 'G02-BOUNDARY' ||
+        this.#session.flags.g01_chapter_complete !== true ||
+        this.#session.flags.g01_handoff_to_g02 !== true)
+    ) {
+      return {
+        ok: false,
+        message: '必须先完成G01序章并抵达旧屏幕谷外缘，才能进入锈环星正式开场。',
+      }
+    }
 
     const next = this.#nextSession()
     next.currentSceneId = sceneId
@@ -144,7 +155,10 @@ export class GameEngine {
       next.activeRuntimeNodeId = null
       next.safeRecovery = null
     }
-    if (sceneId === 'SCN-G02-01') {
+    if (sceneId === 'SCN-G02-00') {
+      next.flags.g02_boundary_handoff_done = true
+      next.sceneStates['G02-BOUNDARY'] = 'S1'
+    } else if (sceneId === 'SCN-G02-01') {
       if (next.flags.g02_intro_scan_done !== true) {
         return { ok: false, message: '必须先完成封存脉冲扫描，才能进入旧屏幕谷外场。' }
       }
@@ -446,25 +460,6 @@ export class GameEngine {
   }
 
   inspect(hotspotId: string): ActionResult {
-    if (
-      hotspotId === 'RUNTIME-HS-G02-HANDOFF' &&
-      this.#session.currentSceneId === 'G02-BOUNDARY'
-    ) {
-      const hotspot = this.activeHotspots().find((candidate) => candidate.id === hotspotId)
-      if (!hotspot) return { ok: false, message: '交接通道当前不可用。' }
-      const next = this.#nextSession()
-      next.completedHotspotIds.push(hotspotId)
-      next.flags.g02_boundary_handoff_done = true
-      next.currentSceneId = 'SCN-G02-00'
-      next.sceneState = 'S0'
-      next.sceneStates['G02-BOUNDARY'] = 'S1'
-      next.sceneStates['SCN-G02-00'] = 'S0'
-      next.activeRuntimeNodeId = null
-      next.safeRecovery = null
-      this.#commit(next)
-      this.saves.saveCheckpoint(this.#session)
-      return { ok: true, message: '交接完成。星宇与七码正式进入旧屏幕谷外缘。' }
-    }
     if (
       ['HS-G02-0005', 'HS-G02-0006', 'HS-G02-0007'].includes(hotspotId) &&
       this.#session.completedHotspotIds.includes(hotspotId)

@@ -46,7 +46,7 @@ V2.2 已把旧版开场航线移入 G01。因此 `G02-BOUNDARY` 只增加一个�
 
 ### G02-BOUNDARY
 
-- 单一适配热点：`RUNTIME-HS-G02-HANDOFF`
+- 单一交接动作适配：`RUNTIME-ACT-G02-HANDOFF`（不向只读边界添加热点）
 - 正式父项：V2.2 旧屏幕谷外缘交接
 - 只执行 `G02-BOUNDARY → SCN-G02-00`，不含 HOS、背包谜题或新任务链。
 

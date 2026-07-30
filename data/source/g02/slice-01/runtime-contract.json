@@ -244,10 +244,10 @@
   },
   "runtime_adapters": [
     {
-      "runtime_id": "RUNTIME-HS-G02-HANDOFF",
+      "runtime_id": "RUNTIME-ACT-G02-HANDOFF",
       "official_id": null,
       "formal_parent": "G02-BOUNDARY",
-      "reason": "V2.2 defines a read-only landing handoff but no direct hotspot id"
+      "reason": "V2.2 defines a read-only landing handoff; this runtime action advances into SCN-G02-00 without adding gameplay to the boundary"
     },
     {
       "runtime_id": "RUNTIME-STATE-G02-00-S4",

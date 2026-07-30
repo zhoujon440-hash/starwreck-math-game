@@ -22,7 +22,7 @@ test('G02 runtime art is precached and its saved scene survives offline refresh'
           foundItemIds: [],
           inventoryItemIds: [],
           usedItemIds: [],
-          completedHotspotIds: ['RUNTIME-HS-G02-HANDOFF'],
+          completedHotspotIds: [],
           completedPuzzleIds: [],
           hosProgress: {},
           puzzleProgress: {},
