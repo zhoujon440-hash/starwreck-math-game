@@ -12,11 +12,12 @@ const SOURCE_SHA256 =
 const portraitMap = <T extends readonly string[]>(
   runtimeKey: string,
   states: T,
+  assetRoot = '/assets/characters',
 ): Record<T[number], string> =>
   Object.fromEntries(
     states.map((state) => [
       state,
-      `/assets/characters/${runtimeKey}/${runtimeKey}_${state}.png`,
+      `${assetRoot}/${runtimeKey}/${runtimeKey}_${state}.png`,
     ]),
   ) as Record<T[number], string>
 
@@ -81,7 +82,11 @@ export const CHARACTERS: Record<CharacterId, CharacterDefinition> = {
     official_id: null,
     name: '阿铆',
     runtime_key: 'almao',
-    portrait_states: portraitMap('almao', almaoStates),
+    portrait_states: portraitMap(
+      'almao',
+      almaoStates,
+      '/assets/g02/slice-01/characters',
+    ),
     default_state: 'trapped',
     available_states: [...almaoStates],
     introduction_status: 'available',
@@ -98,7 +103,11 @@ export const CHARACTERS: Record<CharacterId, CharacterDefinition> = {
     official_id: null,
     name: '狰',
     runtime_key: 'zheng',
-    portrait_states: portraitMap('zheng', zhengStates),
+    portrait_states: portraitMap(
+      'zheng',
+      zhengStates,
+      '/assets/g02/slice-01/characters',
+    ),
     default_state: 'warning',
     available_states: [...zhengStates],
     introduction_status: 'available',

@@ -9,7 +9,7 @@ from PIL import Image, ImageChops, ImageEnhance, ImageFilter
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "art/runtime-production/g02-slice-01/source"
 PUBLIC = ROOT / "public/assets/g02/slice-01"
-CHARACTERS = ROOT / "public/assets/characters"
+G02_CHARACTERS = PUBLIC / "characters"
 DATA = ROOT / "data/source/g02/slice-01"
 DOCS = ROOT / "docs/art"
 CANVAS = (2560, 1440)
@@ -181,7 +181,7 @@ def save_character(runtime_key: str, state: str, sprite: Image.Image) -> None:
         sprite,
         ((canvas.width - sprite.width) // 2, canvas.height - sprite.height - 32),
     )
-    target = CHARACTERS / f"{runtime_key}/{runtime_key}_{state}.png"
+    target = G02_CHARACTERS / f"{runtime_key}/{runtime_key}_{state}.png"
     ensure_parent(target)
     canvas.save(target, "PNG", optimize=True)
 
@@ -263,12 +263,7 @@ def write_manifests() -> None:
     DATA.mkdir(parents=True, exist_ok=True)
     DOCS.mkdir(parents=True, exist_ok=True)
     runtime_files = sorted(path for path in PUBLIC.rglob("*") if path.is_file())
-    character_files = sorted(
-        path
-        for runtime_key in ("almao", "zheng")
-        for path in (CHARACTERS / runtime_key).glob("*.png")
-    )
-    records = [runtime_record(path) for path in [*runtime_files, *character_files]]
+    records = [runtime_record(path) for path in runtime_files]
     generated_inputs = [
         {
             "path": relative(path),
