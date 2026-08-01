@@ -11,6 +11,7 @@ import { G01_SCN04 } from '../scenes/g01/scn04'
 import { G01_SCN05 } from '../scenes/g01/scn05'
 import { G01_SCN06 } from '../scenes/g01/scn06'
 import { G01_SCN07, G02_BOUNDARY } from '../scenes/g01/scn07'
+import { G02_SLICE_SCENES } from './g02'
 
 const publicPath = (path: string): string => `/${path.replace(/^public\//, '')}`
 
@@ -429,6 +430,7 @@ export const G01: ChapterDefinition = {
     G01_SCN06,
     G01_SCN07,
     G02_BOUNDARY,
+    ...G02_SLICE_SCENES,
   ],
 }
 

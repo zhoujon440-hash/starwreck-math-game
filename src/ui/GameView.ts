@@ -10,6 +10,8 @@ import { DEBUG_UI } from '../config'
 import { CharacterPortrait } from '../components/characters/CharacterPortrait'
 import { characterData } from '../data/characters'
 import { G01_DIALOGUE } from '../data/dialogue/g01'
+import { G02_DIALOGUE } from '../data/dialogue/g02'
+import { g02HintById } from '../data/hints/g02'
 import { DialogueDataLoader } from '../services/DialogueDataLoader'
 import { DialogueRunner } from '../services/DialogueRunner'
 import type {
@@ -46,6 +48,7 @@ const itemById = (items: ItemDefinition[], itemId: string): ItemDefinition | und
   items.find((item) => item.id === itemId)
 
 const PLAYER_SCENE_TITLE = '拾光号熄灯'
+const HINT_COOLDOWN_MS = 1_500
 
 export class GameView {
   readonly #drag: InventoryDragCoordinator
@@ -80,10 +83,18 @@ export class GameView {
   ) {
     this.#session = engine.snapshot
     this.#dialogueRunner = new DialogueRunner(
-      new DialogueDataLoader(G01_DIALOGUE),
+      new DialogueDataLoader([...G01_DIALOGUE, ...G02_DIALOGUE]),
       engine,
     )
     this.#drag = new InventoryDragCoordinator(root, (itemId, targetId) => {
+      if (
+        itemId.startsWith('RUNTIME-G02-LABEL-') &&
+        targetId.startsWith('RUNTIME-G02-SLOT-')
+      ) {
+        const result = this.engine.assignG02ResourceLabel(itemId, targetId)
+        this.#handleResult(result)
+        return
+      }
       this.#useItem(itemId, targetId)
     })
     root.addEventListener('click', this.#handleClick)
@@ -147,6 +158,8 @@ export class GameView {
     const isScn06 = scene.id === 'SCN-G01-06'
     const isScn07 = scene.id === 'SCN-G01-07'
     const isG02Boundary = scene.id === 'G02-BOUNDARY'
+    const isG02Scene = scene.id.startsWith('SCN-G02-')
+    const isG02ReadOnly = scene.id === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY'
     const isCargoRecovery =
       isScn03 &&
       this.#session.activeRuntimeNodeId === 'SCN-G01-03:cargo-safety-door' &&
@@ -159,7 +172,11 @@ export class GameView {
       isScn07 &&
       this.#session.safeRecovery?.sceneId === scene.id &&
       this.#session.activeRuntimeNodeId === 'SCN-G01-07:orbit-safe-node'
-    const state = isCargoRecovery || isPrBRecovery || isPrCRecovery
+    const isG02Recovery =
+      isG02Scene &&
+      this.#session.safeRecovery?.sceneId === scene.id &&
+      Boolean(this.#session.activeRuntimeNodeId)
+    const state = isCargoRecovery || isPrBRecovery || isPrCRecovery || isG02Recovery
       ? {
           id: this.#session.sceneState,
           title: isCargoRecovery
@@ -193,7 +210,7 @@ export class GameView {
 
     this.root.innerHTML = this.#withBaseAssets(`
       <main
-        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery || isPrCRecovery ? 'is-cargo-safe-recovery' : ''}"
+        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery || isPrCRecovery || isG02Recovery ? 'is-cargo-safe-recovery' : ''}"
         data-debug-ui="${DEBUG_UI}"
         data-scene-id="${scene.id}"
         data-runtime-node-id="${escapeHtml(this.#session.activeRuntimeNodeId ?? 'scene-active')}"
@@ -204,7 +221,11 @@ export class GameView {
             <span class="brand-mark" aria-hidden="true">✦</span>
             <div>
               <p>星骸拾荒者：十二星门</p>
-              <span>序章 · ${escapeHtml(this.engine.chapter.title)}</span>
+              <span>${
+                isG02Scene || isG02ReadOnly || isG02Boundary
+                  ? '第二章 · 锈环星旧屏幕谷'
+                  : `序章 · ${escapeHtml(this.engine.chapter.title)}`
+              }</span>
             </div>
           </div>
 
@@ -265,6 +286,7 @@ export class GameView {
             ${isScn02 || (isScn03 && !isCargoRecovery) ? this.#prASceneLayersTemplate() : ''}
             ${isScn04 || isScn05 ? this.#prBSceneLayersTemplate() : ''}
             ${isScn06 || isScn07 || isG02Boundary ? this.#prCSceneLayersTemplate() : ''}
+            ${isG02Scene || isG02ReadOnly ? this.#g02SceneLayersTemplate() : ''}
             <div class="scene-treatment" aria-hidden="true"></div>
             <div class="foreground-layer" aria-hidden="true"></div>
             ${this.#collectibleLayersTemplate('scene')}
@@ -485,7 +507,7 @@ export class GameView {
           }
 
           ${
-            isG02Boundary
+            isG02Boundary && this.engine.currentSceneDefinition.hotspots.length === 0
               ? `
                 <section class="story-panel complete-panel demo-complete" aria-labelledby="demo-complete-title"
                   data-g01-chapter-complete="${this.#session.flags.g01_chapter_complete === true}"
@@ -493,10 +515,43 @@ export class GameView {
                   data-world-star-core-count="${Number(this.#session.flags.world_star_core_count ?? 0)}">
                   <span class="eyebrow">G01 Demo · 0.1.0</span>
                   <h2 id="demo-complete-title">序章《拾光号：坠落之前》完成</h2>
-                  <p>星宇与七码已经抵达旧屏幕谷外缘。这里仅展示G01→G02交接，不包含G02热点、找物、谜题或剧情流程。</p>
+                  <h3>旧屏幕谷外缘</h3>
+                  <p>星宇与七码已经抵达旧屏幕谷外缘。落点存档通过校验后，可继续进入锈环星正式开场。</p>
                   <div class="completion-stats"><span><b>8</b> 连续场景</span><span><b>0</b> 序章星核</span><span><b>3</b> 基础能力</span></div>
+                  <button class="primary-action" data-action="enter-g02-slice">进入旧屏幕谷</button>
                   <button class="secondary-action" data-action="open-journal">查看任务与证据</button>
                   <button class="text-action" data-action="restart">开始新游戏</button>
+                </section>
+              `
+              : ''
+          }
+          ${
+            isG02Scene && this.#session.sceneState === 'S6' && !dialogue
+              ? `
+                <section class="story-panel complete-panel g02-complete-panel" aria-labelledby="g02-scene-complete-title">
+                  <span class="eyebrow">锈环星 · 已自动保存</span>
+                  <h2 id="g02-scene-complete-title">${escapeHtml(scene.playerTitle)}完成</h2>
+                  <p>${scene.id === 'SCN-G02-00'
+                    ? '封存脉冲证据已归档。沿断卫星轴掩体进入五尾吊臂落物区。'
+                    : scene.id === 'SCN-G02-01'
+                      ? '阿铆已经获救，三类资源归属证据完整。前往旧电视墙恢复借用规则。'
+                      : '三块主屏和借用档案已恢复。档案标出了四组能量信号，先回到安全区等待路线确认。'}</p>
+                  <button class="primary-action" data-action="advance-g02">${scene.id === 'SCN-G02-02' ? '返回旧屏幕谷安全区' : '继续探索'}</button>
+                </section>
+              `
+              : ''
+          }
+
+          ${
+            isG02ReadOnly
+              ? `
+                <section class="story-panel complete-panel g02-boundary-panel" aria-labelledby="g02-boundary-title"
+                  data-world-star-core-count="${Number(this.#session.flags.world_star_core_count ?? 0)}">
+                  <span class="eyebrow">旧屏幕谷 · 已自动保存</span>
+                  <h2 id="g02-boundary-title">四组能量信号</h2>
+                  <p>发动机坑、电池洞穴、供暖棚和电线森林的信号已经标记。垃圾雨仍在谷口盘旋，星宇留在安全区等待七码确认路线。</p>
+                  <div class="completion-stats"><span><b>4</b> 能量信号</span><span><b>5</b> 线索</span><span><b>0</b> 星核</span></div>
+                  <button class="secondary-action" data-action="open-journal">查看任务与证据</button>
                 </section>
               `
               : ''
@@ -509,7 +564,9 @@ export class GameView {
                 ? this.#prBRecoveryTemplate(sceneArt)
                 : isPrCRecovery
                   ? this.#prCRecoveryTemplate(sceneArt)
-                : ''
+                  : isG02Recovery
+                    ? this.#g02RecoveryTemplate(sceneArt)
+                    : ''
           }
 
           <div class="scene-counter" aria-live="polite">
@@ -884,6 +941,7 @@ export class GameView {
   }
 
   #activeZoomTemplate(): string {
+    if (this.#session.currentSceneId === 'SCN-G02-02') return this.#g02HosTemplate()
     if (this.#session.currentSceneId === 'SCN-G01-00') return this.#cabinetTemplate()
     if (this.#session.currentSceneId === 'SCN-G01-01') return this.#qimaHosTemplate()
     if (this.#session.currentSceneId === 'SCN-G01-02') return this.#shipMapCloseupTemplate()
@@ -894,6 +952,12 @@ export class GameView {
   }
 
   #activePuzzleTemplate(): string {
+    if (this.#activeZoomId === 'RUNTIME-PUZ-G02-PULSE-SCAN') {
+      return this.#g02PulsePuzzleTemplate()
+    }
+    if (this.#activeZoomId === 'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION') {
+      return this.#g02ResourcePuzzleTemplate()
+    }
     if (this.#session.currentSceneId === 'SCN-G01-02') {
       return this.#taskDependencyPuzzleTemplate()
     }
@@ -912,6 +976,196 @@ export class GameView {
         : this.#impactDampingPuzzleTemplate()
     }
     return this.#chipPuzzleTemplate()
+  }
+
+  #g02SceneLayersTemplate(): string {
+    const sceneId = this.#session.currentSceneId
+    const layers: Array<[boolean, string, string]> =
+      sceneId === 'SCN-G02-00'
+        ? [
+            [
+              this.#session.flags.g02_sealed_pulse_located === true,
+              '/assets/g02/slice-01/scn00/states/sealed-pulse-located.png',
+              '封存脉冲已锁定',
+            ],
+            [
+              this.#session.flags.g02_intro_scan_done === true,
+              '/assets/g02/slice-01/scn00/states/sealed-pulse-scanned.png',
+              '封存脉冲已扫描',
+            ],
+          ]
+        : sceneId === 'SCN-G02-01'
+          ? [
+              [
+                this.#session.flags.g02_grapnel_installed === true,
+                '/assets/g02/slice-01/scn01/states/grapnel-installed.png',
+                '磁力挂索已安装',
+              ],
+              [
+                this.#session.flags.g02_almao_rescued === true,
+                '/assets/g02/slice-01/scn01/states/almao-rescued.png',
+                '阿铆已获救',
+              ],
+              [
+                this.#session.flags.g02_evidence_002 === true,
+                '/assets/g02/slice-01/scn01/states/label-private-scanned.png',
+                '私人资源标签已扫描',
+              ],
+              [
+                this.#session.flags.g02_evidence_003 === true,
+                '/assets/g02/slice-01/scn01/states/label-public-scanned.png',
+                '公共供暖标签已扫描',
+              ],
+              [
+                this.#session.flags.g02_evidence_004 === true,
+                '/assets/g02/slice-01/scn01/states/label-abandoned-scanned.png',
+                '废弃标签已扫描',
+              ],
+            ]
+          : [
+              [
+                this.#session.flags.g02_screen_a_restored === true,
+                '/assets/g02/slice-01/scn02/states/screen-a-restored.png',
+                '主屏A已恢复',
+              ],
+              [
+                this.#session.flags.g02_screen_b_restored === true,
+                '/assets/g02/slice-01/scn02/states/screen-b-restored.png',
+                '主屏B已恢复',
+              ],
+              [
+                this.#session.flags.g02_screen_c_restored === true,
+                '/assets/g02/slice-01/scn02/states/screen-c-restored.png',
+                '主屏C已恢复',
+              ],
+              [
+                this.#session.flags.g02_archive_restored === true,
+                '/assets/g02/slice-01/scn02/states/archive-restored.png',
+                '借用规则档案已恢复',
+              ],
+            ]
+    return layers
+      .filter(([visible]) => visible)
+      .map(
+        ([, source, label]) =>
+          `<img class="g02-state-layer" src="${source}" alt="${escapeHtml(label)}" draggable="false">`,
+      )
+      .join('')
+  }
+
+  #g02HosTemplate(): string {
+    const targets = this.engine.currentSceneDefinition.items
+    const activeTargets = this.engine
+      .activeHotspots()
+      .filter((hotspot) => hotspot.scope === 'zoom')
+    return `
+      <div class="modal-backdrop" data-action="close-cabinet"></div>
+      <section class="zoom-modal cabinet-modal g02-hos-modal" role="dialog" aria-modal="true" aria-labelledby="g02-hos-title">
+        <header>
+          <div><span class="eyebrow">旧电视墙近景</span><h2 id="g02-hos-title">屏幕碎片堆</h2></div>
+          <button class="icon-button" data-action="close-cabinet" aria-label="关闭屏幕碎片堆">×</button>
+        </header>
+        <div class="cabinet-layout">
+          <div class="cabinet-scene g02-hos-scene" role="img" aria-label="混有断线、键帽、旧标签和碎螺丝的屏幕碎片堆">
+            <img class="cabinet-art" src="/assets/g02/slice-01/scn02/HOS-G02-001_screen-scrap-closeup.webp" alt="">
+            ${this.#collectibleLayersTemplate('zoom')}
+            <div class="hotspot-layer pickable-layer">${activeTargets.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}</div>
+            <button class="hos-distractor g02-distractor d1" data-action="g02-hos-distractor" aria-label="检查破遥控器"></button>
+            <button class="hos-distractor g02-distractor d2" data-action="g02-hos-distractor" aria-label="检查普通键帽"></button>
+            <button class="hos-distractor g02-distractor d3" data-action="g02-hos-distractor" aria-label="检查废螺丝"></button>
+            <button class="hos-distractor g02-distractor d4" data-action="g02-hos-distractor" aria-label="检查旧标签"></button>
+          </div>
+          <aside class="hos-list"><span>屏幕维修清单</span><h3>在场景中找出</h3><ul>
+            ${targets
+              .map(
+                (target) =>
+                  `<li class="${this.#session.foundItemIds.includes(target.id) ? 'is-found' : ''}"><i></i>${escapeHtml(target.name)}</li>`,
+              )
+              .join('')}
+          </ul><p>目标拾取后从图层消失；镜面屏片会保留在背包中。</p></aside>
+        </div>
+      </section>
+    `
+  }
+
+  #g02PulsePuzzleTemplate(): string {
+    const controls = [
+      { id: 'interval', label: '脉冲间隔', decrease: '缩短脉冲间隔', increase: '延长脉冲间隔' },
+      { id: 'gain', label: '扫描增益', decrease: '降低扫描增益', increase: '提高扫描增益' },
+      { id: 'window', label: '取样窗口', decrease: '缩短取样窗口', increase: '延长取样窗口' },
+    ] as const
+    const controlTemplate = (control: (typeof controls)[number]): string => {
+      const value = Number(this.#session.puzzleProgress[`g02_pulse_${control.id}`] ?? 1)
+      return `
+        <div class="pulse-control" data-pulse-control="${control.id}" data-control-value="${value}">
+          <span>${control.label}</span>
+          <button data-action="g02-pulse-adjust" data-control="${control.id}" data-delta="-1" aria-label="${control.decrease}">−</button>
+          <div class="pulse-control-meter" role="meter" aria-label="${control.label}当前档位" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${value}">
+            ${[1, 2, 3, 4].map((tick) => `<i class="${tick <= value ? 'is-active' : ''}"></i>`).join('')}
+          </div>
+          <button data-action="g02-pulse-adjust" data-control="${control.id}" data-delta="1" aria-label="${control.increase}">+</button>
+        </div>`
+    }
+    return `
+      <div class="modal-backdrop" data-action="close-puzzle"></div>
+      <section class="zoom-modal puzzle-modal g02-pulse-puzzle" role="dialog" aria-modal="true" aria-labelledby="g02-pulse-title">
+        <header><div><span class="eyebrow">七码扫描 · 已授权能力</span><h2 id="g02-pulse-title">封存脉冲取样窗</h2></div>
+          <button class="icon-button" data-action="close-puzzle" aria-label="关闭封存脉冲取样">×</button></header>
+        <p>读取屏幕上的高低脉冲，把三个取样控制量调到与波形同步的位置。</p>
+        <div class="pulse-waveform" role="img" aria-label="两组等长高脉冲，中间有较短低谷的扫描波形">
+          <span class="pulse-group">${'<i></i>'.repeat(3)}</span>
+          <span class="pulse-gap">${'<i></i>'.repeat(2)}</span>
+          <span class="pulse-group">${'<i></i>'.repeat(3)}</span>
+          <b class="pulse-sweep" aria-hidden="true"></b>
+        </div>
+        <div class="pulse-control-bank">${controls.map(controlTemplate).join('')}</div>
+        <button class="primary-action pulse-sample-action" data-action="g02-pulse-sample">封存当前取样</button>
+      </section>
+    `
+  }
+
+  #g02ResourcePuzzleTemplate(): string {
+    const labels = [
+      { id: 'RUNTIME-G02-LABEL-DOUBLE-RING', aria: '带双环磨损的资源标签', className: 'double-ring' },
+      { id: 'RUNTIME-G02-LABEL-THREE-LINK', aria: '带三路接头的资源标签', className: 'three-link' },
+      { id: 'RUNTIME-G02-LABEL-BROKEN-EDGE', aria: '带断裂边缘的资源标签', className: 'broken-edge' },
+    ]
+    const slots = [
+      { id: 'RUNTIME-G02-SLOT-PRIVATE', label: '私人储物箱', mark: '私' },
+      { id: 'RUNTIME-G02-SLOT-PUBLIC-HEAT', label: '公共供暖箱', mark: '暖' },
+      { id: 'RUNTIME-G02-SLOT-DISCARDED', label: '废弃回收箱', mark: '弃' },
+    ]
+    const assignment = (labelId: string): string | undefined => {
+      const value = this.#session.puzzleProgress[`g02_resource_assignment_${labelId}`]
+      return typeof value === 'string' ? value : undefined
+    }
+    const token = (label: (typeof labels)[number]): string => `
+      <div class="resource-label-token ${label.className}" draggable="true"
+        data-mechanism-item="${label.id}" aria-label="${label.aria}" role="img">
+        <span class="label-core" aria-hidden="true"></span>
+        <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
+      </div>`
+    return `
+      <div class="modal-backdrop" data-action="close-puzzle"></div>
+      <section class="zoom-modal puzzle-modal g02-resource-puzzle" role="dialog" aria-modal="true" aria-labelledby="g02-resource-title">
+        <header><div><span class="eyebrow">证据分析</span><h2 id="g02-resource-title">三类资源归属</h2></div>
+          <button class="icon-button" data-action="close-puzzle" aria-label="关闭资源归属分析">×</button></header>
+        <p>拖动三枚标签，依据磨损轮廓和接头数量放回仍在使用它们的资源箱。</p>
+        <div class="resource-label-tray" aria-label="待归位标签">
+          ${labels.filter((label) => !assignment(label.id)).map(token).join('') || '<span class="tray-empty">标签已全部离开托盘</span>'}
+        </div>
+        <div class="resource-slot-grid">
+          ${slots.map((slot) => {
+            const placed = labels.find((label) => assignment(label.id) === slot.id)
+            return `<div class="resource-slot ${placed ? 'is-filled' : ''}" data-drop-target="${slot.id}" data-resource-slot="${slot.id}" aria-label="${slot.label}归位槽">
+              <strong><b>${slot.mark}</b>${slot.label}</strong>
+              <span>${placed ? token(placed) : '拖入标签'}</span>
+            </div>`
+          }).join('')}
+        </div>
+        <button class="primary-action resource-submit-action" data-action="g02-resource-submit">确认资源归属</button>
+      </section>
+    `
   }
 
   #prCSceneLayersTemplate(): string {
@@ -1488,6 +1742,37 @@ export class GameView {
     `
   }
 
+  #g02RecoveryTemplate(sceneArt: string): string {
+    const recovery = this.#session.safeRecovery
+    if (!recovery) return ''
+    const g02EvidenceCount = ['001', '002', '003', '004', '005'].filter(
+      (suffix) => this.#session.flags[`g02_evidence_${suffix}`] === true,
+    ).length
+    const hosCount = this.#session.hosProgress['HOS-G02-001']?.length ?? 0
+    return `
+      <section class="cargo-safe-recovery-node g02-safe-recovery"
+        data-safe-recovery-node="${escapeHtml(recovery.nodeId)}"
+        data-pre-failure-state="${recovery.preFailureState}"
+        data-resume-state="${recovery.resumeState ?? recovery.preFailureState}"
+        style="--safe-node-art:url('${sceneArt}')"
+        aria-labelledby="g02-recovery-title">
+        <div class="cargo-recovery-panel">
+          <span class="eyebrow">锈环星安全恢复节点</span>
+          <h2 id="g02-recovery-title">危险操作已中止</h2>
+          <p>随身物品与已经确认的线索都还在；继续后回到刚才中止的位置。</p>
+          <ul>
+            <li>背包：${this.#session.inventoryItemIds.length} 件保留</li>
+            <li>证据：${g02EvidenceCount} 项保留</li>
+            <li>已找回部件：${hosCount} / 6</li>
+            <li>已完成操作：${this.#session.completedHotspotIds.length} 项</li>
+            <li>恢复位置：最近安全步骤</li>
+          </ul>
+          <button class="primary-action" data-action="resume-g02">保留进度继续</button>
+        </div>
+      </section>
+    `
+  }
+
   #scn01SceneLayersTemplate(): string {
     const qimaState =
       this.#session.characterStates['CHAR-QIMA'] ??
@@ -1779,7 +2064,9 @@ export class GameView {
           }
           if (
             result.ok &&
-            ['SCN-G01-03', 'SCN-G01-04', 'SCN-G01-06'].includes(this.#session.currentSceneId) &&
+            ['SCN-G01-03', 'SCN-G01-04', 'SCN-G01-06', 'SCN-G02-02'].includes(
+              this.#session.currentSceneId,
+            ) &&
             this.#session.sceneState !== 'S1'
           ) {
             this.#cabinetOpen = false
@@ -1865,6 +2152,12 @@ export class GameView {
       case 'enter-g02-boundary':
         this.#handleResult(this.engine.completeG01Handoff())
         break
+      case 'enter-g02-slice': {
+        const result = this.engine.enterScene('SCN-G02-00')
+        this.#handleResult(result)
+        if (result.ok) this.#dialogueRunner.startTrigger('SCN-G02-00', '无')
+        break
+      }
       case 'open-menu':
         this.#menuOpen = true
         this.#render()
@@ -1922,6 +2215,8 @@ export class GameView {
             'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT',
             'RUNTIME-PUZ-G01-LANDING-TRIANGULATION',
             'RUNTIME-PUZ-G01-IMPACT-DAMPING',
+            'RUNTIME-PUZ-G02-PULSE-SCAN',
+            'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION',
           ].includes(this.#activeZoomId ?? '')
         ) {
           this.#puzzleOpen = true
@@ -2070,6 +2365,38 @@ export class GameView {
         }
         break
       }
+      case 'g02-pulse-adjust': {
+        const control = actionElement.dataset.control
+        if (!['interval', 'gain', 'window'].includes(control ?? '')) break
+        const key = `g02_pulse_${control}`
+        const current = Number(this.#session.puzzleProgress[key] ?? 1)
+        const delta = Number(actionElement.dataset.delta ?? 0)
+        this.#handleResult(
+          this.engine.setG02PulseControl(
+            control as 'interval' | 'gain' | 'window',
+            current + delta,
+          ),
+        )
+        break
+      }
+      case 'g02-pulse-sample': {
+        const result = this.engine.submitG02PulseSample()
+        if (result.ok) {
+          this.#puzzleOpen = false
+          this.#activeZoomId = null
+        }
+        this.#handleResult(result)
+        break
+      }
+      case 'g02-resource-submit': {
+        const result = this.engine.submitG02ResourceClassification()
+        if (result.ok) {
+          this.#puzzleOpen = false
+          this.#activeZoomId = null
+        }
+        this.#handleResult(result)
+        break
+      }
       case 'dismiss-complete':
         this.#completionPanelDismissed = true
         this.#render()
@@ -2089,6 +2416,9 @@ export class GameView {
       case 'signal-distractor':
         this.#showToast('这件零件无法复原求救波形，会留在接收器中。')
         break
+      case 'g02-hos-distractor':
+        this.#showToast('这是干扰物：材质或磨损边缘与电视墙接口不匹配，留在原处。')
+        break
       case 'inspect': {
         const hotspotId = actionElement.dataset.hotspotId
         if (hotspotId) {
@@ -2102,6 +2432,7 @@ export class GameView {
           }
           const result = this.engine.inspect(hotspotId)
           this.#handleResult(result)
+          if (result.ok) this.#handleG02InspectDialogue(hotspotId)
           if (
             result.ok &&
             this.#session.currentSceneId === 'SCN-G01-01' &&
@@ -2224,6 +2555,16 @@ export class GameView {
       case 'resume-pr-c':
         this.#handleResult(this.engine.resumePrCAfterSoftFailure())
         break
+      case 'resume-g02':
+        this.#handleResult(this.engine.resumeG02AfterSoftFailure())
+        break
+      case 'advance-g02':
+        this.#selectedItemId = null
+        this.#cabinetOpen = false
+        this.#puzzleOpen = false
+        this.#activeZoomId = null
+        this.#handleResult(this.engine.advanceG02Slice())
+        break
       case 'hint':
         this.#requestHint()
         break
@@ -2311,6 +2652,17 @@ export class GameView {
     this.#handleResult(result)
   }
 
+  #handleG02InspectDialogue(hotspotId: string): void {
+    const triggerByHotspot: Record<string, [string, string]> = {
+      'RUNTIME-HS-G02-01-OBSERVE': ['SCN-G02-01', '进入救援区'],
+      'RUNTIME-HS-G02-01-RESCUE-CONFIRM': ['SCN-G02-01', '救援完成'],
+      'HS-G02-0011': ['SCN-G02-02', '点击主屏'],
+      'RUNTIME-HS-G02-02-ARCHIVE': ['SCN-G02-02', '档案播放完成'],
+    }
+    const trigger = triggerByHotspot[hotspotId]
+    if (trigger) this.#dialogueRunner.startTrigger(trigger[0], trigger[1])
+  }
+
   #requestHint(): void {
     if (Date.now() < this.#hintAvailableAt) return
     const result = this.engine.requestHint(this.#cabinetOpen ? 'zoom' : 'scene')
@@ -2320,14 +2672,22 @@ export class GameView {
     }
 
     if (result.hotspot.scope === 'zoom') this.#cabinetOpen = true
-    this.#hintAvailableAt = Date.now() + 7_000
-    if (result.level === 3) this.#hintedHotspotId = result.hotspot.id
+    this.#hintAvailableAt = Date.now() + HINT_COOLDOWN_MS
+    if (result.level >= 2) this.#hintedHotspotId = result.hotspot.id
     this.#render()
     this.#showToast(this.#hintCopy(result))
 
     if (
       result.level === 3 &&
-      ['SCN-G01-04', 'SCN-G01-05', 'SCN-G01-06', 'SCN-G01-07'].includes(
+      [
+        'SCN-G01-04',
+        'SCN-G01-05',
+        'SCN-G01-06',
+        'SCN-G01-07',
+        'SCN-G02-00',
+        'SCN-G02-01',
+        'SCN-G02-02',
+      ].includes(
         this.#session.currentSceneId,
       )
     ) {
@@ -2405,12 +2765,17 @@ export class GameView {
     this.#hintTimer = window.setTimeout(() => {
       this.#hintedHotspotId = null
       this.#render()
-    }, 3_800)
-    window.setTimeout(() => this.#render(), 7_000)
+    }, 1_250)
+    window.setTimeout(() => this.#render(), HINT_COOLDOWN_MS)
   }
 
   #hintCopy(result: HintResult): string {
     const { hotspot, level } = result
+    const g02Hint = g02HintById(result.hintId)
+    if (g02Hint) {
+      const levelName = { 1: '一级', 2: '二级', 3: '三级' }[level]
+      return `${levelName}提示：${g02Hint.text}`
+    }
     if (this.#session.currentSceneId === 'SCN-G01-04') {
       if (level === 1) return '一级提示：先观察碎片边缘与十二星门环的机械编号。'
       if (level === 2) return '二级提示：锈环星坐标位于反复删除自身的信号源。'
@@ -2571,6 +2936,10 @@ export class GameView {
   }
 
   #journalTemplate(): string {
+    const isG02Context =
+      this.#session.currentSceneId === 'G02-BOUNDARY' ||
+      this.#session.currentSceneId.startsWith('SCN-G02-') ||
+      this.#session.currentSceneId === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY'
     const tasks = [
       ['恢复拾光号应急照明', this.#session.sceneStates['SCN-G01-00'] === 'S6'],
       ['修复七码导航核心', this.#session.sceneStates['SCN-G01-01'] === 'S6'],
@@ -2580,6 +2949,9 @@ export class GameView {
       ['穿过垃圾雨航线', this.#session.sceneStates['SCN-G01-05'] === 'S6'],
       ['锁定锈环星求救源', this.#session.sceneStates['SCN-G01-06'] === 'S6'],
       ['抵达旧屏幕谷外缘', this.#session.flags.g01_scn07_complete === true],
+      ['扫描蓝色封存脉冲', this.#session.flags.g02_intro_scan_done === true],
+      ['救下阿铆并识别三类资源', this.#session.flags.g02_almao_rescued === true && Number(this.#session.flags.g02_resource_labels ?? 0) === 3],
+      ['恢复旧电视墙借用档案', this.#session.flags.g02_archive_restored === true],
     ] as const
     const evidence = [
       ['货舱漏气记录', this.#session.flags.g01_scn03_evidence_leak_confirmed === true],
@@ -2587,11 +2959,16 @@ export class GameView {
       ['锈环星异常信号', this.#session.flags.g01_scn04_evidence_anomaly === true],
       ['锈环星求救记录', this.#session.flags.g01_scn06_evidence_distress_record === true],
       ['旧屏幕谷落点扫描', this.#session.flags.g01_scn07_evidence_landing_scan === true],
+      ['管理员封存脉冲', this.#session.flags.g02_evidence_001 === true],
+      ['私人资源归属标签', this.#session.flags.g02_evidence_002 === true],
+      ['公共供暖资源标签', this.#session.flags.g02_evidence_003 === true],
+      ['废弃资源标签', this.#session.flags.g02_evidence_004 === true],
+      ['借用规则档案', this.#session.flags.g02_evidence_005 === true],
     ] as const
     return `
       <div class="modal-backdrop" data-action="close-journal"></div>
       <section class="story-modal journal-modal" role="dialog" aria-modal="true" aria-labelledby="journal-title">
-        <header><div><span class="eyebrow">星宇的序章记录</span><h2 id="journal-title">任务与证据</h2></div>
+        <header><div><span class="eyebrow">${isG02Context ? '星宇的锈环星记录' : '星宇的序章记录'}</span><h2 id="journal-title">任务与证据</h2></div>
           <button class="icon-button" data-action="close-journal" aria-label="关闭任务与证据">×</button>
         </header>
         <div class="journal-grid">
@@ -2616,14 +2993,20 @@ export class GameView {
   }
 
   #menuTemplate(): string {
+    const isG02Context =
+      this.#session.currentSceneId === 'G02-BOUNDARY' ||
+      this.#session.currentSceneId.startsWith('SCN-G02-') ||
+      this.#session.currentSceneId === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY'
     return `
       <div class="modal-backdrop" data-action="close-menu"></div>
       <section class="story-modal demo-menu-modal" role="dialog" aria-modal="true" aria-labelledby="demo-menu-title">
-        <header><div><span class="eyebrow">G01 Demo · 0.1.0</span><h2 id="demo-menu-title">拾光号：坠落之前</h2></div>
+        <header><div><span class="eyebrow">${isG02Context ? 'G02 Slice · 0.1.0' : 'G01 Demo · 0.1.0'}</span><h2 id="demo-menu-title">${isG02Context ? '锈环星：旧屏幕谷' : '拾光号：坠落之前'}</h2></div>
           <button class="icon-button" data-action="close-menu" aria-label="关闭主菜单">×</button>
         </header>
         <div class="demo-menu-copy">
-          <p>连续探索八个场景：观察高清场景、局部放大找物、把背包道具拖到正确机关，并在危险时从安全节点继续。</p>
+          <p>${isG02Context
+            ? '从旧屏幕谷外缘连续经历封存脉冲扫描、阿铆救援与资源标签调查、电视墙找物和借用档案修复。'
+            : '连续探索八个场景：观察高清场景、局部放大找物、把背包道具拖到正确机关，并在危险时从安全节点继续。'}</p>
           <ul><li>进度会自动保存在本设备。</li><li>三级提示会完成当前合法步骤。</li><li>安装PWA后，首次完整加载完成即可离线继续。</li></ul>
           <div class="demo-menu-actions">
             <button class="primary-action" data-action="continue-game">继续游戏</button>
@@ -2649,6 +3032,11 @@ export class GameView {
       proud: '确认记录',
       awkward: '迟疑',
       scanning: '扫描中',
+      trapped: '受困',
+      relieved: '脱险',
+      concerned: '担忧',
+      measured: '核验',
+      silent: '静默',
     }
     return labels[state] ?? '状态未知'
   }
