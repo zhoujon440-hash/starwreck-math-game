@@ -9,6 +9,7 @@ import type {
   SceneDefinition,
   SceneStateId,
 } from './types'
+import { g02HintById, g02HintFor } from '../data/hints/g02'
 import type { SaveRepository } from './save'
 
 type Listener = (session: GameSession) => void
@@ -218,7 +219,7 @@ export class GameEngine {
       'SCN-G02-01': '星宇沿断卫星轴掩体进入五尾吊臂落物区。',
       'SCN-G02-02': '救援记录已保存，星宇和阿铆来到旧电视墙。',
       'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY':
-        '借用规则档案已恢复；后续能源搜索分支保持只读。',
+        '借用规则档案已恢复；四组能量信号已经标记，先在安全区等待路线确认。',
       'SCN-G01-00': '星宇返回领航舱。',
       'SCN-G01-01': '星宇进入导航核心舱。',
       'SCN-G01-02': '星宇和七码来到中控任务台。',
@@ -435,6 +436,13 @@ export class GameEngine {
       ) {
         return { ok: false, message: '扫描必须在断卫星轴掩体后，并使用已授权的七码能力。' }
       }
+      if (
+        Number(next.puzzleProgress.g02_pulse_interval ?? 1) !== 3 ||
+        Number(next.puzzleProgress.g02_pulse_gain ?? 1) !== 2 ||
+        Number(next.puzzleProgress.g02_pulse_window ?? 1) !== 3
+      ) {
+        return { ok: false, message: '取样控制量尚未与可见波形同步。' }
+      }
       next.flags.g02_pulse_scan_sampled = true
       next.puzzleProgress.g02_pulse_scan = '3-2-3:sealed-sample'
     } else if (puzzleId === 'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION') {
@@ -444,6 +452,19 @@ export class GameEngine {
         Number(next.flags.g02_resource_labels ?? 0) !== 3
       ) {
         return { ok: false, message: '需要先真实扫描私人、公共供暖和废弃三类标签。' }
+      }
+      const requiredAssignments: Record<string, string> = {
+        'RUNTIME-G02-LABEL-DOUBLE-RING': 'RUNTIME-G02-SLOT-PRIVATE',
+        'RUNTIME-G02-LABEL-THREE-LINK': 'RUNTIME-G02-SLOT-PUBLIC-HEAT',
+        'RUNTIME-G02-LABEL-BROKEN-EDGE': 'RUNTIME-G02-SLOT-DISCARDED',
+      }
+      if (
+        !Object.entries(requiredAssignments).every(
+          ([label, slot]) =>
+            next.puzzleProgress[`g02_resource_assignment_${label}`] === slot,
+        )
+      ) {
+        return { ok: false, message: '三枚资源标签尚未全部进入正确实体槽。' }
       }
       next.flags.g02_resource_classification_complete = true
       next.puzzleProgress.g02_resource_classification =
@@ -686,12 +707,28 @@ export class GameEngine {
     const next = this.#nextSession()
     const hint = candidates[0]
     if (!hint) return null
-    const previousLevel = next.hintLevels[hint.id] ?? 0
+    const g02TaskId = this.#session.currentSceneId.startsWith('SCN-G02-')
+      ? g02HintFor(this.#session.currentSceneId, 1)?.taskId
+      : undefined
+    const g02Level = Math.min(
+      3,
+      (next.hintLevels[g02TaskId ?? hint.id] ?? 0) + 1,
+    ) as 1 | 2 | 3
+    const g02Hint = g02TaskId
+      ? g02HintFor(this.#session.currentSceneId, g02Level)
+      : undefined
+    const taskId = g02Hint?.taskId ?? hint.id
+    const previousLevel = next.hintLevels[taskId] ?? 0
     const level = Math.min(3, previousLevel + 1) as 1 | 2 | 3
-    next.hintLevels[hint.id] = level
+    next.hintLevels[taskId] = level
     next.hintCount += 1
     this.#commit(next)
-    return { hotspot: hint, level }
+    return {
+      hotspot: hint,
+      level,
+      hintId: g02Hint?.hintId,
+      taskId: g02Hint?.taskId,
+    }
   }
 
   completeHintStep(hint: HintResult): ActionResult {
@@ -713,6 +750,10 @@ export class GameEngine {
       return { ok: false, message: '当前场景继续使用原有提示行为。' }
     }
 
+    if (sceneId.startsWith('SCN-G02-')) {
+      return this.#advanceG02HintStep(hint)
+    }
+
     if (hint.hotspot.kind === 'hidden-item' && hint.hotspot.itemId) {
       return this.findItem(hint.hotspot.itemId)
     }
@@ -731,13 +772,150 @@ export class GameEngine {
         'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT',
         'RUNTIME-PUZ-G01-LANDING-TRIANGULATION',
         'RUNTIME-PUZ-G01-IMPACT-DAMPING',
-        'RUNTIME-PUZ-G02-PULSE-SCAN',
-        'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION',
       ].includes(hint.hotspot.zoomId)
     ) {
       return this.completePuzzle(hint.hotspot.zoomId)
     }
     return { ok: false, message: '当前没有可由提示完成的合法步骤。' }
+  }
+
+  setG02PulseControl(
+    control: 'interval' | 'gain' | 'window',
+    value: number,
+  ): ActionResult {
+    if (
+      this.#session.currentSceneId !== 'SCN-G02-00' ||
+      this.#session.sceneState !== 'S2'
+    ) {
+      return { ok: false, message: '当前不在封存脉冲取样窗。' }
+    }
+    const normalized = Math.max(1, Math.min(4, Math.round(value)))
+    const next = this.#nextSession()
+    next.puzzleProgress[`g02_pulse_${control}`] = normalized
+    this.#commit(next)
+    return { ok: true, message: '取样控制量已调整；等待观察波形反馈。' }
+  }
+
+  submitG02PulseSample(): ActionResult {
+    const targets = { interval: 3, gain: 2, window: 3 } as const
+    const matches = Object.entries(targets).every(
+      ([control, value]) =>
+        Number(this.#session.puzzleProgress[`g02_pulse_${control}`] ?? 1) === value,
+    )
+    if (!matches) {
+      return {
+        ok: false,
+        message: '取样窗口与波形没有同步；当前控制量保留，可以继续校准。',
+      }
+    }
+    return this.completePuzzle('RUNTIME-PUZ-G02-PULSE-SCAN')
+  }
+
+  assignG02ResourceLabel(labelId: string, slotId: string): ActionResult {
+    const assignments: Record<string, string> = {
+      'RUNTIME-G02-LABEL-DOUBLE-RING': 'RUNTIME-G02-SLOT-PRIVATE',
+      'RUNTIME-G02-LABEL-THREE-LINK': 'RUNTIME-G02-SLOT-PUBLIC-HEAT',
+      'RUNTIME-G02-LABEL-BROKEN-EDGE': 'RUNTIME-G02-SLOT-DISCARDED',
+    }
+    if (
+      this.#session.currentSceneId !== 'SCN-G02-01' ||
+      this.#session.sceneState !== 'S5' ||
+      Number(this.#session.flags.g02_resource_labels ?? 0) !== 3
+    ) {
+      return { ok: false, message: '需要先扫描三只资源箱，才能移动归属标签。' }
+    }
+    if (assignments[labelId] !== slotId) {
+      return {
+        ok: false,
+        message: '磨损轮廓与这个资源槽不吻合；正确归位的标签保持不动。',
+      }
+    }
+    const progressKey = `g02_resource_assignment_${labelId}`
+    if (this.#session.puzzleProgress[progressKey] === slotId) {
+      return { ok: false, message: '这枚标签已经归位。' }
+    }
+    const next = this.#nextSession()
+    next.puzzleProgress[progressKey] = slotId
+    this.#commit(next)
+    return { ok: true, message: '一枚标签已归位；其余资源关系仍需判断。' }
+  }
+
+  submitG02ResourceClassification(): ActionResult {
+    const assignments: Record<string, string> = {
+      'RUNTIME-G02-LABEL-DOUBLE-RING': 'RUNTIME-G02-SLOT-PRIVATE',
+      'RUNTIME-G02-LABEL-THREE-LINK': 'RUNTIME-G02-SLOT-PUBLIC-HEAT',
+      'RUNTIME-G02-LABEL-BROKEN-EDGE': 'RUNTIME-G02-SLOT-DISCARDED',
+    }
+    const complete = Object.entries(assignments).every(
+      ([label, slot]) =>
+        this.#session.puzzleProgress[`g02_resource_assignment_${label}`] === slot,
+    )
+    if (!complete) {
+      return { ok: false, message: '仍有标签没有归位；已确认的标签保持不动。' }
+    }
+    return this.completePuzzle('RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION')
+  }
+
+  #advanceG02HintStep(hint: HintResult): ActionResult {
+    const definition = g02HintById(hint.hintId)
+    if (!definition || definition.level !== 3) {
+      return { ok: false, message: '当前提示缺少可执行的正式效果。' }
+    }
+
+    if (definition.effect === 'advance_pulse_control') {
+      if (this.#session.sceneState !== 'S2') {
+        return { ok: false, message: '先进入封存脉冲取样窗，再让七码校准一个控制量。' }
+      }
+      const targets = { interval: 3, gain: 2, window: 3 } as const
+      const control = (Object.keys(targets) as Array<keyof typeof targets>).find(
+        (candidate) =>
+          Number(this.#session.puzzleProgress[`g02_pulse_${candidate}`] ?? 1) !==
+          targets[candidate],
+      )
+      if (!control) return { ok: false, message: '三个控制量都已校准，请亲自封存取样。' }
+      return this.setG02PulseControl(control, targets[control])
+    }
+
+    if (definition.effect === 'assign_one_resource_label') {
+      if (this.#session.sceneState !== 'S5') {
+        return { ok: false, message: '先完成三类资源扫描，再让七码归位一枚标签。' }
+      }
+      const assignments: Array<[string, string]> = [
+        ['RUNTIME-G02-LABEL-DOUBLE-RING', 'RUNTIME-G02-SLOT-PRIVATE'],
+        ['RUNTIME-G02-LABEL-THREE-LINK', 'RUNTIME-G02-SLOT-PUBLIC-HEAT'],
+        ['RUNTIME-G02-LABEL-BROKEN-EDGE', 'RUNTIME-G02-SLOT-DISCARDED'],
+      ]
+      const nextAssignment = assignments.find(
+        ([label, slot]) =>
+          this.#session.puzzleProgress[`g02_resource_assignment_${label}`] !== slot,
+      )
+      if (!nextAssignment) return { ok: false, message: '三枚标签都已归位，请亲自确认归属。' }
+      const next = this.#nextSession()
+      next.puzzleProgress[`g02_resource_assignment_${nextAssignment[0]}`] =
+        nextAssignment[1]
+      this.#commit(next)
+      return { ok: true, message: '七码只归位了一枚合法标签，谜题仍未完成。' }
+    }
+
+    if (definition.effect === 'install_one_power_key') {
+      const keyTargets = this.activeHotspots().filter(
+        (candidate) =>
+          candidate.kind === 'use-target' &&
+          candidate.requiredItemId?.startsWith('ITM-G02-00') &&
+          !candidate.requiredItemId.startsWith('RUNTIME-ITM-G02-005'),
+      )
+      const target = keyTargets.find(
+        (candidate) =>
+          candidate.requiredItemId &&
+          this.#session.inventoryItemIds.includes(candidate.requiredItemId),
+      )
+      if (!target?.requiredItemId) {
+        return { ok: false, message: '当前没有已取得且可安装的电源键；先完成屏幕碎片堆找物。' }
+      }
+      return this.useItem(target.requiredItemId, target.id)
+    }
+
+    return { ok: false, message: '这个提示只提供观察信息，不代替操作。' }
   }
 
   advanceG02Slice(): ActionResult {

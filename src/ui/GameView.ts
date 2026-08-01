@@ -11,6 +11,7 @@ import { CharacterPortrait } from '../components/characters/CharacterPortrait'
 import { characterData } from '../data/characters'
 import { G01_DIALOGUE } from '../data/dialogue/g01'
 import { G02_DIALOGUE } from '../data/dialogue/g02'
+import { g02HintById } from '../data/hints/g02'
 import { DialogueDataLoader } from '../services/DialogueDataLoader'
 import { DialogueRunner } from '../services/DialogueRunner'
 import type {
@@ -47,6 +48,7 @@ const itemById = (items: ItemDefinition[], itemId: string): ItemDefinition | und
   items.find((item) => item.id === itemId)
 
 const PLAYER_SCENE_TITLE = '拾光号熄灯'
+const HINT_COOLDOWN_MS = 1_500
 
 export class GameView {
   readonly #drag: InventoryDragCoordinator
@@ -85,6 +87,14 @@ export class GameView {
       engine,
     )
     this.#drag = new InventoryDragCoordinator(root, (itemId, targetId) => {
+      if (
+        itemId.startsWith('RUNTIME-G02-LABEL-') &&
+        targetId.startsWith('RUNTIME-G02-SLOT-')
+      ) {
+        const result = this.engine.assignG02ResourceLabel(itemId, targetId)
+        this.#handleResult(result)
+        return
+      }
       this.#useItem(itemId, targetId)
     })
     root.addEventListener('click', this.#handleClick)
@@ -525,8 +535,8 @@ export class GameView {
                     ? '封存脉冲证据已归档。沿断卫星轴掩体进入五尾吊臂落物区。'
                     : scene.id === 'SCN-G02-01'
                       ? '阿铆已经获救，三类资源归属证据完整。前往旧电视墙恢复借用规则。'
-                      : '三块主屏和借用档案已恢复。下一组能源搜索分支在本切片中保持只读。'}</p>
-                  <button class="primary-action" data-action="advance-g02">${scene.id === 'SCN-G02-02' ? '查看能源搜索边界' : '继续探索'}</button>
+                      : '三块主屏和借用档案已恢复。档案标出了四组能量信号，先回到安全区等待路线确认。'}</p>
+                  <button class="primary-action" data-action="advance-g02">${scene.id === 'SCN-G02-02' ? '返回旧屏幕谷安全区' : '继续探索'}</button>
                 </section>
               `
               : ''
@@ -537,10 +547,10 @@ export class GameView {
               ? `
                 <section class="story-panel complete-panel g02-boundary-panel" aria-labelledby="g02-boundary-title"
                   data-world-star-core-count="${Number(this.#session.flags.world_star_core_count ?? 0)}">
-                  <span class="eyebrow">G02-SLICE-0.1.0</span>
-                  <h2 id="g02-boundary-title">能源搜索分支之前</h2>
-                  <p>档案指向发动机坑、电池洞穴、供暖棚和电线森林。本版本只展示分支边界，不发放物品、不开放热点、不写入后续变量。</p>
-                  <div class="completion-stats"><span><b>3</b> 正式场景</span><span><b>5</b> 证据</span><span><b>0</b> 星核</span></div>
+                  <span class="eyebrow">旧屏幕谷 · 已自动保存</span>
+                  <h2 id="g02-boundary-title">四组能量信号</h2>
+                  <p>发动机坑、电池洞穴、供暖棚和电线森林的信号已经标记。垃圾雨仍在谷口盘旋，星宇留在安全区等待七码确认路线。</p>
+                  <div class="completion-stats"><span><b>4</b> 能量信号</span><span><b>5</b> 线索</span><span><b>0</b> 星核</span></div>
                   <button class="secondary-action" data-action="open-journal">查看任务与证据</button>
                 </section>
               `
@@ -1079,39 +1089,81 @@ export class GameView {
   }
 
   #g02PulsePuzzleTemplate(): string {
-    const step = Number(this.#session.puzzleProgress.g02_pulse_scan_step ?? 0)
-    const labels = ['等待三格稳定间隔', '压低两格扫描增益', '在第三次脉冲封存取样']
+    const controls = [
+      { id: 'interval', label: '脉冲间隔', decrease: '缩短脉冲间隔', increase: '延长脉冲间隔' },
+      { id: 'gain', label: '扫描增益', decrease: '降低扫描增益', increase: '提高扫描增益' },
+      { id: 'window', label: '取样窗口', decrease: '缩短取样窗口', increase: '延长取样窗口' },
+    ] as const
+    const controlTemplate = (control: (typeof controls)[number]): string => {
+      const value = Number(this.#session.puzzleProgress[`g02_pulse_${control.id}`] ?? 1)
+      return `
+        <div class="pulse-control" data-pulse-control="${control.id}" data-control-value="${value}">
+          <span>${control.label}</span>
+          <button data-action="g02-pulse-adjust" data-control="${control.id}" data-delta="-1" aria-label="${control.decrease}">−</button>
+          <div class="pulse-control-meter" role="meter" aria-label="${control.label}当前档位" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${value}">
+            ${[1, 2, 3, 4].map((tick) => `<i class="${tick <= value ? 'is-active' : ''}"></i>`).join('')}
+          </div>
+          <button data-action="g02-pulse-adjust" data-control="${control.id}" data-delta="1" aria-label="${control.increase}">+</button>
+        </div>`
+    }
     return `
       <div class="modal-backdrop" data-action="close-puzzle"></div>
       <section class="zoom-modal puzzle-modal g02-pulse-puzzle" role="dialog" aria-modal="true" aria-labelledby="g02-pulse-title">
         <header><div><span class="eyebrow">七码扫描 · 已授权能力</span><h2 id="g02-pulse-title">封存脉冲取样窗</h2></div>
           <button class="icon-button" data-action="close-puzzle" aria-label="关闭封存脉冲取样">×</button></header>
-        <p>观察 3—2—3 的重复间隔，把取样操作嵌入真实扫描过程。</p>
-        <div class="g02-mechanism-steps">${labels
-          .map(
-            (label, index) =>
-              `<button data-action="g02-pulse-step" data-step-index="${index}" class="${index < step ? 'is-complete' : ''}"><span>${index + 1}</span>${label}</button>`,
-          )
-          .join('')}</div>
+        <p>读取屏幕上的高低脉冲，把三个取样控制量调到与波形同步的位置。</p>
+        <div class="pulse-waveform" role="img" aria-label="两组等长高脉冲，中间有较短低谷的扫描波形">
+          <span class="pulse-group">${'<i></i>'.repeat(3)}</span>
+          <span class="pulse-gap">${'<i></i>'.repeat(2)}</span>
+          <span class="pulse-group">${'<i></i>'.repeat(3)}</span>
+          <b class="pulse-sweep" aria-hidden="true"></b>
+        </div>
+        <div class="pulse-control-bank">${controls.map(controlTemplate).join('')}</div>
+        <button class="primary-action pulse-sample-action" data-action="g02-pulse-sample">封存当前取样</button>
       </section>
     `
   }
 
   #g02ResourcePuzzleTemplate(): string {
-    const step = Number(this.#session.puzzleProgress.g02_resource_step ?? 0)
-    const labels = ['双环磨损对应私人资源', '三路连接对应公共供暖', '断裂划痕对应废弃资源']
+    const labels = [
+      { id: 'RUNTIME-G02-LABEL-DOUBLE-RING', aria: '带双环磨损的资源标签', className: 'double-ring' },
+      { id: 'RUNTIME-G02-LABEL-THREE-LINK', aria: '带三路接头的资源标签', className: 'three-link' },
+      { id: 'RUNTIME-G02-LABEL-BROKEN-EDGE', aria: '带断裂边缘的资源标签', className: 'broken-edge' },
+    ]
+    const slots = [
+      { id: 'RUNTIME-G02-SLOT-PRIVATE', label: '私人储物箱', mark: '私' },
+      { id: 'RUNTIME-G02-SLOT-PUBLIC-HEAT', label: '公共供暖箱', mark: '暖' },
+      { id: 'RUNTIME-G02-SLOT-DISCARDED', label: '废弃回收箱', mark: '弃' },
+    ]
+    const assignment = (labelId: string): string | undefined => {
+      const value = this.#session.puzzleProgress[`g02_resource_assignment_${labelId}`]
+      return typeof value === 'string' ? value : undefined
+    }
+    const token = (label: (typeof labels)[number]): string => `
+      <div class="resource-label-token ${label.className}" draggable="true"
+        data-mechanism-item="${label.id}" aria-label="${label.aria}" role="img">
+        <span class="label-core" aria-hidden="true"></span>
+        <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
+      </div>`
     return `
       <div class="modal-backdrop" data-action="close-puzzle"></div>
       <section class="zoom-modal puzzle-modal g02-resource-puzzle" role="dialog" aria-modal="true" aria-labelledby="g02-resource-title">
         <header><div><span class="eyebrow">证据分析</span><h2 id="g02-resource-title">三类资源归属</h2></div>
           <button class="icon-button" data-action="close-puzzle" aria-label="关闭资源归属分析">×</button></header>
-        <p>按标签形状和连接数量对应真实用途，不产生新的未扫描证据。</p>
-        <div class="g02-mechanism-steps">${labels
-          .map(
-            (label, index) =>
-              `<button data-action="g02-resource-step" data-step-index="${index}" class="${index < step ? 'is-complete' : ''}"><span>${index + 1}</span>${label}</button>`,
-          )
-          .join('')}</div>
+        <p>拖动三枚标签，依据磨损轮廓和接头数量放回仍在使用它们的资源箱。</p>
+        <div class="resource-label-tray" aria-label="待归位标签">
+          ${labels.filter((label) => !assignment(label.id)).map(token).join('') || '<span class="tray-empty">标签已全部离开托盘</span>'}
+        </div>
+        <div class="resource-slot-grid">
+          ${slots.map((slot) => {
+            const placed = labels.find((label) => assignment(label.id) === slot.id)
+            return `<div class="resource-slot ${placed ? 'is-filled' : ''}" data-drop-target="${slot.id}" data-resource-slot="${slot.id}" aria-label="${slot.label}归位槽">
+              <strong><b>${slot.mark}</b>${slot.label}</strong>
+              <span>${placed ? token(placed) : '拖入标签'}</span>
+            </div>`
+          }).join('')}
+        </div>
+        <button class="primary-action resource-submit-action" data-action="g02-resource-submit">确认资源归属</button>
       </section>
     `
   }
@@ -1707,13 +1759,13 @@ export class GameView {
         <div class="cargo-recovery-panel">
           <span class="eyebrow">锈环星安全恢复节点</span>
           <h2 id="g02-recovery-title">危险操作已中止</h2>
-          <p>刷新后仍停留在这里；继续时恢复失败前的有效状态，不重置场景，也不生成未取得的证据。</p>
+          <p>随身物品与已经确认的线索都还在；继续后回到刚才中止的位置。</p>
           <ul>
             <li>背包：${this.#session.inventoryItemIds.length} 件保留</li>
             <li>证据：${g02EvidenceCount} 项保留</li>
-            <li>HOS：${hosCount} / 6 保留</li>
-            <li>已确认热点：${this.#session.completedHotspotIds.length} 个保留</li>
-            <li>恢复状态：${recovery.resumeState ?? recovery.preFailureState}</li>
+            <li>已找回部件：${hosCount} / 6</li>
+            <li>已完成操作：${this.#session.completedHotspotIds.length} 项</li>
+            <li>恢复位置：最近安全步骤</li>
           </ul>
           <button class="primary-action" data-action="resume-g02">保留进度继续</button>
         </div>
@@ -2313,43 +2365,36 @@ export class GameView {
         }
         break
       }
-      case 'g02-pulse-step': {
-        const selected = Number(actionElement.dataset.stepIndex)
-        const expected = Number(this.#session.puzzleProgress.g02_pulse_scan_step ?? 0)
-        if (selected !== expected) {
-          this.#showToast('取样节拍不匹配；已确认的扫描数据保持不变。')
-          break
-        }
-        const nextStep = expected + 1
-        this.engine.updateStory((draft) => {
-          draft.puzzleProgress.g02_pulse_scan_step = nextStep
-        })
-        if (nextStep === 3) {
-          this.#puzzleOpen = false
-          this.#activeZoomId = null
-          this.#handleResult(this.engine.completePuzzle('RUNTIME-PUZ-G02-PULSE-SCAN'))
-        }
+      case 'g02-pulse-adjust': {
+        const control = actionElement.dataset.control
+        if (!['interval', 'gain', 'window'].includes(control ?? '')) break
+        const key = `g02_pulse_${control}`
+        const current = Number(this.#session.puzzleProgress[key] ?? 1)
+        const delta = Number(actionElement.dataset.delta ?? 0)
+        this.#handleResult(
+          this.engine.setG02PulseControl(
+            control as 'interval' | 'gain' | 'window',
+            current + delta,
+          ),
+        )
         break
       }
-      case 'g02-resource-step': {
-        const selected = Number(actionElement.dataset.stepIndex)
-        const expected = Number(this.#session.puzzleProgress.g02_resource_step ?? 0)
-        if (selected !== expected) {
-          this.#showToast('归属顺序与已扫描的标签连接不符；证据不会被消耗。')
-          break
-        }
-        const nextStep = expected + 1
-        this.engine.updateStory((draft) => {
-          draft.puzzleProgress.g02_resource_step = nextStep
-        })
-        if (nextStep === 3) {
+      case 'g02-pulse-sample': {
+        const result = this.engine.submitG02PulseSample()
+        if (result.ok) {
           this.#puzzleOpen = false
           this.#activeZoomId = null
-          const result = this.engine.completePuzzle(
-            'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION',
-          )
-          this.#handleResult(result)
         }
+        this.#handleResult(result)
+        break
+      }
+      case 'g02-resource-submit': {
+        const result = this.engine.submitG02ResourceClassification()
+        if (result.ok) {
+          this.#puzzleOpen = false
+          this.#activeZoomId = null
+        }
+        this.#handleResult(result)
         break
       }
       case 'dismiss-complete':
@@ -2627,8 +2672,8 @@ export class GameView {
     }
 
     if (result.hotspot.scope === 'zoom') this.#cabinetOpen = true
-    this.#hintAvailableAt = Date.now() + 7_000
-    if (result.level === 3) this.#hintedHotspotId = result.hotspot.id
+    this.#hintAvailableAt = Date.now() + HINT_COOLDOWN_MS
+    if (result.level >= 2) this.#hintedHotspotId = result.hotspot.id
     this.#render()
     this.#showToast(this.#hintCopy(result))
 
@@ -2720,12 +2765,17 @@ export class GameView {
     this.#hintTimer = window.setTimeout(() => {
       this.#hintedHotspotId = null
       this.#render()
-    }, 3_800)
-    window.setTimeout(() => this.#render(), 7_000)
+    }, 1_250)
+    window.setTimeout(() => this.#render(), HINT_COOLDOWN_MS)
   }
 
   #hintCopy(result: HintResult): string {
     const { hotspot, level } = result
+    const g02Hint = g02HintById(result.hintId)
+    if (g02Hint) {
+      const levelName = { 1: '一级', 2: '二级', 3: '三级' }[level]
+      return `${levelName}提示：${g02Hint.text}`
+    }
     if (this.#session.currentSceneId === 'SCN-G01-04') {
       if (level === 1) return '一级提示：先观察碎片边缘与十二星门环的机械编号。'
       if (level === 2) return '二级提示：锈环星坐标位于反复删除自身的信号源。'
@@ -2955,7 +3005,7 @@ export class GameView {
         </header>
         <div class="demo-menu-copy">
           <p>${isG02Context
-            ? '从旧屏幕谷外缘连续探索三个正式场景：封存脉冲扫描、阿铆救援与资源标签调查、电视墙找物和借用档案修复。'
+            ? '从旧屏幕谷外缘连续经历封存脉冲扫描、阿铆救援与资源标签调查、电视墙找物和借用档案修复。'
             : '连续探索八个场景：观察高清场景、局部放大找物、把背包道具拖到正确机关，并在危险时从安全节点继续。'}</p>
           <ul><li>进度会自动保存在本设备。</li><li>三级提示会完成当前合法步骤。</li><li>安装PWA后，首次完整加载完成即可离线继续。</li></ul>
           <div class="demo-menu-actions">

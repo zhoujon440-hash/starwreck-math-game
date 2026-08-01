@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { G01 } from '../../src/content/g01'
 import { G02_DIALOGUE } from '../../src/data/dialogue/g02'
+import { G02_HINTS } from '../../src/data/hints/g02'
 import { GameEngine } from '../../src/game/engine'
 import { MemorySaveRepository } from '../../src/game/save'
 import type { GameSession, SceneStateId } from '../../src/game/types'
@@ -15,6 +16,26 @@ const hosItems = [
   'RUNTIME-ITM-G02-005-B',
   'ITM-G02-006',
 ]
+
+const resourceAssignments = [
+  ['RUNTIME-G02-LABEL-DOUBLE-RING', 'RUNTIME-G02-SLOT-PRIVATE'],
+  ['RUNTIME-G02-LABEL-THREE-LINK', 'RUNTIME-G02-SLOT-PUBLIC-HEAT'],
+  ['RUNTIME-G02-LABEL-BROKEN-EDGE', 'RUNTIME-G02-SLOT-DISCARDED'],
+] as const
+
+const solvePulse = (engine: GameEngine) => {
+  expect(engine.setG02PulseControl('interval', 3).ok).toBe(true)
+  expect(engine.setG02PulseControl('gain', 2).ok).toBe(true)
+  expect(engine.setG02PulseControl('window', 3).ok).toBe(true)
+  expect(engine.submitG02PulseSample().ok).toBe(true)
+}
+
+const solveResources = (engine: GameEngine) => {
+  for (const [label, slot] of resourceAssignments) {
+    expect(engine.assignG02ResourceLabel(label, slot).ok).toBe(true)
+  }
+  expect(engine.submitG02ResourceClassification().ok).toBe(true)
+}
 
 const seedG02Boundary = (repository = new MemorySaveRepository()) => {
   const engine = new GameEngine(G01, repository)
@@ -49,7 +70,7 @@ const enterScn00 = (repository = new MemorySaveRepository()) => {
 const finishScn00 = (engine: GameEngine) => {
   expect(engine.inspect('HS-G02-0001').ok).toBe(true)
   expect(engine.inspect('HS-G02-0002').ok).toBe(true)
-  expect(engine.completePuzzle('RUNTIME-PUZ-G02-PULSE-SCAN').ok).toBe(true)
+  solvePulse(engine)
   expect(engine.inspect('RUNTIME-HS-G02-00-SAMPLE').ok).toBe(true)
   expect(engine.snapshot.flags.g02_intro_scan_done).toBe(false)
   expect(engine.inspect('RUNTIME-HS-G02-00-VERIFY').ok).toBe(true)
@@ -72,7 +93,7 @@ const finishScn01 = (engine: GameEngine) => {
   for (const id of ['HS-G02-0005', 'HS-G02-0006', 'HS-G02-0007']) {
     expect(engine.inspect(id).ok).toBe(true)
   }
-  expect(engine.completePuzzle('RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION').ok).toBe(true)
+  solveResources(engine)
   expect(engine.snapshot.sceneState).toBe('S6')
 }
 
@@ -100,7 +121,7 @@ const reachScn00Phase = (engine: GameEngine, phase: Extract<SceneStateId, 'S1' |
   if (phase === 'S1') return
   expect(engine.inspect('HS-G02-0002').ok).toBe(true)
   if (phase === 'S2') return
-  expect(engine.completePuzzle('RUNTIME-PUZ-G02-PULSE-SCAN').ok).toBe(true)
+  solvePulse(engine)
   if (phase === 'S3') return
   expect(engine.inspect('RUNTIME-HS-G02-00-SAMPLE').ok).toBe(true)
 }
@@ -137,13 +158,29 @@ describe('G02 vertical slice runtime', () => {
     expect(runner.current).toBeNull()
   })
 
+  it('loads the three formal SCN02 hints with exact text and one-step effects', () => {
+    expect(
+      G02_HINTS.filter((hint) => hint.sceneId === 'SCN-G02-02').map((hint) => [
+        hint.hintId,
+        hint.text,
+        hint.effect,
+      ]),
+    ).toEqual([
+      ['HINT-G02-001-1', '先检查屏幕碎片堆，缺少的不是整块屏幕。', 'direction_only'],
+      ['HINT-G02-001-2', '三枚电源键的边缘磨损分别对应三块主屏。', 'highlight_current_region'],
+      ['HINT-G02-001-3', '自动将一枚正确电源键放入对应槽。', 'install_one_power_key'],
+    ])
+  })
+
   it('completes SCN00 with a real scan and writes evidence only after verification', () => {
     const engine = enterScn00()
     expect(engine.snapshot.flags.g02_intro_scan_done).toBe(false)
     expect(engine.inspect('HS-G02-0001').ok).toBe(true)
     expect(engine.inspect('HS-G02-0002').ok).toBe(true)
     expect(engine.snapshot.flags.g02_evidence_001).not.toBe(true)
-    expect(engine.completePuzzle('RUNTIME-PUZ-G02-PULSE-SCAN').ok).toBe(true)
+    expect(engine.submitG02PulseSample().ok).toBe(false)
+    expect(engine.snapshot.sceneState).toBe('S2')
+    solvePulse(engine)
     expect(engine.snapshot.puzzleProgress.g02_pulse_scan).toBe('3-2-3:sealed-sample')
     expect(engine.snapshot.flags.g02_intro_scan_done).toBe(false)
     expect(engine.inspect('RUNTIME-HS-G02-00-SAMPLE').ok).toBe(true)
@@ -153,6 +190,21 @@ describe('G02 vertical slice runtime', () => {
     expect(engine.snapshot.flags.g02_evidence_001).toBe(true)
     expect(engine.inspect('RUNTIME-HS-G02-00-EXIT').ok).toBe(true)
     expect(engine.snapshot.flags.world_star_core_count).toBe(0)
+  })
+
+  it('persists partial waveform controls across reload without completing the scan', () => {
+    const repository = new MemorySaveRepository()
+    const engine = enterScn00(repository)
+    expect(engine.inspect('HS-G02-0001').ok).toBe(true)
+    expect(engine.inspect('HS-G02-0002').ok).toBe(true)
+    expect(engine.setG02PulseControl('interval', 3).ok).toBe(true)
+    expect(engine.setG02PulseControl('gain', 2).ok).toBe(true)
+    const refreshed = new GameEngine(G01, repository)
+    expect(refreshed.snapshot.sceneState).toBe('S2')
+    expect(refreshed.snapshot.puzzleProgress.g02_pulse_interval).toBe(3)
+    expect(refreshed.snapshot.puzzleProgress.g02_pulse_gain).toBe(2)
+    expect(refreshed.snapshot.puzzleProgress.g02_pulse_window).toBeUndefined()
+    expect(refreshed.snapshot.completedPuzzleIds).not.toContain('RUNTIME-PUZ-G02-PULSE-SCAN')
   })
 
   it.each(['S1', 'S2', 'S3', 'S4'] as const)(
@@ -206,7 +258,37 @@ describe('G02 vertical slice runtime', () => {
     }
     expect(engine.inspect('HS-G02-0007').ok).toBe(false)
     expect(engine.snapshot.flags.g02_resource_labels).toBe(3)
-    expect(engine.completePuzzle('RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION').ok).toBe(true)
+    expect(
+      engine.assignG02ResourceLabel(
+        'RUNTIME-G02-LABEL-DOUBLE-RING',
+        'RUNTIME-G02-SLOT-DISCARDED',
+      ).ok,
+    ).toBe(false)
+    expect(engine.snapshot.sceneState).toBe('S5')
+    expect(engine.submitG02ResourceClassification().ok).toBe(false)
+    solveResources(engine)
+  })
+
+  it('persists one correctly placed resource label across reload without completing classification', () => {
+    const repository = new MemorySaveRepository()
+    const engine = enterScn01(repository)
+    expect(engine.inspect('RUNTIME-HS-G02-01-OBSERVE').ok).toBe(true)
+    expect(engine.useItem('RUNTIME-ITM-G02-MAGNETIC-GRAPNEL', 'HS-G02-0003').ok).toBe(true)
+    expect(engine.inspect('RUNTIME-HS-G02-01-RESCUE-CONFIRM').ok).toBe(true)
+    for (const id of ['HS-G02-0005', 'HS-G02-0006', 'HS-G02-0007']) {
+      expect(engine.inspect(id).ok).toBe(true)
+    }
+    expect(engine.assignG02ResourceLabel(...resourceAssignments[0]).ok).toBe(true)
+    const refreshed = new GameEngine(G01, repository)
+    expect(refreshed.snapshot.sceneState).toBe('S5')
+    expect(
+      refreshed.snapshot.puzzleProgress[
+        'g02_resource_assignment_RUNTIME-G02-LABEL-DOUBLE-RING'
+      ],
+    ).toBe('RUNTIME-G02-SLOT-PRIVATE')
+    expect(refreshed.snapshot.completedPuzzleIds).not.toContain(
+      'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION',
+    )
   })
 
   it.each(['S1', 'S2'] as const)(
@@ -307,25 +389,69 @@ describe('G02 vertical slice runtime', () => {
     },
   )
 
-  it.each(['SCN-G02-00', 'SCN-G02-01', 'SCN-G02-02'] as const)(
-    'makes the %s level-three hint complete one legal step',
-    (sceneId) => {
-      const engine =
-        sceneId === 'SCN-G02-00'
-          ? enterScn00()
-          : sceneId === 'SCN-G02-01'
-            ? enterScn01()
-            : enterScn02()
-      const before = engine.snapshot.transitionLog.length
-      const first = engine.requestHint('scene')
-      const second = engine.requestHint('scene')
-      const third = engine.requestHint('scene')
-      expect([first?.level, second?.level, third?.level]).toEqual([1, 2, 3])
-      expect(engine.completeHintStep(third!).ok).toBe(true)
-      expect(engine.snapshot.transitionLog.length).toBe(before + 1)
-      expect(engine.snapshot.sceneState).toBe('S1')
-    },
-  )
+  it('makes the SCN00 level-three hint calibrate one control without completing the scan', () => {
+    const engine = enterScn00()
+    expect(engine.inspect('HS-G02-0001').ok).toBe(true)
+    expect(engine.inspect('HS-G02-0002').ok).toBe(true)
+    const before = engine.snapshot.transitionLog.length
+    const hints = [engine.requestHint('scene'), engine.requestHint('scene'), engine.requestHint('scene')]
+    expect(hints.map((hint) => hint?.hintId)).toEqual([
+      'RUNTIME-HINT-G02-00-1',
+      'RUNTIME-HINT-G02-00-2',
+      'RUNTIME-HINT-G02-00-3',
+    ])
+    expect(engine.completeHintStep(hints[2]!).ok).toBe(true)
+    expect(engine.snapshot.puzzleProgress.g02_pulse_interval).toBe(3)
+    expect(engine.snapshot.puzzleProgress.g02_pulse_gain).toBeUndefined()
+    expect(engine.snapshot.puzzleProgress.g02_pulse_window).toBeUndefined()
+    expect(engine.snapshot.completedPuzzleIds).not.toContain('RUNTIME-PUZ-G02-PULSE-SCAN')
+    expect(engine.snapshot.transitionLog.length).toBe(before)
+    expect(engine.snapshot.sceneState).toBe('S2')
+  })
+
+  it('makes the SCN01 level-three hint place one label without completing classification', () => {
+    const engine = enterScn01()
+    expect(engine.inspect('RUNTIME-HS-G02-01-OBSERVE').ok).toBe(true)
+    expect(engine.useItem('RUNTIME-ITM-G02-MAGNETIC-GRAPNEL', 'HS-G02-0003').ok).toBe(true)
+    expect(engine.inspect('RUNTIME-HS-G02-01-RESCUE-CONFIRM').ok).toBe(true)
+    for (const id of ['HS-G02-0005', 'HS-G02-0006', 'HS-G02-0007']) {
+      expect(engine.inspect(id).ok).toBe(true)
+    }
+    const hints = [engine.requestHint('scene'), engine.requestHint('scene'), engine.requestHint('scene')]
+    expect(hints.map((hint) => hint?.hintId)).toEqual([
+      'RUNTIME-HINT-G02-01-1',
+      'RUNTIME-HINT-G02-01-2',
+      'RUNTIME-HINT-G02-01-3',
+    ])
+    expect(engine.completeHintStep(hints[2]!).ok).toBe(true)
+    expect(
+      Object.keys(engine.snapshot.puzzleProgress).filter((key) =>
+        key.startsWith('g02_resource_assignment_'),
+      ),
+    ).toHaveLength(1)
+    expect(engine.snapshot.completedPuzzleIds).not.toContain(
+      'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION',
+    )
+    expect(engine.snapshot.sceneState).toBe('S5')
+  })
+
+  it('makes formal HINT-G02-001-3 install one power key and nothing else', () => {
+    const engine = enterScn02()
+    expect(engine.inspect('HS-G02-0011').ok).toBe(true)
+    for (const id of hosItems) expect(engine.findItem(id).ok).toBe(true)
+    const hints = [engine.requestHint('scene'), engine.requestHint('scene'), engine.requestHint('scene')]
+    expect(hints.map((hint) => hint?.hintId)).toEqual([
+      'HINT-G02-001-1',
+      'HINT-G02-001-2',
+      'HINT-G02-001-3',
+    ])
+    expect(engine.completeHintStep(hints[2]!).ok).toBe(true)
+    expect(engine.snapshot.flags.g02_screen_a_key_installed).toBe(true)
+    expect(engine.snapshot.flags.g02_screen_a_restored).not.toBe(true)
+    expect(engine.snapshot.inventoryItemIds).not.toContain('ITM-G02-002')
+    expect(engine.snapshot.inventoryItemIds).toContain('RUNTIME-ITM-G02-005-A')
+    expect(engine.snapshot.sceneState).toBe('S2')
+  })
 
   it('finishes at the read-only SCN03 boundary with only four G02 variables changed', () => {
     const engine = enterScn02()

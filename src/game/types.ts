@@ -149,4 +149,6 @@ export type ActionResult = {
 export type HintResult = {
   hotspot: HotspotDefinition
   level: 1 | 2 | 3
+  hintId?: string
+  taskId?: string
 }

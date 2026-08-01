@@ -38,13 +38,13 @@ export const G02_SCN00: SceneDefinition = {
       id: 'S4',
       title: '样本复核',
       objective: '让七码复核封存来源',
-      narrative: '运行时适配状态用于补全正式状态表缺失的复核步骤，不改变正式数据。',
+      narrative: '封存纹样重复出现，七码正在比对信号源与记录时间。',
     },
     S5: {
       id: 'S5',
       title: '扫描归档',
       objective: '确认自动存档并收起扫描近景',
-      narrative: '封存脉冲证据已经归档，落点信息保存在 AUTO-G02-001。',
+      narrative: '封存脉冲证据已经归档，落点信息已自动保存。',
       safeCheckpoint: true,
     },
     S6: {

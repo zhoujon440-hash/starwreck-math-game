@@ -21,7 +21,7 @@ export const G02_SCN01: SceneDefinition = {
       id: 'S1',
       title: '救援挂索',
       objective: '把背包里的磁力挂索拖到阿铆的挂索点',
-      narrative: '挂索可以把重量转移到旁边的旧框架；它不是尚未取得的磁力手套。',
+      narrative: '挂索可以把重量转移到旁边的旧框架，暂时卸开清算主回路的拉力。',
     },
     S2: {
       id: 'S2',
@@ -40,7 +40,7 @@ export const G02_SCN01: SceneDefinition = {
       id: 'S4',
       title: '资源标签',
       objective: '继续扫描，收集三类归属证据',
-      narrative: '每次真实扫描只增加一项证据；对白和软失败不会替玩家完成调查。',
+      narrative: '每次扫描只记录一项证据；先看标签磨损，再确认资源箱仍在怎样被使用。',
     },
     S5: {
       id: 'S5',
@@ -52,7 +52,7 @@ export const G02_SCN01: SceneDefinition = {
       id: 'S6',
       title: '救援记录',
       objective: '前往旧电视墙查找借用规则档案',
-      narrative: 'AUTO-G02-002 保存了阿铆救援和三类资源证据。',
+      narrative: '阿铆救援记录和三类资源证据已经自动保存。',
       safeCheckpoint: true,
     },
   },
@@ -60,7 +60,7 @@ export const G02_SCN01: SceneDefinition = {
     {
       id: 'RUNTIME-ITM-G02-MAGNETIC-GRAPNEL',
       name: '磁力挂索',
-      description: '旧屏幕谷救援任务物；绑定 HS-G02-0003，不是磁力手套。',
+      description: '旧屏幕谷救援用挂索；磁力扣能咬住吊臂旁的钢架。',
       inventoryIcon: itemAsset('RUNTIME-ITM-G02-MAGNETIC-GRAPNEL_inventory.png'),
     },
   ],

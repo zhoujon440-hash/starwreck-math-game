@@ -24,6 +24,7 @@ const provenance = structuredClone(
   json('docs/art/G02_SLICE_01_RUNTIME_ASSET_PROVENANCE.json'),
 )
 const mutation = process.argv.find((arg) => arg.startsWith('--mutation='))?.split('=')[1]
+let injectedUiText = ''
 
 if (mutation) {
   const actions = {
@@ -35,6 +36,14 @@ if (mutation) {
     'adapter-fake-official': () => (contract.runtime_adapters[0].official_id = 'HS-G02-0099'),
     'hint-missing-level': () => contract.hint_contracts[0].levels.splice(1, 1),
     'hint-wrong-semantics': () => (contract.hint_contracts[1].levels[2].semantics = 'direction'),
+    'hint-wrong-formal-text': () => (contract.hint_contracts[2].levels[0].text = '检查任意区域。'),
+    'hint-completes-whole-puzzle': () =>
+      (contract.hint_contracts[0].levels[2].effect = 'complete_puzzle'),
+    'pulse-text-answer-buttons': () =>
+      (contract.mechanism_contracts[0].answer_text_buttons = true),
+    'resource-text-answer-buttons': () =>
+      (contract.mechanism_contracts[1].interaction = 'text_answer_buttons'),
+    'formal-ui-developer-copy': () => (injectedUiText = '垂直切片已完成'),
     'wrong-use-consumes': () => (contract.critical_item_contracts[0].wrong_use_consumes = true),
     'duplicate-grant': () => (contract.critical_item_contracts[1].duplicate_grant_forbidden = false),
     'danger-no-safe-node': () => (contract.danger_contracts[0].safe_recovery_node = ''),
@@ -118,7 +127,44 @@ for (const hint of contract.hint_contracts) {
     'G02-HINT-003',
     `${hint.scene_id}/${hint.task_id} level three does not complete one step`,
   )
+  check(
+    hint.levels.every((entry) => Boolean(entry.hint_id && entry.text && entry.effect)),
+    'G02-HINT-004',
+    `${hint.scene_id}/${hint.task_id} lacks data-driven id/text/effect`,
+  )
+  check(
+    hint.levels[2]?.effect !== 'complete_puzzle',
+    'G02-HINT-005',
+    `${hint.scene_id}/${hint.task_id} level three completes the whole puzzle`,
+  )
 }
+const formalScn02Hints = json('data/source/g02-g13/G02/json/三级提示.json').filter(
+  (entry) => entry['场景ID'] === 'SCN-G02-02' && entry['机关/任务'] === '电视墙修复',
+)
+const scn02HintContract = contract.hint_contracts.find(
+  (entry) => entry.scene_id === 'SCN-G02-02',
+)
+check(formalScn02Hints.length === 3, 'G02-HINT-006', 'formal SCN02 hint rows missing')
+for (const [index, formalHint] of formalScn02Hints.entries()) {
+  const runtimeHint = scn02HintContract?.levels[index]
+  check(runtimeHint?.hint_id === formalHint['提示ID'], 'G02-HINT-007', `${formalHint['提示ID']} id mismatch`)
+  check(runtimeHint?.text === formalHint['提示文本'], 'G02-HINT-008', `${formalHint['提示ID']} text mismatch`)
+}
+for (const mechanism of contract.mechanism_contracts) {
+  check(mechanism.answer_text_buttons === false, 'G02-MECH-001', `${mechanism.mechanism_id} exposes answer buttons`)
+  check(mechanism.wrong_action_preserves_progress === true, 'G02-MECH-002', `${mechanism.mechanism_id} drops progress on wrong action`)
+  check(mechanism.playwright_real_pointer === true, 'G02-MECH-003', `${mechanism.mechanism_id} lacks real pointer proof`)
+}
+check(
+  contract.mechanism_contracts[0]?.interaction === 'waveform_controls',
+  'G02-MECH-004',
+  'pulse scan is not a visual waveform-control mechanism',
+)
+check(
+  contract.mechanism_contracts[1]?.interaction === 'drag_physical_labels_to_slots',
+  'G02-MECH-005',
+  'resource classification is not a physical drag/slot mechanism',
+)
 for (const item of contract.critical_item_contracts) {
   check(item.wrong_use_consumes === false, 'G02-ITEM-001', `${item.scene_id}/${item.item_id} is consumed by wrong use`)
   check(item.wrong_use_changes_progress === false, 'G02-ITEM-002', `${item.scene_id}/${item.item_id} changes progress on wrong use`)
@@ -291,9 +337,10 @@ const sceneCode = ['scn00', 'scn01', 'scn02']
   .join('\n')
 const engineCode = read('src/game/engine.ts')
 const saveCode = read('src/game/save.ts')
-const uiCode = read('src/ui/GameView.ts')
+const uiCode = `${read('src/ui/GameView.ts')}\n${injectedUiText}`
 const contentCode = read('src/content/g02.ts')
 const configCode = read('src/config.ts')
+const hintCode = read('src/data/hints/g02.ts')
 for (const scene of contract.scenes) {
   check(sceneCode.includes(`id: '${scene.scene_id}'`), 'G02-RUNTIME-001', `${scene.scene_id} module missing`)
   for (const id of scene.hotspots ?? []) {
@@ -317,6 +364,49 @@ check(
   configCode.includes('import.meta.env.DEV && debugRequested'),
   'G02-UI-003',
   'DEBUG_UI must remain disabled in production',
+)
+const formalUiCode = [uiCode, contentCode, sceneCode, engineCode].join('\n')
+for (const term of contract.formal_ui_contract.forbidden_terms) {
+  check(!formalUiCode.includes(term), 'G02-UI-004', `formal UI contains forbidden delivery term: ${term}`)
+}
+for (const text of ['四组能量信号', '安全区', '等待路线确认']) {
+  check(formalUiCode.includes(text), 'G02-UI-005', `world-internal boundary copy missing: ${text}`)
+}
+const hintMethod = engineCode.slice(
+  engineCode.indexOf('completeHintStep('),
+  engineCode.indexOf('setG02PulseControl('),
+)
+check(
+  hintMethod.includes("sceneId.startsWith('SCN-G02-')") &&
+    hintMethod.includes('#advanceG02HintStep(hint)'),
+  'G02-HINT-009',
+  'G02 level-three hint is not routed through the one-step adapter',
+)
+check(
+  !hintMethod.includes('RUNTIME-PUZ-G02-PULSE-SCAN') &&
+    !hintMethod.includes('RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION'),
+  'G02-HINT-010',
+  'completeHintStep still directly references a whole G02 puzzle',
+)
+for (const formalHint of formalScn02Hints) {
+  check(hintCode.includes(formalHint['提示ID']), 'G02-HINT-011', `${formalHint['提示ID']} runtime data missing`)
+  check(hintCode.includes(formalHint['提示文本']), 'G02-HINT-012', `${formalHint['提示ID']} runtime text missing`)
+}
+check(
+  uiCode.includes('pulse-waveform') &&
+    uiCode.includes('g02-pulse-adjust') &&
+    uiCode.includes('g02-pulse-sample') &&
+    !uiCode.includes('g02-pulse-step'),
+  'G02-MECH-006',
+  'pulse scan still uses text-answer steps instead of waveform controls',
+)
+check(
+  uiCode.includes('data-mechanism-item') &&
+    uiCode.includes('data-resource-slot') &&
+    uiCode.includes('g02-resource-submit') &&
+    !uiCode.includes('g02-resource-step'),
+  'G02-MECH-007',
+  'resource classification still uses text-answer steps instead of physical slots',
 )
 
 const packageConfig = json('package.json')
@@ -377,9 +467,25 @@ for (const evidence of [
   'dialogue-history',
   'character-profile',
   'read-only-scn03-boundary',
+  'hint-direction',
+  'hint-area',
+  'hint-one-control-only',
+  'hint-one-label-only',
+  'formal-hint-one-key-only',
+  'pulse-wrong-retained',
+  'resource-wrong-retained',
+  'pulse-partial-calibration',
+  'resource-partial',
 ]) {
   check(e2eCode.includes(evidence), 'G02-E2E-002', `${evidence} evidence capture missing`)
 }
+check(
+  e2eCode.includes('.dragTo(') &&
+    e2eCode.includes('data-mechanism-item') &&
+    e2eCode.includes('data-resource-slot'),
+  'G02-E2E-005',
+  'non-text mechanisms lack real pointer/drag Playwright proof',
+)
 check(
   e2eCode.includes("expect(consoleErrors).toEqual([])"),
   'G02-E2E-003',
@@ -437,5 +543,5 @@ check(
 for (const failure of failures) console.error(failure)
 if (failures.length) process.exit(1)
 console.log(
-  `G02_SLICE_01_VALIDATION_OK rules=${ruleCount} assets=${art.runtime_assets.length} formal_dialogues=${formalDialogue.length} critical_items=${contract.critical_item_contracts.length} negative_mutations=18`,
+  `G02_SLICE_01_VALIDATION_OK rules=${ruleCount} assets=${art.runtime_assets.length} formal_dialogues=${formalDialogue.length} critical_items=${contract.critical_item_contracts.length} negative_mutations=23`,
 )

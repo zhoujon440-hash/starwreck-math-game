@@ -115,6 +115,16 @@ const advanceDialogue = async (page: Page, count: number): Promise<void> => {
   }
 }
 
+const requestHint = async (page: Page, expectedText: string): Promise<void> => {
+  await page.getByRole('button', { name: '获取渐进式提示' }).click()
+  await expect(page.locator('.toast')).toContainText(expectedText)
+}
+
+const waitForHintCooldown = async (page: Page): Promise<void> => {
+  await page.waitForTimeout(1_650)
+  await expect(page.getByRole('button', { name: '获取渐进式提示' })).toBeEnabled()
+}
+
 test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice', async ({
   page,
 }, info) => {
@@ -176,14 +186,33 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   await expect(
     page.getByRole('heading', { name: '封存脉冲取样窗' }),
   ).toBeVisible()
-  await capture(page, info, '05-scn00-pulse-scan.png')
-  for (const label of [
-    '等待三格稳定间隔',
-    '压低两格扫描增益',
-    '在第三次脉冲封存取样',
-  ]) {
-    await page.getByRole('button', { name: new RegExp(label) }).click()
-  }
+  await capture(page, info, '05a-scn00-pulse-initial.png')
+  await page.getByRole('button', { name: '封存当前取样' }).click()
+  await expect(page.locator('.toast')).toContainText('没有同步')
+  await capture(page, info, '05b-scn00-pulse-wrong-retained.png')
+  await page.getByRole('button', { name: '关闭封存脉冲取样' }).click()
+
+  await requestHint(page, '先在断卫星轴背风侧观察蓝色脉冲')
+  await capture(page, info, '05c-scn00-hint-direction.png')
+  await waitForHintCooldown(page)
+  await requestHint(page, '扫描窗会重复显示两组等长脉冲')
+  await capture(page, info, '05d-scn00-hint-area.png')
+  await waitForHintCooldown(page)
+  await requestHint(page, '七码会把一个尚未校准的取样控制量调整到合法位置')
+  await page.waitForTimeout(550)
+  await page.getByRole('button', { name: '打开七码封存脉冲扫描近景' }).click()
+  await expect(page.locator('[data-pulse-control="interval"]')).toHaveAttribute('data-control-value', '3')
+  await expect(page.locator('[data-pulse-control="gain"]')).toHaveAttribute('data-control-value', '1')
+  await expect(page.locator('[data-pulse-control="window"]')).toHaveAttribute('data-control-value', '1')
+  await capture(page, info, '05e-scn00-hint-one-control-only.png')
+
+  await page.getByRole('button', { name: '提高扫描增益' }).click()
+  await page.getByRole('button', { name: '延长取样窗口' }).click()
+  await page.getByRole('button', { name: '延长取样窗口' }).click()
+  await capture(page, info, '05f-scn00-pulse-partial-calibration.png')
+  await page.getByRole('button', { name: '封存当前取样' }).click()
+  await expect(page.locator('.game-shell')).toHaveClass(/state-S3/)
+  await capture(page, info, '05g-scn00-pulse-completed.png')
   await clickHotspot(page, 'RUNTIME-HS-G02-00-SAMPLE')
   await clickHotspot(page, 'RUNTIME-HS-G02-00-VERIFY')
   await clickHotspot(page, 'RUNTIME-HS-G02-00-EXIT')
@@ -247,19 +276,50 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   await page
     .getByRole('button', { name: '打开资源归属证据近景并完成分类' })
     .click()
-  for (const label of [
-    '双环磨损对应私人资源',
-    '三路连接对应公共供暖',
-    '断裂划痕对应废弃资源',
-  ]) {
-    await page.getByRole('button', { name: new RegExp(label) }).click()
-  }
+  await capture(page, info, '11a-scn01-resource-slots-initial.png')
+  await page
+    .locator('[data-mechanism-item="RUNTIME-G02-LABEL-DOUBLE-RING"]')
+    .dragTo(page.locator('[data-resource-slot="RUNTIME-G02-SLOT-DISCARDED"]'))
+  await expect(page.locator('.toast')).toContainText('不吻合')
+  await capture(page, info, '11b-scn01-resource-wrong-retained.png')
+  await page.getByRole('button', { name: '关闭资源归属分析' }).click()
+
+  await requestHint(page, '先看标签的磨损轮廓')
+  await capture(page, info, '11c-scn01-hint-direction.png')
+  await waitForHintCooldown(page)
+  await requestHint(page, '双环、三路接头和断裂边缘')
+  await capture(page, info, '11d-scn01-hint-area.png')
+  await waitForHintCooldown(page)
+  await requestHint(page, '七码会把一枚尚未归位的标签放入正确资源槽')
+  await page.waitForTimeout(550)
+  await page
+    .getByRole('button', { name: '打开资源归属证据近景并完成分类' })
+    .click()
+  await expect(
+    page.locator('[data-resource-slot="RUNTIME-G02-SLOT-PRIVATE"] [data-mechanism-item="RUNTIME-G02-LABEL-DOUBLE-RING"]'),
+  ).toBeVisible()
+  await expect(page.locator('[data-mechanism-item]')).toHaveCount(3)
+  await capture(page, info, '11e-scn01-hint-one-label-only.png')
+  await page
+    .locator('[data-mechanism-item="RUNTIME-G02-LABEL-THREE-LINK"]')
+    .dragTo(page.locator('[data-resource-slot="RUNTIME-G02-SLOT-PUBLIC-HEAT"]'))
+  await capture(page, info, '11f-scn01-resource-partial.png')
+  await page
+    .locator('[data-mechanism-item="RUNTIME-G02-LABEL-BROKEN-EDGE"]')
+    .dragTo(page.locator('[data-resource-slot="RUNTIME-G02-SLOT-DISCARDED"]'))
+  await page.getByRole('button', { name: '确认资源归属' }).click()
   await expect(page.getByRole('heading', { name: '五尾清算完成' })).toBeVisible()
   await capture(page, info, '12-scn01-complete.png')
 
   await page.getByRole('button', { name: '继续探索' }).click()
   await expect(page.locator('[data-scene-id="SCN-G02-02"]')).toBeVisible()
   await capture(page, info, '13-scn02-initial.png')
+  await requestHint(page, '先检查屏幕碎片堆，缺少的不是整块屏幕')
+  await capture(page, info, '13a-scn02-formal-hint-direction.png')
+  await waitForHintCooldown(page)
+  await requestHint(page, '三枚电源键的边缘磨损分别对应三块主屏')
+  await capture(page, info, '13b-scn02-formal-hint-area.png')
+  await waitForHintCooldown(page)
   await clickHotspot(page, 'HS-G02-0011')
   await expect(page.locator('[data-dialogue-id="DLG-G02-0007"]')).toBeVisible()
   await advanceDialogue(page, 1)
@@ -291,12 +351,21 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   }
   await expect(page.locator('.game-shell')).toHaveClass(/state-S2/)
   await capture(page, info, '17-scn02-hos-complete-inventory.png')
+  for (const developerText of ['ITM-G02', 'HS-G02', 'RUNTIME-', '本切片']) {
+    await expect(page.locator('body')).not.toContainText(developerText)
+  }
 
-  await drag(page, 'ITM-G02-006', 'RUNTIME-HS-G02-0008-KEY')
+  await requestHint(page, '自动将一枚正确电源键放入对应槽')
+  await page.waitForTimeout(550)
+  await expect(page.locator('[data-inventory-item="ITM-G02-002"]')).toHaveCount(0)
+  await expect(page.locator('[data-inventory-item="RUNTIME-ITM-G02-005-A"]')).toBeVisible()
+  await expect(page.locator('.game-shell')).toHaveClass(/state-S2/)
+  await capture(page, info, '17a-scn02-formal-hint-one-key-only.png')
+
+  await drag(page, 'ITM-G02-006', 'HS-G02-0008')
   await expect(page.getByRole('status')).toContainText('接口不匹配')
   await expect(page.locator('[data-inventory-item="ITM-G02-006"]')).toBeVisible()
   await capture(page, info, '18-scn02-wrong-use-not-consumed.png')
-  await drag(page, 'ITM-G02-002', 'RUNTIME-HS-G02-0008-KEY')
   await drag(page, 'RUNTIME-ITM-G02-005-A', 'HS-G02-0008')
   await drag(page, 'ITM-G02-003', 'RUNTIME-HS-G02-0009-KEY')
   await drag(page, 'RUNTIME-ITM-G02-005-B', 'HS-G02-0009')
@@ -350,12 +419,12 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   await capture(page, info, '26-character-profile.png')
   await page.getByRole('button', { name: '关闭角色档案' }).click()
 
-  await page.getByRole('button', { name: '查看能源搜索边界' }).click()
+  await page.getByRole('button', { name: '返回旧屏幕谷安全区' }).click()
   await expect(
     page.locator('[data-scene-id="RUNTIME-G02-ENERGY-SEARCH-BOUNDARY"]'),
   ).toBeVisible()
   await expect(
-    page.getByRole('heading', { name: '能源搜索分支之前' }),
+    page.getByRole('heading', { name: '四组能量信号' }),
   ).toBeVisible()
   await expect(page.locator('[data-hotspot-id]')).toHaveCount(0)
   await capture(page, info, '27-read-only-scn03-boundary.png')
@@ -388,7 +457,19 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   ).toBeVisible()
   await capture(page, info, '28-final-boundary-after-refresh.png')
 
-  const forbidden = ['S0', 'schema v', '项目负责人', '验收', '交付边界']
+  const forbidden = [
+    'S0',
+    'schema v',
+    '项目负责人',
+    '验收',
+    '交付边界',
+    '垂直切片',
+    '本版本',
+    '只读边界',
+    '不开放热点',
+    '不写入变量',
+    'G02-SLICE',
+  ]
   for (const text of forbidden) {
     await expect(page.locator('body')).not.toContainText(text)
   }

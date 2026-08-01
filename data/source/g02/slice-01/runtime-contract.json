@@ -98,9 +98,9 @@
       "scene_id": "SCN-G02-00",
       "task_id": "RUNTIME-HINT-G02-00",
       "levels": [
-        {"level": 1, "semantics": "direction"},
-        {"level": 2, "semantics": "area"},
-        {"level": 3, "semantics": "complete_one_step"}
+        {"hint_id": "RUNTIME-HINT-G02-00-1", "level": 1, "semantics": "direction", "text": "先在断卫星轴背风侧观察蓝色脉冲，不要离开掩体。", "effect": "direction_only"},
+        {"hint_id": "RUNTIME-HINT-G02-00-2", "level": 2, "semantics": "area", "text": "扫描窗会重复显示两组等长脉冲，中间留有较短的低谷。", "effect": "highlight_current_region"},
+        {"hint_id": "RUNTIME-HINT-G02-00-3", "level": 3, "semantics": "complete_one_step", "text": "七码会把一个尚未校准的取样控制量调整到合法位置。", "effect": "advance_pulse_control"}
       ],
       "level_three_changes_exactly_one_legal_step": true
     },
@@ -108,9 +108,9 @@
       "scene_id": "SCN-G02-01",
       "task_id": "RUNTIME-HINT-G02-01",
       "levels": [
-        {"level": 1, "semantics": "direction"},
-        {"level": 2, "semantics": "area"},
-        {"level": 3, "semantics": "complete_one_step"}
+        {"hint_id": "RUNTIME-HINT-G02-01-1", "level": 1, "semantics": "direction", "text": "先看标签的磨损轮廓，再判断资源箱仍连接着什么。", "effect": "direction_only"},
+        {"hint_id": "RUNTIME-HINT-G02-01-2", "level": 2, "semantics": "area", "text": "双环、三路接头和断裂边缘分别出现在三只不同的资源箱上。", "effect": "highlight_current_region"},
+        {"hint_id": "RUNTIME-HINT-G02-01-3", "level": 3, "semantics": "complete_one_step", "text": "七码会把一枚尚未归位的标签放入正确资源槽。", "effect": "assign_one_resource_label"}
       ],
       "level_three_changes_exactly_one_legal_step": true
     },
@@ -118,13 +118,43 @@
       "scene_id": "SCN-G02-02",
       "task_id": "HINT-G02-001",
       "levels": [
-        {"level": 1, "semantics": "direction"},
-        {"level": 2, "semantics": "area"},
-        {"level": 3, "semantics": "complete_one_step"}
+        {"hint_id": "HINT-G02-001-1", "level": 1, "semantics": "direction", "text": "先检查屏幕碎片堆，缺少的不是整块屏幕。", "effect": "direction_only"},
+        {"hint_id": "HINT-G02-001-2", "level": 2, "semantics": "area", "text": "三枚电源键的边缘磨损分别对应三块主屏。", "effect": "highlight_current_region"},
+        {"hint_id": "HINT-G02-001-3", "level": 3, "semantics": "complete_one_step", "text": "自动将一枚正确电源键放入对应槽。", "effect": "install_one_power_key"}
       ],
       "level_three_changes_exactly_one_legal_step": true
     }
   ],
+  "mechanism_contracts": [
+    {
+      "mechanism_id": "RUNTIME-PUZ-G02-PULSE-SCAN",
+      "interaction": "waveform_controls",
+      "controls": ["interval", "gain", "window"],
+      "observable_pattern": [3, 2, 3],
+      "answer_text_buttons": false,
+      "wrong_action_preserves_progress": true,
+      "playwright_real_pointer": true
+    },
+    {
+      "mechanism_id": "RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION",
+      "interaction": "drag_physical_labels_to_slots",
+      "labels": ["double_ring", "three_link", "broken_edge"],
+      "answer_text_buttons": false,
+      "wrong_action_preserves_progress": true,
+      "playwright_real_pointer": true
+    }
+  ],
+  "formal_ui_contract": {
+    "boundary_narrative": "四组能量信号已经标记；星宇留在安全区等待路线确认。",
+    "forbidden_terms": [
+      "垂直切片",
+      "本版本",
+      "只读边界",
+      "不开放热点",
+      "不写入变量",
+      "G02-SLICE"
+    ]
+  },
   "critical_item_contracts": [
     {
       "scene_id": "SCN-G02-01",
@@ -290,6 +320,18 @@
       "official_id": null,
       "formal_parent": "OBJ-G02-003",
       "reason": "Runtime interaction adapter for classifying three formal evidence labels"
+    },
+    {
+      "runtime_id": "RUNTIME-MECH-G02-PULSE-CONTROLS",
+      "official_id": null,
+      "formal_parent": "HS-G02-0002",
+      "reason": "Visual gain, interval and sample-window controls expose the formal Qima scan as a non-text mechanism"
+    },
+    {
+      "runtime_id": "RUNTIME-MECH-G02-RESOURCE-SLOTS",
+      "official_id": null,
+      "formal_parent": "OBJ-G02-003",
+      "reason": "Draggable wear-mark labels and physical resource slots expose the formal evidence classification without answer text"
     }
   ],
   "allowed_completed_formal_variables": [

@@ -46,7 +46,7 @@ export const G02_SCN02: SceneDefinition = {
       id: 'S2',
       title: '修复准备',
       objective: '根据磨损边缘，把正确电源键和短线装到主屏 A',
-      narrative: '六件目标已进入背包。镜面屏片要保留给后续能源分支，本轮不得使用。',
+      narrative: '六件目标已进入背包。镜面屏片反射着远处四组能量信号，先留在背包里。',
       safeCheckpoint: true,
     },
     S3: {
@@ -70,8 +70,8 @@ export const G02_SCN02: SceneDefinition = {
     S6: {
       id: 'S6',
       title: '档案恢复',
-      objective: '在能源搜索分支前的边界停下',
-      narrative: 'AUTO-G02-003 已保存 HOS、三屏状态和 EVD-G02-005；后续能源分支保持只读。',
+      objective: '带着恢复的档案回到旧屏幕谷安全区',
+      narrative: '借用档案、三屏修复状态与随身物品都已自动保存。四组能量信号等待路线确认。',
       safeCheckpoint: true,
     },
   },
@@ -79,9 +79,9 @@ export const G02_SCN02: SceneDefinition = {
     item('ITM-G02-002', '电源键 A', '边缘有六个浅色接点。', { x: 10, y: 19, width: 9, height: 13 }, -14),
     item('ITM-G02-003', '电源键 B', '背面磨损与四接点短线相合。', { x: 69, y: 18, width: 8, height: 12 }, 21),
     item('ITM-G02-004', '电源键 C', '右下角有一道斜向缺口。', { x: 42, y: 56, width: 8, height: 12 }, -31),
-    item('RUNTIME-ITM-G02-005-A', '短线 A', 'ITM-G02-005 的第一段独立拾取层，六接点。', { x: 22, y: 65, width: 13, height: 9 }, 38),
-    item('RUNTIME-ITM-G02-005-B', '短线 B', 'ITM-G02-005 的第二段独立拾取层，四接点。', { x: 78, y: 57, width: 12, height: 9 }, -23),
-    item('ITM-G02-006', '镜面屏片', '用于后续能源搜索分支；本切片结束时保留。', { x: 50, y: 18, width: 11, height: 15 }, 12),
+    item('RUNTIME-ITM-G02-005-A', '短线 A', '铜芯完整的六接点短线。', { x: 22, y: 65, width: 13, height: 9 }, 38),
+    item('RUNTIME-ITM-G02-005-B', '短线 B', '护套磨旧的四接点短线。', { x: 78, y: 57, width: 12, height: 9 }, -23),
+    item('ITM-G02-006', '镜面屏片', '镜面涂层仍完整，能反射远处微弱的能量信号。', { x: 50, y: 18, width: 11, height: 15 }, 12),
   ],
   hotspots: [
     {

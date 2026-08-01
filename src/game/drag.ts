@@ -41,9 +41,11 @@ export class InventoryDragCoordinator {
   }
 
   #handleDragStart = (event: DragEvent): void => {
-    const element = (event.target as HTMLElement).closest<HTMLElement>('[data-inventory-item]')
-    const itemId = element?.dataset.inventoryItem
-    if (!itemId || !event.dataTransfer) return
+    const element = (event.target as HTMLElement).closest<HTMLElement>(
+      '[data-inventory-item], [data-mechanism-item]',
+    )
+    const itemId = element?.dataset.inventoryItem ?? element?.dataset.mechanismItem
+    if (!element || !itemId || !event.dataTransfer) return
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.setData('application/x-starwreck-item', itemId)
     element.dataset.dragging = 'true'
@@ -70,9 +72,11 @@ export class InventoryDragCoordinator {
 
   #handlePointerDown = (event: PointerEvent): void => {
     if (event.pointerType === 'mouse') return
-    const element = (event.target as HTMLElement).closest<HTMLElement>('[data-inventory-item]')
-    const itemId = element?.dataset.inventoryItem
-    if (!itemId) return
+    const element = (event.target as HTMLElement).closest<HTMLElement>(
+      '[data-inventory-item], [data-mechanism-item]',
+    )
+    const itemId = element?.dataset.inventoryItem ?? element?.dataset.mechanismItem
+    if (!element || !itemId) return
     this.#pointerDrag = {
       itemId,
       pointerId: event.pointerId,
@@ -114,4 +118,3 @@ export class InventoryDragCoordinator {
     this.#pointerDrag = null
   }
 }
-

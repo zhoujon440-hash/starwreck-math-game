@@ -5,16 +5,16 @@ import { G02_SCN02 } from '../scenes/g02/scn02'
 
 const boundaryState = {
   id: 'S0' as const,
-  title: '能源搜索边界',
-  objective: '垂直切片已完成',
-  narrative: '下一步将分流到发动机坑、电池洞穴、供暖棚或电线森林；本版本不开放这些玩法。',
+  title: '旧屏幕谷安全区',
+  objective: '留在安全区，等待七码确认四组能量信号的路线',
+  narrative: '发动机坑、电池洞穴、供暖棚和电线森林各有一组能量信号。垃圾雨尚未停歇，星宇先守住已经恢复的档案。',
   safeCheckpoint: true,
 }
 
 export const G02_ENERGY_SEARCH_BOUNDARY: SceneDefinition = {
   id: 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY',
-  title: '旧屏幕谷能源搜索边界',
-  playerTitle: '档案之后',
+  title: '旧屏幕谷安全区',
+  playerTitle: '四组能量信号',
   art: '/assets/g02/slice-01/scn02/SCENE-G02-003_tv-wall-archive.webp',
   initialState: 'S0',
   states: {
