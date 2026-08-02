@@ -1,0 +1,72 @@
+name: Trial Experience Gate
+
+on:
+  push:
+    branches:
+      - codex/trial-experience-shell-v1
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  trial-experience-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:trial-experience
+      - run: npm run test:trial-experience
+      - run: npm run validate:sources
+      - run: npm run validate:baseline
+      - run: npm run test:baseline
+      - run: npm run validate:characters
+      - run: npm run test:characters
+      - run: npm run validate:character-story
+      - run: npm run test:character-story
+      - run: npm run validate:g01-pr-a
+      - run: npm run test:g01-pr-a
+      - run: npm run validate:g01-pr-b
+      - run: npm run test:g01-pr-b
+      - run: npm run validate:g01-demo
+      - run: npm run test:g01-demo
+      - run: npm run validate:g02-slice-01
+      - run: npm run test:g02-slice-01
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run test:pwa
+      - run: npm run package:trial-experience
+      - name: Upload trial visual acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trial-experience-visual-acceptance-${{ github.run_number }}
+          path: |
+            test-results/**
+            playwright-report/**
+            playwright-pwa-report/**
+            docs/review/TRIAL_EXPERIENCE_VISUAL_ACCEPTANCE.md
+            docs/story-runtime/TRIAL_EXPERIENCE_COPY_MAPPING.md
+            docs/art/TRIAL_EXPERIENCE_ASSET_PROVENANCE.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload production ZIP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: starwreck-trial-0.2.0-${{ github.run_number }}
+          path: |
+            release/starwreck-trial-0.2.0.zip
+            release/starwreck-trial-0.2.0.sha256
+          if-no-files-found: error
+          retention-days: 30

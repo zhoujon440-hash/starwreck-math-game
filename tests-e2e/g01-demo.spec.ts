@@ -1,4 +1,5 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { enterTrialRuntime } from './helpers/trial-entry'
 
 test.use({ trace: 'on', video: 'on' })
 
@@ -98,6 +99,7 @@ test('SCN06—SCN07 complete the formal G01 demo handoff with persistent soft fa
 
   await seedPrC(page)
   await page.goto('/')
+  await enterTrialRuntime(page)
   await expect(page.locator('[data-scene-id="SCN-G01-06"]')).toBeVisible()
   await capture(page, info, 'scn06-01-initial.png')
 
@@ -231,6 +233,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   await page.goto('/')
   await page.evaluate(() => localStorage.clear())
   await page.reload()
+  await enterTrialRuntime(page)
   await page.getByRole('button', { name: '开始搜寻' }).click()
   await advanceDialogue(page, 2)
   await capture(page, info, 'full-00-scn00-initial.png')

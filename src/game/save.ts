@@ -121,6 +121,14 @@ export class LocalSaveRepository implements SaveRepository {
     this.#checkpointKey = `starwreck:checkpoint:${chapterId}:v1`
   }
 
+  get hasStoredSave(): boolean {
+    return this.storage.getItem(this.#saveKey) !== null
+  }
+
+  get recoveredFromCorruption(): boolean {
+    return this.hasStoredSave && parseSession(this.storage.getItem(this.#saveKey)) === null
+  }
+
   load(): GameSession | null {
     return parseSession(this.storage.getItem(this.#saveKey))
   }

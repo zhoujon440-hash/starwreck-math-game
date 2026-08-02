@@ -50,6 +50,14 @@ const itemById = (items: ItemDefinition[], itemId: string): ItemDefinition | und
 const PLAYER_SCENE_TITLE = '拾光号熄灯'
 const HINT_COOLDOWN_MS = 1_500
 
+export type GameViewOptions = {
+  onReturnToTitle?: () => void
+  onOpenArchive?: () => void
+  onOpenSettings?: () => void
+  onViewItem?: (itemId: string) => void
+  onRequestG02Recap?: () => boolean
+}
+
 export class GameView {
   readonly #drag: InventoryDragCoordinator
   readonly #dialogueRunner: DialogueRunner
@@ -80,6 +88,7 @@ export class GameView {
   constructor(
     private readonly root: HTMLElement,
     private readonly engine: GameEngine,
+    private readonly options: GameViewOptions = {},
   ) {
     this.#session = engine.snapshot
     this.#dialogueRunner = new DialogueRunner(
@@ -145,6 +154,12 @@ export class GameView {
     if (this.#recoveryDialogueTimer) window.clearTimeout(this.#recoveryDialogueTimer)
     if (this.#cargoDangerTimer) window.clearTimeout(this.#cargoDangerTimer)
     if (this.#routeWindowTimer) window.clearTimeout(this.#routeWindowTimer)
+  }
+
+  enterG02Slice(): void {
+    const result = this.engine.enterScene('SCN-G02-00')
+    this.#handleResult(result)
+    if (result.ok) this.#dialogueRunner.startTrigger('SCN-G02-00', '无')
   }
 
   #render(): void {
@@ -848,20 +863,23 @@ export class GameView {
       ? `<img class="inventory-art" src="${item.inventoryIcon}" alt="">`
       : '<i class="inventory-art" aria-hidden="true"></i>'
     return `
-      <button
-        class="inventory-item ${this.#selectedItemId === item.id ? 'is-selected' : ''}"
-        draggable="true"
-        data-action="select-item"
-        data-inventory-item="${item.id}"
-        style="${cropStyle}"
-        aria-pressed="${this.#selectedItemId === item.id}"
-      >
-        ${artwork}
-        <span>
-          <strong>${escapeHtml(item.name)}</strong>
-          <small>${escapeHtml(item.description)}</small>
-        </span>
-      </button>
+      <div class="inventory-entry">
+        <button
+          class="inventory-item ${this.#selectedItemId === item.id ? 'is-selected' : ''}"
+          draggable="true"
+          data-action="select-item"
+          data-inventory-item="${item.id}"
+          style="${cropStyle}"
+          aria-pressed="${this.#selectedItemId === item.id}"
+        >
+          ${artwork}
+          <span>
+            <strong>${escapeHtml(item.name)}</strong>
+            <small>${escapeHtml(item.description)}</small>
+          </span>
+        </button>
+        <button class="inventory-detail-button" data-action="item-details" data-item-id="${item.id}" aria-label="查看${escapeHtml(item.name)}详情">详情</button>
+      </div>
     `
   }
 
@@ -2153,9 +2171,8 @@ export class GameView {
         this.#handleResult(this.engine.completeG01Handoff())
         break
       case 'enter-g02-slice': {
-        const result = this.engine.enterScene('SCN-G02-00')
-        this.#handleResult(result)
-        if (result.ok) this.#dialogueRunner.startTrigger('SCN-G02-00', '无')
+        if (this.options.onRequestG02Recap?.() === true) break
+        this.enterG02Slice()
         break
       }
       case 'open-menu':
@@ -2167,6 +2184,23 @@ export class GameView {
         this.#menuOpen = false
         this.#render()
         break
+      case 'return-title':
+        this.#menuOpen = false
+        this.options.onReturnToTitle?.()
+        break
+      case 'open-trial-archive':
+        this.#menuOpen = false
+        this.options.onOpenArchive?.()
+        break
+      case 'open-trial-settings':
+        this.#menuOpen = false
+        this.options.onOpenSettings?.()
+        break
+      case 'item-details': {
+        const itemId = actionElement.dataset.itemId
+        if (itemId) this.options.onViewItem?.(itemId)
+        break
+      }
       case 'open-journal':
         this.#journalOpen = true
         this.#render()
@@ -3000,7 +3034,7 @@ export class GameView {
     return `
       <div class="modal-backdrop" data-action="close-menu"></div>
       <section class="story-modal demo-menu-modal" role="dialog" aria-modal="true" aria-labelledby="demo-menu-title">
-        <header><div><span class="eyebrow">${isG02Context ? 'G02 Slice · 0.1.0' : 'G01 Demo · 0.1.0'}</span><h2 id="demo-menu-title">${isG02Context ? '锈环星：旧屏幕谷' : '拾光号：坠落之前'}</h2></div>
+        <header><div><span class="eyebrow">本机旅程 · 0.2.0</span><h2 id="demo-menu-title">${isG02Context ? '锈环星：旧屏幕谷' : '拾光号：坠落之前'}</h2></div>
           <button class="icon-button" data-action="close-menu" aria-label="关闭主菜单">×</button>
         </header>
         <div class="demo-menu-copy">
@@ -3010,7 +3044,9 @@ export class GameView {
           <ul><li>进度会自动保存在本设备。</li><li>三级提示会完成当前合法步骤。</li><li>安装PWA后，首次完整加载完成即可离线继续。</li></ul>
           <div class="demo-menu-actions">
             <button class="primary-action" data-action="continue-game">继续游戏</button>
-            <button class="secondary-action" data-action="restart">开始新游戏并清除存档</button>
+            <button class="secondary-action" data-action="open-trial-archive">故事档案</button>
+            <button class="secondary-action" data-action="open-trial-settings">设置</button>
+            <button class="secondary-action" data-action="return-title">返回标题页</button>
           </div>
         </div>
       </section>

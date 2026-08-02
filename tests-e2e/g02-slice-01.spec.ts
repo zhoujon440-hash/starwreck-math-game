@@ -1,4 +1,5 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { enterTrialRuntime } from './helpers/trial-entry'
 
 test.use({ trace: 'on', video: 'on' })
 
@@ -137,6 +138,7 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
 
   await seedG01Handoff(page)
   await page.goto('/')
+  await enterTrialRuntime(page)
   await expect(page.locator('[data-scene-id="G02-BOUNDARY"]')).toBeVisible()
   await expect(page.getByRole('heading', { name: '旧屏幕谷外缘' })).toBeVisible()
   await capture(page, info, '00-g01-to-g02-handoff.png')

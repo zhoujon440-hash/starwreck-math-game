@@ -4,6 +4,7 @@
   "version": "0.2.2",
   "demoVersion": "G01-DEMO-0.1.0",
   "g02SliceVersion": "G02-SLICE-0.1.0",
+  "trialVersion": "STARWRECK-TRIAL-0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -27,6 +28,7 @@
     "validate:g01-pr-c": "node scripts/validate-g01-demo.mjs",
     "validate:g01-demo": "node scripts/validate-g01-demo.mjs",
     "validate:g02-slice-01": "node scripts/validate-g02-slice-01.mjs",
+    "validate:trial-experience": "node scripts/validate-trial-experience.mjs",
     "test:baseline": "node --test tests/baseline/*.test.mjs",
     "test:characters": "node --test tests/characters/*.test.mjs",
     "test:character-story": "vitest run tests/character-story/character-data.test.ts tests/character-story/dialogue.test.ts && node --test tests/character-story/character-story-negative.test.mjs",
@@ -35,8 +37,10 @@
     "test:g01-pr-c": "vitest run tests/g01-demo/runtime.test.ts && node --test tests/g01-demo/g01-demo-negative.test.mjs",
     "test:g01-demo": "vitest run tests/g01-demo/runtime.test.ts && node --test tests/g01-demo/g01-demo-negative.test.mjs",
     "test:g02-slice-01": "vitest run tests/g02-slice-01/runtime.test.ts && node --test tests/g02-slice-01/g02-slice-negative.test.mjs",
+    "test:trial-experience": "vitest run tests/trial-experience/runtime.test.ts && node --test tests/trial-experience/trial-experience-negative.test.mjs",
     "package:g01-demo": "node scripts/package-g01-demo.mjs",
     "package:g02-slice-01": "node scripts/package-g02-slice-01.mjs",
+    "package:trial-experience": "node scripts/package-trial-experience.mjs",
     "check": "npm run validate:sources && npm run validate:baseline && npm run test:baseline && npm run test && npm run build"
   },
   "dependencies": {
