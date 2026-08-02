@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
+import { enterTrialRuntime } from './helpers/trial-entry'
 
 const scn04ItemIds = [
   'RUNTIME-ITM-G01-010-A',
@@ -79,6 +80,7 @@ const seed = async (
     localStorage.setItem('starwreck:checkpoint:G01:v1', JSON.stringify(session))
   }, { currentSceneId: sceneId, readThrough })
   await page.reload()
+  await enterTrialRuntime(page)
   await expect(page.locator('.game-shell')).toHaveAttribute('data-scene-id', sceneId)
 }
 

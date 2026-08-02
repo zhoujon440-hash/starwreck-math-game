@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { enterTrialRuntime } from './helpers/trial-entry'
 
 const capture = async (
   page: Page,
@@ -39,6 +40,7 @@ test('SCN-G01-00 uses formal portraits, persistent dialogue, history and profile
   await page.goto('/')
   await page.evaluate(() => window.localStorage.clear())
   await page.reload()
+  await enterTrialRuntime(page)
   await page.getByRole('button', { name: '开始搜寻' }).click()
 
   const opening = page.locator('[data-dialogue-id="DLG-G01-0001"]')
@@ -104,6 +106,7 @@ test('SCN-G01-01 completes the formal HOPA recovery loop and restores from save'
   await page.goto('/')
   await page.evaluate(() => window.localStorage.clear())
   await page.reload()
+  await enterTrialRuntime(page)
   await page.getByRole('button', { name: '开始搜寻' }).click()
   await expect(page.locator('[data-dialogue-id="DLG-G01-0001"]')).toBeVisible()
   await capture(page, testInfo, '01-scn00-xingyu-dialogue.png')

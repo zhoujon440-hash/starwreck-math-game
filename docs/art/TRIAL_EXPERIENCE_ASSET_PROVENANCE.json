@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "version": "STARWRECK-TRIAL-0.2.0",
+  "authorization": "reuse_of_previously_accepted_runtime_assets",
+  "new_runtime_assets": [],
+  "new_runtime_asset_count": 0,
+  "transformations": [
+    "responsive_crop",
+    "vignette",
+    "depth_and_ui_overlay"
+  ],
+  "forbidden_sources": {
+    "pr_5_assets_used": false,
+    "third_party_network_assets_used": false,
+    "unregistered_generated_assets_used": false,
+    "design_board_used_directly": false
+  },
+  "reused_runtime_assets": [
+    {
+      "path": "public/assets/g01/pr-b/scn-g01-04/background/SCENE-G01-005_star_map_gap.webp",
+      "sha256": "d2f402eec263b1376a0bb40d6c364f5fab7d3a386da55a928e7d95bf37394a87"
+    },
+    {
+      "path": "public/assets/g01-cockpit-cabinet-closed-v2.png",
+      "sha256": "980e6488a060a0f05d24b65c881de7290597ff952d24975601e1b0d63f37080f"
+    },
+    {
+      "path": "public/assets/g01/scn-g01-01/background/SCENE-G01-002_navigation_core_cabin.webp",
+      "sha256": "ada681006aa88f58c836acf2e9fa6a9f97e22c1f4db35818291f0a2d1f597597"
+    },
+    {
+      "path": "public/assets/g02/slice-01/scn00/SCENE-G02-001_old-screen-valley-pulse.webp",
+      "sha256": "cba597d730da17c702ef8e1599d023bee5874d82265619d5f2b11cefa0259335"
+    },
+    {
+      "path": "public/assets/g02/slice-01/scn01/SCENE-G02-002_five-tail-rescue.webp",
+      "sha256": "fe5b37a08a9bee2e6142d005bf4894d7ab6fc6e6b636c5c4858d90bd91f23baf"
+    },
+    {
+      "path": "public/assets/g01-cockpit.png",
+      "sha256": "41ecc1dd838dbfa967971a852914e58a1fd129ea8058e6f19cc86aea9f804ca2"
+    },
+    {
+      "path": "public/assets/g01/pr-c/scn-g01-07/background/SCENE-G01-008_old_screen_valley_descent.webp",
+      "sha256": "a9985f32b19482f2dc89d13921577be1a319108c98f91a4d81d5ec69948c6080"
+    },
+    {
+      "path": "public/assets/g02/slice-01/scn02/SCENE-G02-003_tv-wall-archive.webp",
+      "sha256": "5ec475641e2aa4d357faf1e6f95c16d04d647cd0a17bdca67e6bbafb7937baca"
+    },
+    {
+      "path": "public/assets/characters/xingyu/xingyu_normal.png",
+      "sha256": "045971f487c68e882a2d4b08fea166155ad4f3b66f5f2b0ca770017211d0130c"
+    },
+    {
+      "path": "public/assets/characters/qima/qima_normal.png",
+      "sha256": "689515db49d360acb70c25c349d763c4c3f55ff560c61c7c2c0eae7caee951d2"
+    },
+    {
+      "path": "public/assets/g02/slice-01/characters/almao/almao_relieved.png",
+      "sha256": "7dece47bccae6edd1c073f3f369f93e7bf6e56eb5bfd46618e94c1267fa49a03"
+    },
+    {
+      "path": "public/assets/g02/slice-01/characters/zheng/zheng_warning.png",
+      "sha256": "e2c7e234f031b76d24c68c4dedac2ff0cce85336e733551850ba924828814d29"
+    }
+  ]
+}

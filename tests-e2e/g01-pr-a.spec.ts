@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
+import { enterTrialRuntime } from './helpers/trial-entry'
 
 const collectBrowserErrors = (page: Page): string[] => {
   const errors: string[] = []
@@ -146,6 +147,7 @@ const seedScene = async (
     )
   }, sceneId)
   await page.reload()
+  await enterTrialRuntime(page)
   await expect(page.locator('.game-shell')).toHaveAttribute(
     'data-scene-id',
     sceneId,

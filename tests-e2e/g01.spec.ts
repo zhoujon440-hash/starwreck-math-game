@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
+import { enterTrialRuntime } from './helpers/trial-entry'
 
 const cabinetItemHotspots = [
   ['ITM-G01-002', 'HOS-G01-001-01'],
@@ -51,6 +52,7 @@ const resetAndStart = async (page: Page): Promise<void> => {
   await page.goto('/')
   await page.evaluate(() => window.localStorage.clear())
   await page.reload()
+  await enterTrialRuntime(page)
   await page.getByRole('button', { name: '开始搜寻' }).click()
 }
 
