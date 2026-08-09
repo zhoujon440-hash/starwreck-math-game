@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "delivery": "github_release_sha256_verified_tar",
+  "release_tag": "source-baseline-mirror-v1",
+  "asset_name": "source-baseline-mirror-v1.tar",
+  "download_url": "https://github.com/zhoujon440-hash/starwreck-math-game/releases/download/source-baseline-mirror-v1/source-baseline-mirror-v1.tar",
+  "bundle_size": 342599680,
+  "bundle_sha256": "600573f9c1a4cd712349f177fc3deb09dd1ca0d3e46c323ed9bd16cf127a8f50",
+  "entries": [
+    { "path": "archive/legacy/corrupt/星骸拾荒者_Codex脚本与架构基线包_V1.0.zip", "size": 11626, "sha256": "1594cefcc551d1c6f5bc6cd86081ec81d621e0bcbb141540e5434e1bb5e39343" },
+    { "path": "archive/legacy/originals/星骸拾荒者_G01_HTML5-PWA可玩版_V1.0.zip", "size": 25908, "sha256": "62a3686c455d579572bcdf7a75281c4e106dd5d932d100858d3f206403b0be0b" },
+    { "path": "archive/legacy/originals/星骸拾荒者_Unity项目技术方案与G01-G02垂直切片开发包_V1.0.zip", "size": 116526, "sha256": "e503a3d949bcf41738c430e177aca11c5cb2d2592fb89190ca684bb923c865e7" },
+    { "path": "source_packages/originals-or-release-links/G-ANIM-01_图片解密游戏轻动效与骨骼动画方案_V1.0.docx", "size": 40300, "sha256": "c44dcfef7f8b15176f420eb267c50c0ad6aa0b8819f4ed9e26e8f86c333f9e28" },
+    { "path": "source_packages/originals-or-release-links/G-CHAR-01_主角星宇造型基线_V1.0_C方案布偶修正版.docx", "size": 40203, "sha256": "9d5a83301f9462ffd4d268048e4ed809680309b2cb78f9f244d6d3facdddd435" },
+    { "path": "source_packages/originals-or-release-links/G-S2-CHG-01_视觉路线与角色一致性修正记录_V1.0.docx", "size": 39919, "sha256": "a62e1c7df26ed537265dda4830cd7f3690d85e79046630869644e8b6e3641cb0" },
+    { "path": "source_packages/originals-or-release-links/G-S2-D01_S2视觉总方向关键决策冻结记录_V1.0.docx", "size": 40261, "sha256": "b746bec0e860b5a457b701d071d33f01316a1c6cc8f3205b06e92e3656b79a77" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_G01序章全量补齐与G01-G13整合正式包_V3.0.zip", "size": 2901474, "sha256": "85a20020d471e6dc77454b90e9d7792216db2555aef4e44fa729862ae9ddc043" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_G02-G13_Unity数据级制作脚本完整包_V2.1.zip", "size": 1112954, "sha256": "4db2cbb67e688aa7b55b5fe509f38377577e25a2259df3011c105f7c52c59708" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_G02-G13全章节HOPA实施脚本_V2.0.zip", "size": 762114, "sha256": "f8b9d6f628cac99e5ba799d9cac2f630c45650cf0489dad548de31f569e7eb35" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_G02制作脚本总封版与S2启动确认包_V1.0.zip", "size": 463087, "sha256": "2cc04b0a73275af35b8b905ee836123af704d04aea1695e943c38d94d535085e" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_G02锈环星_Unity数据级制作脚本_V2.1.zip", "size": 119980, "sha256": "20d755a73ac1715960cf2c5c5a95b89414d86c9c26c47be76b0a4e6fe5eeb92a" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_G03齿轮荒原_Unity数据级制作脚本_V2.1.zip", "size": 114204, "sha256": "409ab1be9a180d60eec1d4a15cb6917f628ae4d06d76ee34752d0f621185035b" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_HOPA架构与FX-001确认包_V1.0.zip", "size": 1282627, "sha256": "87e1c9f66c5c674c598f62ed69488d6417698aae78666cf749751cb8e93c4ae8" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_人物形象设计全集_V2.1_补齐版.zip", "size": 74253878, "sha256": "a31f21fbe0348be6ff1b9f7b21f53715ccf9dccf59d487cda2296fa4fdd0fceb" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_危险视觉HOPA正式包_V2.0.zip", "size": 61745430, "sha256": "981d9069efbc7627d4d64dbabd5795acb85f2a4098d9061ba7717d924669181b" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_场景美术设计全集_V1.0.zip", "size": 47905077, "sha256": "731cc680ee98eba1bf27474d4d613476dbbe02ca7fff7dfb1beb4b2bb0595de0" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_开发前资料与计划确认包_V1.1_星宇确认版.zip", "size": 291026, "sha256": "ed51f0f9e6e68eae09fd97fe85b7481b688b93ed06099e0bb1cf9e46090115f2" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_技能与装备效果HOPA正式包_V2.0.zip", "size": 30540605, "sha256": "882e933ca90917c37a6cd3c88d5988a2ce0ce8c6dbaf1d86e5f29102290ee5e1" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_机制可视化HOPA正式包_V2.0.zip", "size": 39204379, "sha256": "de7367d1ec06f97d3b8cca3c671ca9680f522f714929997d4a60fd9af1678b2f" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_界面美术HOPA正式包_V2.0.zip", "size": 49547246, "sha256": "827d4262dcf68acf50abdbe77a63192c78cc7b44bf588b389bcbdc612e1d537a" },
+    { "path": "source_packages/originals-or-release-links/星骸拾荒者_道具美术正式包_V3.0.zip", "size": 31998862, "sha256": "f712245f25945b234fd73d794b3ff6d6be39744da3a56324a34706ee85f6aa2d" }
+  ]
+}

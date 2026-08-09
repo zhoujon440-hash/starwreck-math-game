@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { solveTrialMechanic, type TrialMechanicType } from './helpers/trial-mechanics'
 
 test.use({ trace: 'on', video: 'on' })
 test.setTimeout(240_000)
@@ -12,18 +13,18 @@ const sceneRoute = [
 ]
 
 const mechanics = [
-  { sceneId: 'SCN-G01-00', state: 'S4', hotspot: 'HS-G01-0005', id: 'RUNTIME-PUZ-G01-ROTATING-CIRCUIT', type: 'rotating-circuit', targets: { 'input-junction': 1, 'relay-junction': 2, 'output-junction': 3 } },
-  { sceneId: 'SCN-G01-01', state: 'S5', hotspot: 'RUNTIME-HS-G01-01-BOOT-SEQUENCE', id: 'PUZ-G01-QIMA-BOOT', type: 'signal-memory', sequence: ['amber', 'cyan', 'white', 'violet'], tokens: ['cyan', 'amber', 'violet', 'white'] },
-  { sceneId: 'SCN-G01-02', state: 'S3', hotspot: 'RUNTIME-HS-G01-02-TASK-PUZZLE', id: 'RUNTIME-PUZ-G01-TASK-DEPENDENCY', type: 'task-order', sequence: ['pressure', 'patch', 'repress'], tokens: ['repress', 'pressure', 'patch'] },
-  { sceneId: 'SCN-G01-03', state: 'S3', hotspot: 'RUNTIME-HS-G01-03-GAUGE-PUZZLE', id: 'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION', type: 'airflow-maze', sequence: ['inlet', 'lower-valve', 'upper-valve', 'gauge'], tokens: ['inlet', 'upper-valve', 'ice-pocket', 'lower-valve', 'gauge'] },
-  { sceneId: 'SCN-G01-04', state: 'S3', hotspot: 'HS-G01-0018', id: 'TUT-MECH-002', type: 'star-map-snap', sequence: ['fragment-a', 'fragment-b', 'fragment-c'], tokens: ['fragment-c', 'fragment-a', 'fragment-b'] },
-  { sceneId: 'SCN-G01-05', state: 'S4', hotspot: 'HS-G01-0024', id: 'RUNTIME-PUZ-G01-GARBAGE-ROUTE', type: 'garbage-route', sequence: ['node-a', 'node-b', 'bypass-window', 'safe-landing'], tokens: ['node-a', 'wreck-field', 'node-b', 'bypass-window', 'safe-landing'] },
-  { sceneId: 'SCN-G01-06', state: 'S2', hotspot: 'RUNTIME-HS-G01-06-SIGNAL-ALIGNMENT', id: 'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT', type: 'waveform-tuning', targets: { frequency: 62, phase: 38, gain: 74 } },
-  { sceneId: 'SCN-G01-07', state: 'S3', hotspot: 'RUNTIME-HS-G01-07-IMPACT-DAMPING', id: 'RUNTIME-PUZ-G01-IMPACT-DAMPING', type: 'attitude-balance', targets: { pitch: 50, roll: 50 } },
-  { sceneId: 'SCN-G02-00', state: 'S2', hotspot: 'RUNTIME-HS-G02-00-PULSE-ZOOM', id: 'RUNTIME-PUZ-G02-PULSE-SCAN', type: 'pattern-decode', sequence: ['triple', 'double', 'triple'], tokens: ['double', 'triple', 'single', 'echo'] },
-  { sceneId: 'SCN-G02-01', state: 'S2', hotspot: 'RUNTIME-HS-G02-01-RESCUE-CONFIRM', id: 'RUNTIME-PUZ-G02-CRANE-COUNTERWEIGHT', type: 'crane-counterweight', sequence: ['weight-2-left', 'weight-1-right', 'weight-3-left'], tokens: ['weight-2-left', 'weight-1-right', 'weight-3-left'] },
-  { sceneId: 'SCN-G02-02', state: 'S5', hotspot: 'RUNTIME-HS-G02-02-ARCHIVE', id: 'RUNTIME-PUZ-G02-BORROW-RETURN', type: 'borrow-use-return', sequence: ['borrow-heater', 'use-heater', 'return-heater', 'borrow-screen', 'use-screen', 'return-screen'], tokens: ['borrow-heater', 'use-heater', 'return-heater', 'borrow-screen', 'use-screen', 'return-screen'] },
-] as const
+  { sceneId: 'SCN-G01-00', state: 'S4', hotspot: 'HS-G01-0005', id: 'RUNTIME-PUZ-G01-ROTATING-CIRCUIT', type: 'rotating-circuit' },
+  { sceneId: 'SCN-G01-01', state: 'S5', hotspot: 'RUNTIME-HS-G01-01-BOOT-SEQUENCE', id: 'PUZ-G01-QIMA-BOOT', type: 'signal-memory' },
+  { sceneId: 'SCN-G01-02', state: 'S3', hotspot: 'RUNTIME-HS-G01-02-TASK-PUZZLE', id: 'RUNTIME-PUZ-G01-TASK-DEPENDENCY', type: 'task-order' },
+  { sceneId: 'SCN-G01-03', state: 'S3', hotspot: 'RUNTIME-HS-G01-03-GAUGE-PUZZLE', id: 'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION', type: 'airflow-maze' },
+  { sceneId: 'SCN-G01-04', state: 'S3', hotspot: 'HS-G01-0018', id: 'TUT-MECH-002', type: 'star-map-snap' },
+  { sceneId: 'SCN-G01-05', state: 'S4', hotspot: 'HS-G01-0024', id: 'RUNTIME-PUZ-G01-GARBAGE-ROUTE', type: 'garbage-route' },
+  { sceneId: 'SCN-G01-06', state: 'S2', hotspot: 'RUNTIME-HS-G01-06-SIGNAL-ALIGNMENT', id: 'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT', type: 'waveform-tuning' },
+  { sceneId: 'SCN-G01-07', state: 'S3', hotspot: 'RUNTIME-HS-G01-07-IMPACT-DAMPING', id: 'RUNTIME-PUZ-G01-IMPACT-DAMPING', type: 'attitude-balance' },
+  { sceneId: 'SCN-G02-00', state: 'S2', hotspot: 'RUNTIME-HS-G02-00-PULSE-ZOOM', id: 'RUNTIME-PUZ-G02-PULSE-SCAN', type: 'pattern-decode' },
+  { sceneId: 'SCN-G02-01', state: 'S2', hotspot: 'RUNTIME-HS-G02-01-RESCUE-CONFIRM', id: 'RUNTIME-PUZ-G02-CRANE-COUNTERWEIGHT', type: 'crane-counterweight' },
+  { sceneId: 'SCN-G02-02', state: 'S5', hotspot: 'RUNTIME-HS-G02-02-ARCHIVE', id: 'RUNTIME-PUZ-G02-BORROW-RETURN', type: 'borrow-use-return' },
+] as const satisfies readonly { sceneId: string; state: string; hotspot: string; id: string; type: TrialMechanicType }[]
 
 const sessionFor = (sceneId: string, sceneState: string) => {
   const index = sceneRoute.indexOf(sceneId)
@@ -78,6 +79,18 @@ const capture = async (page: Page, info: TestInfo, name: string) => {
   await page.screenshot({ path: join(output, name), fullPage: true, animations: 'disabled' })
 }
 
+const expectNoQimaIdentityLeak = async (page: Page) => {
+  expect(await page.locator('body').innerText()).not.toContain('七码')
+  await expect(page.locator('[aria-label*="七码"], [alt*="七码"], [title*="七码"]')).toHaveCount(0)
+  await expect(page.locator('[data-character-card-id="CHAR-QIMA"]')).toHaveCount(0)
+  await expect(page.locator('.character-profile[data-character-id="CHAR-QIMA"]')).toHaveCount(0)
+}
+
+const dragMechanic = async (page: Page, type: string, token: string, slot: string) => {
+  const panel = page.locator(`[data-trial-mechanic="${type}"]`)
+  await panel.locator(`[data-mechanic-draggable][data-mechanic-target="${token}"]`).dragTo(panel.locator(`[data-mechanic-dropzone="${slot}"]`))
+}
+
 test('all eleven levels expose distinct real controls and four persistent states', async ({ page }, info) => {
   const errors: string[] = []
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()) })
@@ -89,38 +102,34 @@ test('all eleven levels expose distinct real controls and four persistent states
     await expect(panel).toHaveAttribute('data-mechanic-status', 'initial')
     await capture(page, info, `${String(index + 1).padStart(2, '0')}-${mechanic.type}-initial.png`)
 
-    if ('sequence' in mechanic) {
-      const wrong = mechanic.tokens.find((token) => token !== mechanic.sequence[0])!
-      await panel.locator(`[data-mechanic-target="${wrong}"]`).click()
-    } else {
-      await panel.locator('[data-action="mechanic-submit"]').click()
-    }
+    if (mechanic.type === 'signal-memory') {
+      await panel.locator('[data-action="mechanic-play"]').click()
+      await panel.locator('[data-mechanic-target="cyan"]').click()
+    } else if (mechanic.type === 'airflow-maze') await panel.locator('[data-mechanic-target="ice-pocket"]').click()
+    else if (mechanic.type === 'garbage-route') await panel.locator('[data-mechanic-target="wreck-field"]').click()
+    else await panel.locator('[data-action="mechanic-submit"]').click()
     await expect(panel).toHaveAttribute('data-mechanic-status', 'error')
     await capture(page, info, `${String(index + 1).padStart(2, '0')}-${mechanic.type}-error.png`)
 
-    if ('sequence' in mechanic) {
-      await panel.locator(`[data-mechanic-target="${mechanic.sequence[0]}"]`).click()
-    } else if (mechanic.type === 'rotating-circuit') {
-      await panel.locator('[data-mechanic-target="input-junction"]').click()
-    } else {
-      const [target, value] = Object.entries(mechanic.targets)[0]
-      await panel.locator(`[data-mechanic-range="${target}"]`).fill(String(value))
-    }
+    if (mechanic.type === 'rotating-circuit') await panel.locator('[data-mechanic-target="input-junction"]').click()
+    else if (mechanic.type === 'signal-memory') {
+      await panel.locator('[data-action="mechanic-play"]').click()
+      await panel.locator('[data-mechanic-target="amber"]').click()
+    } else if (mechanic.type === 'task-order') await dragMechanic(page, mechanic.type, 'pressure', 'timeline-1')
+    else if (mechanic.type === 'airflow-maze') await panel.locator('[data-mechanic-target="inlet"]').click()
+    else if (mechanic.type === 'star-map-snap') {
+      await panel.locator('[data-action="mechanic-rotate"][data-mechanic-target="fragment-a"]').click()
+      await dragMechanic(page, mechanic.type, 'fragment-a', 'star-slot-a')
+    } else if (mechanic.type === 'garbage-route') await panel.locator('[data-mechanic-target="node-a"]').click()
+    else if (mechanic.type === 'waveform-tuning') await panel.locator('[data-mechanic-range="frequency"]').fill('62')
+    else if (mechanic.type === 'attitude-balance') await panel.locator('[data-mechanic-range="pitch"]').fill('50')
+    else if (mechanic.type === 'pattern-decode') await panel.locator('[data-mechanic-range="pulse-1"]').fill('3')
+    else if (mechanic.type === 'crane-counterweight') await dragMechanic(page, mechanic.type, 'weight-1', 'right-far')
+    else await dragMechanic(page, mechanic.type, 'borrow-heater', 'heater-borrow')
     await expect(panel).toHaveAttribute('data-mechanic-status', 'partial')
     await capture(page, info, `${String(index + 1).padStart(2, '0')}-${mechanic.type}-partial.png`)
 
-    if ('sequence' in mechanic) {
-      for (const token of mechanic.sequence.slice(1)) await panel.locator(`[data-mechanic-target="${token}"]`).click()
-    } else if (mechanic.type === 'rotating-circuit') {
-      for (const [target, clicks] of Object.entries(mechanic.targets)) {
-        const already = target === 'input-junction' ? 1 : 0
-        for (let click = already; click < clicks; click += 1) await panel.locator(`[data-mechanic-target="${target}"]`).click()
-      }
-    } else {
-      for (const [target, value] of Object.entries(mechanic.targets).slice(1)) {
-        await panel.locator(`[data-mechanic-range="${target}"]`).fill(String(value))
-      }
-    }
+    await solveTrialMechanic(page, mechanic.type, { close: false })
     await expect(panel).toHaveAttribute('data-mechanic-status', 'complete')
     await capture(page, info, `${String(index + 1).padStart(2, '0')}-${mechanic.type}-complete.png`)
     const persisted = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? '{}'), saveKey)
@@ -137,19 +146,23 @@ test('Qima is revealed by repair, boot, self-introduction and mission dialogue b
   session.unlockedCharacterIds = ['CHAR-XINGYU']
   session.characterStates['CHAR-QIMA'] = 'booting'
   await seed(page, session, ['CHAR-XINGYU'])
-  await expect(page.locator('[data-character-card-id="CHAR-QIMA"]')).toHaveCount(0)
+  await expectNoQimaIdentityLeak(page)
   await page.locator('[data-hotspot-id="RUNTIME-HS-G01-01-BOOT-SEQUENCE"]').click()
+  await expectNoQimaIdentityLeak(page)
+  await page.locator('[data-action="mechanic-play"]').click()
   for (const token of ['amber', 'cyan', 'white', 'violet']) await page.locator(`[data-mechanic-target="${token}"]`).click()
   await expect(page.locator('[data-mechanic-status="complete"]')).toBeVisible()
+  await expectNoQimaIdentityLeak(page)
   await capture(page, info, 'qima-boot-complete-before-reveal.png')
   await page.getByRole('button', { name: '关闭启动信号记忆' }).click()
   await expect(page.locator('[data-dialogue-id="DLG-G01-0004"]')).toBeVisible()
   for (const id of ['DLG-G01-0004', 'DLG-G01-0005', 'DLG-G01-0006']) {
     await expect(page.locator(`[data-dialogue-id="${id}"]`)).toBeVisible()
-    await expect(page.locator('[data-character-card-id="CHAR-QIMA"]')).toHaveCount(0)
+    await expectNoQimaIdentityLeak(page)
     await page.getByRole('button', { name: '下一句' }).click()
   }
   await expect(page.locator('[data-dialogue-id="DLG-G01-0025"]')).toContainText('EDU-0077')
+  await expect(page.locator('body')).toContainText('七码')
   await capture(page, info, 'qima-self-introduction.png')
   for (const id of ['DLG-G01-0025', 'DLG-G01-0026', 'DLG-G01-0027']) {
     await expect(page.locator(`[data-dialogue-id="${id}"]`)).toBeVisible()

@@ -4,6 +4,12 @@ import { withBaseAssets } from './assetPath'
 const escapeHtml = (value: string): string =>
   value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character] ?? character)
 
+const storyCharacterPortrait = (characterId: string): string => characterId === 'CHAR-XINGYU'
+  ? '<img src="/assets/characters/xingyu/xingyu_normal.png" alt="星宇正式立绘">'
+  : characterId === 'CHAR-QIMA'
+    ? '<img src="/assets/characters/qima/qima_normal.png" alt="七码正式立绘">'
+    : ''
+
 export class StoryIntro {
   renderCard(card: StoryCardDefinition, index: number, total: number, replay = false): string {
     return withBaseAssets(`
@@ -16,8 +22,7 @@ export class StoryIntro {
           <p>${escapeHtml(card.body)}</p>
           ${card.characterIds?.length
             ? `<div class="story-character-pair">
-                <img src="/assets/characters/xingyu/xingyu_normal.png" alt="星宇正式立绘">
-                <img src="/assets/characters/qima/qima_normal.png" alt="七码正式立绘">
+                ${card.characterIds.map(storyCharacterPortrait).join('')}
               </div>`
             : ''}
           <footer>

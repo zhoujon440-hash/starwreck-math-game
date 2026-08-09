@@ -11,14 +11,14 @@ jobs:
   baseline-gate:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository and Git LFS objects
+      - name: Check out repository without Git LFS bandwidth dependency
         uses: actions/checkout@v4
-        with:
-          lfs: true
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+      - name: Restore SHA-256 verified formal source mirror
+        run: node scripts/restore-formal-source-mirror.mjs
       - name: Install dependencies
         run: npm ci
       - name: Validate source import integrity

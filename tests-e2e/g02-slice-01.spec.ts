@@ -201,7 +201,7 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
     page.getByRole('heading', { name: '脉冲规律解码' }),
   ).toBeVisible()
   await capture(page, info, '05a-scn00-pulse-initial.png')
-  await page.locator('[data-mechanic-target="double"]').click()
+  await page.locator('[data-action="mechanic-submit"]').click()
   await expect(page.locator('[data-trial-mechanic="pattern-decode"]')).toHaveAttribute('data-mechanic-status', 'error')
   await capture(page, info, '05b-scn00-pulse-wrong-retained.png')
   await page.getByRole('button', { name: '关闭脉冲规律解码' }).click()
@@ -216,10 +216,10 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   await page.waitForTimeout(550)
   await page.getByRole('button', { name: '打开七码封存脉冲扫描近景' }).click()
   await expect(page.locator('[data-trial-mechanic="pattern-decode"]')).toHaveAttribute('data-mechanic-status', 'partial')
-  await expect(page.locator('[data-mechanic-target="triple"]')).toHaveClass(/is-confirmed/)
+  await expect(page.locator('[data-mechanic-range="pulse-1"]')).toHaveValue('3')
   await capture(page, info, '05e-scn00-hint-one-control-only.png')
 
-  await page.locator('[data-mechanic-target="double"]').click()
+  await page.locator('[data-mechanic-range="pulse-2"]').fill('2')
   await capture(page, info, '05f-scn00-pulse-partial-calibration.png')
   await solveTrialMechanic(page, 'pattern-decode')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S3/)

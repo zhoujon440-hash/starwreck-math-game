@@ -373,7 +373,7 @@ test('visual acceptance covers calibrated layers, disappearance and browser relo
 
   await clickHotspotCenter(page, 'HS-G01-0006')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S6/)
-  await expect(page.getByRole('heading', { name: '继续寻找七码' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '继续寻找受损导航设备' })).toBeVisible()
   await expectProductionUi(page)
   await expectWorldStarCoreCountZero(page)
   await captureAcceptance(page, testInfo, '07-production-ui-no-dev-copy.png')

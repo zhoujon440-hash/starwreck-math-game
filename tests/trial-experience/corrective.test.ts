@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { G01 } from '../../src/content/g01'
 import { characterNarrativelyRevealed } from '../../src/data/trial/characterReveal'
+import { presentIdentityMarkup } from '../../src/data/dialogue/presentation'
 import { SCENE_EXPERIENCES } from '../../src/data/trial/sceneExperiences'
 import { GameEngine } from '../../src/game/engine'
 import {
@@ -36,24 +37,35 @@ describe('trial experience P0 corrective contracts', () => {
       let progress = initialMechanicProgress(sceneId)
       expect(progress.status).toBe('initial')
       if (definition.sequence) {
+        if (mechanicType === 'signal-memory') {
+          progress = applyTrialMechanicAction(sceneId, progress, { kind: 'play' })
+          expect(progress.values.playbackSeen).toBe(true)
+        }
         const wrong = definition.tokens.find((token) => token !== definition.sequence?.[0])!
         progress = applyTrialMechanicAction(sceneId, progress, { kind: 'choose', target: wrong })
         expect(progress.status).toBe('error')
         expect(progress.confirmedSteps).toEqual([])
+        if (mechanicType === 'signal-memory') progress = applyTrialMechanicAction(sceneId, progress, { kind: 'play' })
         for (const token of definition.sequence) {
           progress = applyTrialMechanicAction(sceneId, progress, { kind: 'choose', target: token })
           if (token !== definition.sequence.at(-1)) expect(progress.status).toBe('partial')
         }
       } else {
-        const entries = Object.entries(definition.targetValues ?? {})
         progress = applyTrialMechanicAction(sceneId, progress, { kind: 'submit' })
         expect(progress.status).toBe('error')
-        const [firstKey, firstValue] = entries[0]
-        progress = applyTrialMechanicAction(sceneId, progress, { kind: 'set', target: firstKey, value: firstValue })
-        expect(['partial', 'complete']).toContain(progress.status)
-        for (const [target, value] of entries.slice(1)) {
+        const placements = Object.entries(definition.targetPlacements ?? {})
+        const values = Object.entries(definition.targetValues ?? {})
+        const first = placements[0] ?? values[0]
+        if (placements[0]) progress = applyTrialMechanicAction(sceneId, progress, { kind: 'place', target: first[0], slot: String(first[1]) })
+        else progress = applyTrialMechanicAction(sceneId, progress, { kind: 'set', target: first[0], value: Number(first[1]) })
+        expect(progress.status).toBe('partial')
+        for (const [target, slot] of placements.slice(placements[0] ? 1 : 0)) {
+          progress = applyTrialMechanicAction(sceneId, progress, { kind: 'place', target, slot })
+        }
+        for (const [target, value] of values.slice(placements[0] ? 0 : 1)) {
           progress = applyTrialMechanicAction(sceneId, progress, { kind: 'set', target, value })
         }
+        progress = applyTrialMechanicAction(sceneId, progress, { kind: 'submit' })
       }
       expect(progress.status).toBe('complete')
       expect(progress.mistakes).toBeGreaterThanOrEqual(definition.sequence ? 1 : 0)
@@ -95,6 +107,20 @@ describe('trial experience P0 corrective contracts', () => {
     expect(characterNarrativelyRevealed('CHAR-ALMAO', engine.snapshot)).toBe(false)
     engine.updateStory((draft) => { draft.flags.qima_identity_revealed = true })
     expect(characterNarrativelyRevealed('CHAR-QIMA', engine.snapshot)).toBe(true)
+  })
+
+  it('conceals Qima in visible text and accessibility attributes until self-introduction', () => {
+    const hidden = presentIdentityMarkup(
+      { flags: { qima_identity_revealed: false } },
+      '<h1>找回七码</h1><button aria-label="检查七码芯片">七码维修</button>',
+    )
+    expect(hidden).not.toContain('七码')
+    expect(hidden).toContain('受损导航设备芯片')
+    expect(presentIdentityMarkup({ flags: { qima_identity_revealed: true } }, hidden.replaceAll('受损导航设备', '七码'))).toContain('七码')
+    const intro = readFileSync('src/ui/StoryIntro.ts', 'utf8')
+    const story = readFileSync('src/data/trial/story.ts', 'utf8')
+    expect(story).toContain("characterIds: ['CHAR-XINGYU']")
+    expect(intro).toContain('card.characterIds.map(storyCharacterPortrait)')
   })
 
   it('uses a white shell without altering scene-art assets', () => {

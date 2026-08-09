@@ -16,12 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          lfs: true
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+      - name: Restore SHA-256 verified formal source mirror
+        run: node scripts/restore-formal-source-mirror.mjs
       - run: npm ci
       - run: npm run validate:trial-experience
       - run: npm run test:trial-experience

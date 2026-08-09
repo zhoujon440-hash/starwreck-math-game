@@ -155,7 +155,7 @@ test('SCN-G01-01 completes the formal HOPA recovery loop and restores from save'
 
   await clickHotspot(page, 'HS-G01-0006')
   await expect(
-    page.getByRole('dialog', { name: '找回七码的维修组件' }),
+    page.getByRole('dialog', { name: '找回受损导航设备的维修组件' }),
   ).toBeVisible()
   await expect(page.locator('.qima-hos-art .collectible-object')).toHaveCount(4)
   await expect(page.locator('.qima-hos-art .hos-distractor-object')).toHaveCount(6)

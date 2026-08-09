@@ -11,6 +11,7 @@ import { CharacterPortrait } from '../components/characters/CharacterPortrait'
 import { characterData } from '../data/characters'
 import { G01_DIALOGUE } from '../data/dialogue/g01'
 import { G02_DIALOGUE } from '../data/dialogue/g02'
+import { presentIdentityMarkup } from '../data/dialogue/presentation'
 import { g02HintById } from '../data/hints/g02'
 import { PLAYER_SCENE_IDS, SCENE_EXPERIENCES, sceneExperience } from '../data/trial/sceneExperiences'
 import { characterNarrativelyRevealed } from '../data/trial/characterReveal'
@@ -244,7 +245,7 @@ export class GameView {
         ? '/assets/g01-cockpit-cabinet-closed-v2.png'
         : scene.art
 
-    this.root.innerHTML = this.#withBaseAssets(`
+    this.root.innerHTML = presentIdentityMarkup(this.#session, this.#withBaseAssets(`
       <main
         class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery || isPrCRecovery || isG02Recovery ? 'is-cargo-safe-recovery' : ''}"
         data-debug-ui="${DEBUG_UI}"
@@ -699,7 +700,7 @@ export class GameView {
           <p>横屏能保留完整的场景细节与背包操作区。</p>
         </div>
       </main>
-    `)
+    `))
     if (
       isScn01 &&
       this.#session.sceneState === 'S6' &&
@@ -2094,11 +2095,13 @@ export class GameView {
   }
 
   #handleMechanicDrop = (event: DragEvent): void => {
-    if (!(event.target as HTMLElement).closest('[data-mechanic-dropzone]')) return
+    const dropzone = (event.target as HTMLElement).closest<HTMLElement>('[data-mechanic-dropzone]')
+    if (!dropzone) return
     const target = event.dataTransfer?.getData('application/x-starwreck-mechanic')
-    if (!target) return
+    const slot = dropzone.dataset.mechanicDropzone
+    if (!target || !slot) return
     event.preventDefault()
-    this.#performMechanic({ kind: 'choose', target })
+    this.#performMechanic({ kind: 'place', target, slot })
   }
 
   #handleClick = (event: MouseEvent): void => {
@@ -2324,10 +2327,12 @@ export class GameView {
       }
       case 'mechanic-rotate': {
         const target = actionElement.dataset.mechanicTarget
-        const current = Number(actionElement.dataset.mechanicValue ?? 0)
-        if (target) this.#performMechanic({ kind: 'set', target, value: (current + 1) % 4 })
+        if (target) this.#performMechanic({ kind: 'rotate', target })
         break
       }
+      case 'mechanic-play':
+        this.#performMechanic({ kind: 'play' })
+        break
       case 'mechanic-submit':
         this.#performMechanic({ kind: 'submit' })
         break

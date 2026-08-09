@@ -403,7 +403,8 @@ describe('G02 vertical slice runtime', () => {
     expect(engine.completeHintStep(hints[2]!).ok).toBe(true)
     expect(engine.snapshot.mechanicProgress['RUNTIME-PUZ-G02-PULSE-SCAN']).toMatchObject({
       status: 'partial',
-      confirmedSteps: ['triple'],
+      confirmedSteps: [],
+      values: { 'pulse-1': 3 },
     })
     expect(engine.snapshot.completedPuzzleIds).not.toContain('RUNTIME-PUZ-G02-PULSE-SCAN')
     expect(engine.snapshot.transitionLog.length).toBe(before)

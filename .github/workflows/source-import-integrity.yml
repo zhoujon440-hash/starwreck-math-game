@@ -11,6 +11,7 @@ on:
       - "scripts/import_source_baseline.py"
       - "scripts/baseline*.mjs"
       - "scripts/validate-source-import.mjs"
+      - "scripts/restore-formal-source-mirror.mjs"
       - "config/baseline-policy.json"
       - "source_packages/**"
       - "package.json"
@@ -24,6 +25,7 @@ on:
       - "scripts/import_source_baseline.py"
       - "scripts/baseline*.mjs"
       - "scripts/validate-source-import.mjs"
+      - "scripts/restore-formal-source-mirror.mjs"
       - "config/baseline-policy.json"
       - "source_packages/**"
       - "package.json"
@@ -33,11 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Restore SHA-256 verified formal source mirror
+        run: node scripts/restore-formal-source-mirror.mjs
       - name: Verify imported source packages, extraction, and catalogs
         env:
           REQUIRE_LFS_OBJECTS: "1"

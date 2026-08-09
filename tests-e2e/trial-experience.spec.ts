@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 test.use({ trace: 'on', video: 'on' })
 
@@ -225,9 +226,7 @@ test('Almao and Zheng character cards appear once at their formal first encounte
     page.locator('[data-drop-target="HS-G02-0003"]'),
   )
   await page.locator('[data-hotspot-id="RUNTIME-HS-G02-01-RESCUE-CONFIRM"]').click()
-  for (const token of ['weight-2-left', 'weight-1-right', 'weight-3-left']) {
-    await page.locator(`[data-mechanic-target="${token}"]`).click()
-  }
+  await solveTrialMechanic(page, 'crane-counterweight', { close: false })
   await expect(page.locator('[data-mechanic-status="complete"]')).toBeVisible()
   await page.getByRole('button', { name: '关闭吊臂配重救援' }).click()
   await page.getByRole('button', { name: '下一句' }).click()

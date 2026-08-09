@@ -14,6 +14,7 @@ import { PLAYER_SCENE_IDS, sceneExperience } from '../data/trial/sceneExperience
 import {
   applyTrialMechanicAction,
   initialMechanicProgress,
+  nextLegalMechanicAction,
   TRIAL_MECHANICS,
   type TrialMechanicAction,
 } from './minigames/trialMechanics'
@@ -904,18 +905,10 @@ export class GameEngine {
       const definition = TRIAL_MECHANICS[experience.mechanicType]
       const progress = this.#session.mechanicProgress[experience.mechanicId] ??
         initialMechanicProgress(sceneId)
-      if (definition.sequence) {
-        const nextToken = definition.sequence[progress.confirmedSteps.length]
-        return nextToken
-          ? this.performTrialMechanic({ kind: 'choose', target: nextToken })
-          : { ok: false, message: '机关步骤已经全部确认。' }
-      }
-      const nextValue = Object.entries(definition.targetValues ?? {}).find(
-        ([target, value]) => Number(progress.values[target] ?? -1) !== value,
-      )
-      return nextValue
-        ? this.performTrialMechanic({ kind: 'set', target: nextValue[0], value: nextValue[1] })
-        : { ok: false, message: '机关参数已经全部确认。' }
+      const action = nextLegalMechanicAction(definition, progress)
+      return action
+        ? this.performTrialMechanic(action)
+        : { ok: false, message: '机关步骤已经全部确认。' }
     }
     if (
       hint.hotspot.zoomId &&
@@ -1017,9 +1010,9 @@ export class GameEngine {
       const definition = TRIAL_MECHANICS['pattern-decode']
       const progress = this.#session.mechanicProgress[experience!.mechanicId] ??
         initialMechanicProgress('SCN-G02-00')
-      const nextToken = definition.sequence?.[progress.confirmedSteps.length]
-      return nextToken
-        ? this.performTrialMechanic({ kind: 'choose', target: nextToken })
+      const action = nextLegalMechanicAction(definition, progress)
+      return action
+        ? this.performTrialMechanic(action)
         : { ok: false, message: '三格规律都已确认，请关闭近景继续调查。' }
     }
 

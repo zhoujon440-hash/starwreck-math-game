@@ -32,9 +32,13 @@ let engine = read('src/game/engine.ts')
 let gameTypes = read('src/game/types.ts')
 let characterReveal = read('src/data/trial/characterReveal.ts')
 let dialoguePresentation = read('src/data/dialogue/presentation.ts')
+let storyIntro = read('src/ui/StoryIntro.ts')
+let correctiveE2e = read('tests-e2e/trial-experience-corrective.spec.ts')
+let trialWorkflow = read('.github/workflows/trial-experience-gate.yml')
 let styles = read('src/styles.css')
 let packageConfig = json('package.json')
 const assetProvenance = json('docs/art/TRIAL_EXPERIENCE_ASSET_PROVENANCE.json')
+const sourceMirror = json('source_packages/manifests/formal-source-mirror.json')
 
 const mutation = process.argv.find((arg) => arg.startsWith('--mutation='))?.split('=')[1]
 if (mutation) {
@@ -59,6 +63,9 @@ if (mutation) {
     'revisit-regresses-mainline': () => { engine = engine.replace('if (enteredOrder > mainlineOrder) next.mainlineSceneId = sceneId', 'next.mainlineSceneId = sceneId') },
     'qima-card-early': () => { app += "\nconst earlyCard = ['CHAR-QIMA']" },
     'dark-shell': () => { styles = styles.replace('--light-panel: #ffffff', '--light-panel: #08111d') },
+    'identity-markup-bypass': () => { dialoguePresentation = dialoguePresentation.replace("markup.replaceAll('七码', CONCEALED_QIMA_NAME)", 'markup') },
+    'sequence-button-restored': () => { mechanics = mechanics.replace("targetPlacements: { pressure: 'timeline-1'", "sequence: ['pressure', 'patch', 'repress'], removedPlacements: { pressure: 'timeline-1'") },
+    'lfs-checkout-restored': () => { trialWorkflow += '\n          lfs: true' },
   }
   if (!actions[mutation]) failures.push(`TRIAL-FIXTURE-001: unknown mutation ${mutation}`)
   else actions[mutation]()
@@ -99,6 +106,16 @@ check(mechanics.includes("'initial'" ) && mechanics.includes("'error'") && mecha
 check(mechanicPanel.includes('data-mechanic-draggable') && mechanicPanel.includes('data-mechanic-range'), 'TRIAL-MECHANIC-002', 'real drag and pointer/range controls are missing')
 check(!mechanicPanel.includes('data-answer='), 'TRIAL-MECHANIC-003', 'an exposed answer button is present')
 check(gameView.includes('performTrialMechanic') && gameView.includes('data-action="open-map"'), 'TRIAL-MECHANIC-004', 'mechanics or scene map are not wired into the runtime')
+check((mechanics.match(/sequence:/g) ?? []).length === 3, 'TRIAL-MECHANIC-005', 'button-sequence model leaked into a non-memory/non-path mechanic')
+check(mechanics.includes("pressure: 'timeline-1'") && mechanicPanel.includes('task-timeline') && mechanicPanel.includes('data-mechanic-dropzone'), 'TRIAL-MECHANIC-006', 'task ordering is not a drag/reorder then submit interaction')
+check(mechanicPanel.includes('data-playback-seen') && mechanicPanel.includes('mechanic-play'), 'TRIAL-MECHANIC-007', 'signal memory lacks a playback-before-reproduction phase')
+check(mechanicPanel.includes('safe-pipe') && mechanicPanel.includes('dead-pipe') && mechanicPanel.includes('maze-node'), 'TRIAL-MECHANIC-008', 'airflow maze lacks spatial branches and a dead end')
+check(mechanics.includes("'fragment-a': 'star-slot-a'") && mechanicPanel.includes('star-piece') && mechanicPanel.includes('mechanic-rotate'), 'TRIAL-MECHANIC-009', 'star map lacks independent drag, rotation and target slots')
+check(mechanicPanel.includes('safe-edge') && mechanicPanel.includes('danger-edge') && mechanicPanel.includes('route-node'), 'TRIAL-MECHANIC-010', 'route planning lacks an edge graph and danger constraint')
+check(mechanicPanel.includes('waveform-board') && mechanicPanel.includes('attitude-board') && mechanicPanel.includes('data-mechanic-range'), 'TRIAL-MECHANIC-011', 'continuous waveform or two-axis attitude inputs are missing')
+check(mechanics.includes("'pulse-1': 3") && mechanicPanel.includes('pulse-wave-board') && !mechanics.includes("sequence: ['triple'"), 'TRIAL-MECHANIC-012', 'G02 pulse decoding is still a text sequence')
+check(mechanics.includes("'weight-1': 'right-far'") && mechanicPanel.includes('crane-board'), 'TRIAL-MECHANIC-013', 'crane rescue lacks physical weight-to-hook placement')
+check(mechanics.includes("'borrow-heater': 'heater-borrow'") && mechanicPanel.includes('archive-logic-board'), 'TRIAL-MECHANIC-014', 'borrow/use/return lacks object-to-record spatial matching')
 
 check(gameTypes.includes('mainlineSceneId') && gameTypes.includes('unlockedSceneIds') && gameTypes.includes('completedSceneIds'), 'TRIAL-REVISIT-001', 'save model does not separate viewed scene from mainline')
 check(engine.includes('visitScene(sceneId: string)') && engine.includes('returnToMainline()'), 'TRIAL-REVISIT-002', 'scene revisit navigation is incomplete')
@@ -110,6 +127,9 @@ check(characterReveal.includes('qima_identity_revealed') && app.includes('charac
 check(!app.includes("const earlyCard = ['CHAR-QIMA']"), 'TRIAL-REVEAL-003', 'Qima character card is forced before narrative reveal')
 check(app.includes("this.#engine?.snapshot.dialogue.active === true"), 'TRIAL-REVEAL-004', 'character cards can interrupt their reveal dialogue')
 check(dialoguePresentation.includes("导航核心？回答。"), 'TRIAL-REVEAL-005', 'pre-reveal dialogue still exposes Qima identity')
+check(dialoguePresentation.includes("markup.replaceAll('七码', CONCEALED_QIMA_NAME)") && gameView.includes('presentIdentityMarkup(this.#session'), 'TRIAL-REVEAL-006', 'global visible/accessibility identity presentation gate is missing')
+check(correctiveE2e.includes('expectNoQimaIdentityLeak') && correctiveE2e.includes('[aria-label*="七码"]') && correctiveE2e.includes('DLG-G01-0025'), 'TRIAL-REVEAL-007', 'fresh-save visible DOM and accessibility leakage E2E is missing')
+check(story.includes("characterIds: ['CHAR-XINGYU']") && storyIntro.includes('card.characterIds.map(storyCharacterPortrait)'), 'TRIAL-REVEAL-008', 'pre-reveal story card still forces the Qima portrait')
 
 check(styles.includes('--light-panel: #ffffff') && styles.includes('--light-canvas: #f3f5f7'), 'TRIAL-LIGHT-001', 'light UI palette is missing or darkened')
 check(styles.includes('.trial-title-screen') && styles.includes('.topbar') && styles.includes('.trial-card') && styles.includes('.story-modal'), 'TRIAL-LIGHT-002', 'light shell does not cover all primary player surfaces')
@@ -175,6 +195,23 @@ for (const asset of assetProvenance.reused_runtime_assets) {
   check(existsSync(path), 'TRIAL-ASSET-005', `reused runtime asset missing: ${asset.path}`)
   const actual = existsSync(path) ? createHash('sha256').update(readFileSync(path)).digest('hex') : ''
   check(actual === asset.sha256, 'TRIAL-ASSET-006', `reused runtime asset SHA mismatch: ${asset.path}`)
+}
+
+check(sourceMirror.delivery === 'github_release_sha256_verified_tar', 'TRIAL-SOURCE-001', 'formal sources lack a sustainable non-LFS delivery contract')
+check(sourceMirror.entries.length === 22 && new Set(sourceMirror.entries.map((entry) => entry.path)).size === 22, 'TRIAL-SOURCE-002', 'formal source mirror entry set is incomplete or duplicated')
+check(/^[a-f0-9]{64}$/.test(sourceMirror.bundle_sha256) && sourceMirror.bundle_size > 300_000_000, 'TRIAL-SOURCE-003', 'formal source mirror bundle is not size/SHA pinned')
+for (const workflowPath of [
+  '.github/workflows/source-import-integrity.yml', '.github/workflows/baseline-gate.yml',
+  '.github/workflows/character-assets-gate.yml', '.github/workflows/character-story-gate.yml',
+  '.github/workflows/g01-pr-a-gate.yml', '.github/workflows/g01-pr-b-gate.yml',
+  '.github/workflows/g01-demo-gate.yml', '.github/workflows/g02-vertical-slice-gate.yml',
+  '.github/workflows/trial-experience-gate.yml',
+]) {
+  const workflow = workflowPath.endsWith('trial-experience-gate.yml') ? trialWorkflow : read(workflowPath)
+  check(!/lfs:\s*true/.test(workflow) && workflow.includes('restore-formal-source-mirror.mjs'), 'TRIAL-SOURCE-004', `${workflowPath} still depends on LFS bandwidth or skips verified restoration`)
+}
+for (const workflowPath of ['.github/workflows/deploy-g01-demo.yml', '.github/workflows/deploy-g02-slice.yml', '.github/workflows/deploy-trial-experience.yml']) {
+  check(!/lfs:\s*true/.test(read(workflowPath)), 'TRIAL-SOURCE-005', `${workflowPath} still blocks Pages on LFS bandwidth`)
 }
 
 for (const path of [

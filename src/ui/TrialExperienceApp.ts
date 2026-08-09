@@ -20,6 +20,7 @@ import { CharacterIntroCard } from './CharacterIntroCard'
 import { ItemDetailCard } from './ItemDetailCard'
 import { assetPath } from './assetPath'
 import { characterNarrativelyRevealed } from '../data/trial/characterReveal'
+import { presentIdentityMarkup } from '../data/dialogue/presentation'
 
 type ExtendedSaveRepository = SaveRepository & {
   readonly hasStoredSave?: boolean
@@ -62,6 +63,10 @@ export class TrialExperienceApp {
   #libraryOverlay: 'archive' | 'settings' | null = null
   #pendingCards: PendingCard[] = []
   #activeCard: PendingCard | null = null
+
+  #present(markup: string, session: GameSession | null = this.#engine?.snapshot ?? this.#storedSession): string {
+    return presentIdentityMarkup(session, markup)
+  }
 
   constructor(
     private readonly root: HTMLElement,
@@ -120,13 +125,13 @@ export class TrialExperienceApp {
     this.#storedSession = this.saves.load()
     this.#screen = 'title'
     this.#libraryOverlay = null
-    this.root.innerHTML = this.#titleScreen.render({
+    this.root.innerHTML = this.#present(this.#titleScreen.render({
       session: this.#storedSession,
       pwaInstallAvailable: Boolean(this.#installPrompt),
       fullscreenAvailable: document.fullscreenEnabled === true,
       saveRecoveredSafely: this.saves.recoveredFromCorruption === true,
       uiMetaRecoveredSafely: this.uiMeta.recoveredFromCorruption,
-    })
+    }))
   }
 
   #beginIntro(replay = false): void {
@@ -138,12 +143,12 @@ export class TrialExperienceApp {
   }
 
   #renderIntro(): void {
-    this.root.innerHTML = this.#storyIntro.renderCard(
+    this.root.innerHTML = this.#present(this.#storyIntro.renderCard(
       STORY_INTRO_CARDS[this.#introIndex],
       this.#introIndex,
       STORY_INTRO_CARDS.length,
       this.#introReplay,
-    )
+    ))
   }
 
   #completeIntro(): void {
@@ -163,19 +168,19 @@ export class TrialExperienceApp {
     const markup = this.#storyIntro.renderChapter(CHAPTER_GUIDES[chapterId], mode)
     if (mode === 'handoff' && this.#screen === 'game') {
       const overlay = this.#overlayHost()
-      overlay.innerHTML = markup
+      overlay.innerHTML = this.#present(markup)
       return
     }
     this.#destroyGame()
     this.#screen = 'chapter'
-    this.root.innerHTML = markup
+    this.root.innerHTML = this.#present(markup)
   }
 
   #showChapters(): void {
     this.#destroyGame()
     this.#screen = 'chapters'
     const g02Unlocked = this.#storedSession?.flags.g01_handoff_to_g02 === true
-    this.root.innerHTML = `
+    this.root.innerHTML = this.#present(`
       <main class="trial-library-screen chapter-select-screen" data-trial-view="chapters">
         <header><div><span>合法旅程入口</span><h2>章节选择</h2></div><button data-trial-action="title">返回标题页</button></header>
         <div class="chapter-select-grid">
@@ -183,7 +188,7 @@ export class TrialExperienceApp {
           ${this.#chapterSelectCard('G02', g02Unlocked)}
           <article class="chapter-select-locked"><span>信号之外</span><h3>后续路线尚未开放</h3><p>七码仍在确认四组能量信号。当前旅程不会越过安全区。</p><button disabled>等待路线确认</button></article>
         </div>
-      </main>`
+      </main>`)
   }
 
   #chapterSelectCard(chapterId: 'G01' | 'G02', unlocked: boolean): string {
@@ -201,30 +206,30 @@ export class TrialExperienceApp {
     const markup = this.#archiveView.render(session, this.#meta, tab, overlay)
     if (overlay && this.#screen === 'game') {
       this.#libraryOverlay = 'archive'
-      this.#overlayHost().innerHTML = markup
+      this.#overlayHost().innerHTML = this.#present(markup, session)
       return
     }
     this.#destroyGame()
     this.#screen = 'archive'
-    this.root.innerHTML = markup
+    this.root.innerHTML = this.#present(markup, session)
   }
 
   #showSettings(overlay: boolean): void {
     const markup = this.#settingsView.render(this.#meta.settings, this.#resetStage, overlay)
     if (overlay && this.#screen === 'game') {
       this.#libraryOverlay = 'settings'
-      this.#overlayHost().innerHTML = markup
+      this.#overlayHost().innerHTML = this.#present(markup)
       return
     }
     this.#destroyGame()
     this.#screen = 'settings'
-    this.root.innerHTML = markup
+    this.root.innerHTML = this.#present(markup)
   }
 
   #showCredits(): void {
     this.#destroyGame()
     this.#screen = 'credits'
-    this.root.innerHTML = `
+    this.root.innerHTML = this.#present(`
       <main class="trial-library-screen credits-screen" data-trial-view="credits">
         <header><div><span>制作记录</span><h2>《星骸拾荒者：十二星门》</h2></div><button data-trial-action="title">返回标题页</button></header>
         <div class="credits-grid">
@@ -234,18 +239,18 @@ export class TrialExperienceApp {
           <article><h3>本机存档</h3><p>本作不建立虚假联网账号。玩家档案、设置和进度保存在当前浏览器设备。</p></article>
         </div>
         <p class="credits-version">STARWRECK-TRIAL-0.3.0</p>
-      </main>`
+      </main>`)
   }
 
   #showNewGameConfirmation(): void {
     this.#screen = 'confirm-new'
-    this.root.innerHTML = `
+    this.root.innerHTML = this.#present(`
       <main class="trial-confirm-screen" data-trial-view="new-game-confirm">
         <section><span>新游戏确认</span><h2>覆盖当前本机旅程？</h2>
           <p>继续会清除现有场景、背包、证据与对白进度，然后从故事背景开始。PWA离线资源和显示设置会保留。</p>
           <div><button data-trial-action="title">取消，保留存档</button><button class="danger-action" data-trial-action="new-game-confirm">确认并开始新游戏</button></div>
         </section>
-      </main>`
+      </main>`)
   }
 
   #startNewGame(): void {
@@ -310,14 +315,15 @@ export class TrialExperienceApp {
     const item = trialItemById(itemId)
     if (!item) return
     this.#activeCard = { kind: 'item', id: itemId, firstPickup }
-    this.#overlayHost().innerHTML = this.#itemCard.render(item, this.#engine?.snapshot ?? this.saves.load(), firstPickup)
+    const session = this.#engine?.snapshot ?? this.saves.load()
+    this.#overlayHost().innerHTML = this.#present(this.#itemCard.render(item, session, firstPickup), session)
   }
 
   #showCharacterCard(characterId: string): void {
     const character = trialCharacterById(characterId)
     if (!character) return
     this.#activeCard = { kind: 'character', id: characterId }
-    this.#overlayHost().innerHTML = this.#characterCard.render(character)
+    this.#overlayHost().innerHTML = this.#present(this.#characterCard.render(character))
   }
 
   #showNextCard(): void {

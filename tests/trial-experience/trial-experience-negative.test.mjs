@@ -23,6 +23,9 @@ const mutations = [
   'revisit-regresses-mainline',
   'qima-card-early',
   'dark-shell',
+  'identity-markup-bypass',
+  'sequence-button-restored',
+  'lfs-checkout-restored',
 ]
 
 for (const mutation of mutations) {
