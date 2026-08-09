@@ -19,6 +19,7 @@ import { SettingsView } from './SettingsView'
 import { CharacterIntroCard } from './CharacterIntroCard'
 import { ItemDetailCard } from './ItemDetailCard'
 import { assetPath } from './assetPath'
+import { characterNarrativelyRevealed } from '../data/trial/characterReveal'
 
 type ExtendedSaveRepository = SaveRepository & {
   readonly hasStoredSave?: boolean
@@ -101,9 +102,11 @@ export class TrialExperienceApp {
       this.#meta.seenItemCards.length === 0
     if (!legacyUiMissing) return
     this.#meta.introSeen = true
-    this.#meta.seenCharacterCards = [
-      ...new Set(['CHAR-XINGYU', 'CHAR-QIMA', ...session.unlockedCharacterIds]),
-    ]
+    this.#meta.seenCharacterCards = [...new Set(
+      ['CHAR-XINGYU', ...session.unlockedCharacterIds].filter((id) =>
+        characterNarrativelyRevealed(id, session),
+      ),
+    )]
     this.#meta.seenItemCards = [
       ...new Set([...session.foundItemIds, ...session.inventoryItemIds, ...session.usedItemIds]),
     ]
@@ -146,7 +149,7 @@ export class TrialExperienceApp {
   #completeIntro(): void {
     this.#meta.introSeen = true
     this.#meta.seenCharacterCards = [
-      ...new Set([...this.#meta.seenCharacterCards, 'CHAR-XINGYU', 'CHAR-QIMA']),
+      ...new Set([...this.#meta.seenCharacterCards, 'CHAR-XINGYU']),
     ]
     this.uiMeta.save(this.#meta)
     if (this.#introReplay) {
@@ -230,7 +233,7 @@ export class TrialExperienceApp {
           <article><h3>正式资料</h3><p>剧情、角色、场景、道具与运行时资产均来自仓库内已登记的冻结资料和项目负责人授权制作记录。</p></article>
           <article><h3>本机存档</h3><p>本作不建立虚假联网账号。玩家档案、设置和进度保存在当前浏览器设备。</p></article>
         </div>
-        <p class="credits-version">STARWRECK-TRIAL-0.2.0</p>
+        <p class="credits-version">STARWRECK-TRIAL-0.3.0</p>
       </main>`
   }
 
@@ -292,7 +295,8 @@ export class TrialExperienceApp {
 
     for (const characterId of session.unlockedCharacterIds) {
       if (
-        !previous.unlockedCharacterIds.includes(characterId) &&
+        characterNarrativelyRevealed(characterId, session) &&
+        !characterNarrativelyRevealed(characterId, previous) &&
         !this.#meta.seenCharacterCards.includes(characterId) &&
         trialCharacterById(characterId)
       ) {
@@ -317,7 +321,12 @@ export class TrialExperienceApp {
   }
 
   #showNextCard(): void {
-    if (this.#activeCard || this.#libraryOverlay || this.#pendingCards.length === 0) return
+    if (
+      this.#activeCard ||
+      this.#libraryOverlay ||
+      this.#pendingCards.length === 0 ||
+      this.#engine?.snapshot.dialogue.active === true
+    ) return
     const next = this.#pendingCards.shift()
     if (!next) return
     if (next.kind === 'item') this.#showItemCard(next.id, next.firstPickup)

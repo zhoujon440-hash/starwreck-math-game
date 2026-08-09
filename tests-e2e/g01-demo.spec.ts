@@ -1,5 +1,6 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
 import { enterTrialRuntime } from './helpers/trial-entry'
+import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 test.use({ trace: 'on', video: 'on' })
 
@@ -115,9 +116,7 @@ test('SCN06—SCN07 complete the formal G01 demo handoff with persistent soft fa
   await capture(page, info, 'scn06-03-hos-complete-inventory.png')
 
   await page.getByRole('button', { name: '打开求救波形频段校准近景' }).click()
-  for (const name of ['锁定求救频段', '同步重复相位', '提升弱信号增益']) {
-    await page.getByRole('button', { name: new RegExp(name) }).click()
-  }
+  await solveTrialMechanic(page, 'waveform-tuning')
   await expect(page.locator('[data-dialogue-id="DLG-G01-0017"]')).toBeVisible()
   await capture(page, info, 'scn06-04-distress-dialogue.png')
   await advanceDialogue(page, 2)
@@ -169,9 +168,7 @@ test('SCN06—SCN07 complete the formal G01 demo handoff with persistent soft fa
 
   await page.getByRole('button', { name: '确认舷窗中央的安全着陆走廊' }).click()
   await page.getByRole('button', { name: '打开垃圾雨冲击缓冲机关' }).click()
-  for (const name of ['锁定船体姿态', '接通冲击缓冲', '闭合着陆锁']) {
-    await page.getByRole('button', { name: new RegExp(name) }).click()
-  }
+  await solveTrialMechanic(page, 'attitude-balance')
   await capture(page, info, 'scn07-05-impact-stabilized.png')
 
   await page.getByRole('button', { name: '确认右侧自动存档信标' }).click()
@@ -254,6 +251,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   await capture(page, info, 'full-scn00-02-middle-hos-complete.png')
   await drag('ITM-G01-002', 'HS-G01-0004')
   await clickId('HS-G01-0005')
+  await solveTrialMechanic(page, 'rotating-circuit')
   await page.getByRole('button', { name: '沿船尾通道前进' }).click()
   await capture(page, info, 'full-01-scn00-complete.png')
   await page.getByRole('button', { name: '进入导航核心舱' }).click()
@@ -278,11 +276,11 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   await drag('ITM-G01-006', 'HS-G01-0007-FUSE')
   await drag('ITM-G01-004', 'HS-G01-0008')
   await drag('RUNTIME-ITM-G01-FIXED-BUCKLE', 'RUNTIME-HS-G01-0008-BUCKLE')
-  await expect(page.locator('.game-shell')).toHaveClass(/state-S6/, {
-    timeout: 6_000,
-  })
+  await clickId('RUNTIME-HS-G01-01-BOOT-SEQUENCE')
+  await solveTrialMechanic(page, 'signal-memory')
+  await expect(page.locator('.game-shell')).toHaveClass(/state-S6/)
   await expect(page.locator('[data-dialogue-id="DLG-G01-0004"]')).toBeVisible()
-  await advanceDialogue(page, 3)
+  await advanceDialogue(page, 7)
   await capture(page, info, 'full-03-scn01-complete.png')
   await page.getByRole('button', { name: '前往中控任务台' }).click()
 
@@ -295,9 +293,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   await clickId('HS-G01-0010')
   await page.getByRole('button', { name: '记下路径' }).click()
   await clickId('RUNTIME-HS-G01-02-TASK-PUZZLE')
-  for (const name of ['测量货舱压力', '封堵外壳裂口', '启动货舱复压']) {
-    await page.getByRole('button', { name: new RegExp(name) }).click()
-  }
+  await solveTrialMechanic(page, 'task-order')
   await drag('RUNTIME-ITM-G01-STAR-MAP-KEY', 'RUNTIME-HS-G01-02-MAP-KEY')
   await drag('RUNTIME-ITM-G01-MAINTENANCE-SHEET', 'HS-G01-0011')
   await advanceDialogue(page)
@@ -321,9 +317,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   await drag('ITM-G01-009', 'HS-G01-0014')
   await advanceDialogue(page)
   await clickId('RUNTIME-HS-G01-03-GAUGE-PUZZLE')
-  for (const name of ['隔离外舱读数', '读取裂口压差', '锁定安全时间窗']) {
-    await page.getByRole('button', { name }).click()
-  }
+  await solveTrialMechanic(page, 'airflow-maze')
   await drag('ITM-G01-008', 'HS-G01-0015-PATCH')
   await drag('ITM-G01-007', 'HS-G01-0015-TAPE')
   await drag('RUNTIME-ITM-G01-REPRESS-KEY', 'HS-G01-0016')
@@ -351,7 +345,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   await page.locator('[data-inventory-item="RUNTIME-ITM-G01-010-C"]').click()
   await clickId('HS-G01-0018-C')
   await clickId('HS-G01-0018')
-  await page.getByRole('button', { name: '锁定十二星门环' }).click()
+  await solveTrialMechanic(page, 'star-map-snap')
   await clickId('HS-G01-0019')
   await advanceDialogue(page)
   await page.locator('[data-inventory-item="ITM-G01-011"]').click()
@@ -369,6 +363,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   await advanceDialogue(page)
   await capture(page, info, 'full-scn05-02-middle-bypass-window.png')
   await clickId('HS-G01-0024')
+  await solveTrialMechanic(page, 'garbage-route')
   await clickId('RUNTIME-HS-G01-05-LANDING-CONFIRM')
   await capture(page, info, 'full-11-scn05-complete.png')
   await page.getByRole('button', { name: '追踪锈环星求救信号' }).click()
@@ -380,9 +375,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   }
   await capture(page, info, 'full-scn06-02-middle-signal-components.png')
   await clickId('RUNTIME-HS-G01-06-SIGNAL-ALIGNMENT')
-  for (const name of ['锁定求救频段', '同步重复相位', '提升弱信号增益']) {
-    await page.getByRole('button', { name: new RegExp(name) }).click()
-  }
+  await solveTrialMechanic(page, 'waveform-tuning')
   await advanceDialogue(page, 2)
   await clickId('HS-G01-0026')
   await clickId('HS-G01-0027')
@@ -403,9 +396,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
   await capture(page, info, 'full-scn07-02-middle-landing-scan.png')
   await clickId('RUNTIME-HS-G01-07-CORRIDOR-CONFIRM')
   await clickId('RUNTIME-HS-G01-07-IMPACT-DAMPING')
-  for (const name of ['锁定船体姿态', '接通冲击缓冲', '闭合着陆锁']) {
-    await page.getByRole('button', { name: new RegExp(name) }).click()
-  }
+  await solveTrialMechanic(page, 'attitude-balance')
   await clickId('HS-G01-0030')
   await advanceDialogue(page, 3)
   await clickId('HS-G01-0031')

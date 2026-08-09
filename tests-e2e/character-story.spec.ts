@@ -2,6 +2,7 @@ import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
 import { enterTrialRuntime } from './helpers/trial-entry'
+import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 const capture = async (
   page: Page,
@@ -49,7 +50,7 @@ test('SCN-G01-00 uses formal portraits, persistent dialogue, history and profile
     'src',
     '/assets/characters/xingyu/xingyu_alert.png',
   )
-  await expect(opening).toContainText('七码？回答。')
+  await expect(opening).toContainText('导航核心？回答。')
   await capture(page, testInfo, '01-scn00-xingyu-performance.png')
 
   await page.getByRole('button', { name: '下一句' }).click()
@@ -61,7 +62,7 @@ test('SCN-G01-00 uses formal portraits, persistent dialogue, history and profile
   const history = page.getByRole('dialog', { name: '对话历史' })
   await expect(history).toBeVisible()
   await expect(history.locator('[data-history-dialogue-id]')).toHaveCount(2)
-  await expect(history).toContainText('七码？回答。')
+  await expect(history).toContainText('导航核心？回答。')
   await expect(history).toContainText('导航核心离线。维修舱进入应急照明模式。')
   await capture(page, testInfo, '02-dialogue-history-restored.png')
   await page.getByRole('button', { name: '关闭对话历史' }).click()
@@ -131,6 +132,7 @@ test('SCN-G01-01 completes the formal HOPA recovery loop and restores from save'
     page.locator('[data-drop-target="HS-G01-0004"]'),
   )
   await clickHotspot(page, 'HS-G01-0005')
+  await solveTrialMechanic(page, 'rotating-circuit')
   await page.getByRole('button', { name: '沿船尾通道前进' }).click()
   await page.getByRole('button', { name: '进入导航核心舱' }).click()
 
@@ -208,16 +210,15 @@ test('SCN-G01-01 completes the formal HOPA recovery loop and restores from save'
   await expect(page.locator('[data-boot-sequence="non-skippable"]')).toBeVisible()
   await capture(page, testInfo, '10-qima-booting.png')
 
-  await expect(page.locator('.game-shell')).toHaveClass(/state-S6/, {
-    timeout: 5_000,
-  })
+  await clickHotspot(page, 'RUNTIME-HS-G01-01-BOOT-SEQUENCE')
+  await solveTrialMechanic(page, 'signal-memory')
+
+  await expect(page.locator('.game-shell')).toHaveClass(/state-S6/)
   await expect(page.locator('[data-qima-state="normal"]')).toBeVisible()
   await capture(page, testInfo, '11-qima-normal.png')
   await expect(page.locator('[data-dialogue-id="DLG-G01-0004"]')).toBeVisible()
   await capture(page, testInfo, '12-qima-first-dialogue.png')
-  await advanceVisibleDialogue(page)
-  await advanceVisibleDialogue(page)
-  await advanceVisibleDialogue(page)
+  for (let index = 0; index < 7; index += 1) await advanceVisibleDialogue(page)
   await expect(page.getByRole('heading', { name: '七码已重新上线' })).toBeVisible()
   await capture(page, testInfo, '13-scn01-complete.png')
 
@@ -251,7 +252,7 @@ test('SCN-G01-01 completes the formal HOPA recovery loop and restores from save'
   expect(stored.sceneStates['SCN-G01-01']).toBe('S6')
   expect(stored.hosProgress['HOS-G01-002']).toHaveLength(4)
   expect(stored.characterStates['CHAR-QIMA']).toBe('normal')
-  expect(stored.dialogueHistory).toHaveLength(6)
+  expect(stored.dialogueHistory.length).toBeGreaterThanOrEqual(9)
   expect(stored.flags.g01_scn01_complete).toBe(true)
   expect(stored.flags.world_star_core_count).toBe(0)
   expect(browserErrors).toEqual([])

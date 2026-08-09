@@ -4,6 +4,7 @@ import { TRIAL_ITEMS, itemUsageStatus } from '../data/trial/items'
 import type { TrialUiMeta } from '../game/uiMetaSave'
 import type { GameSession } from '../game/types'
 import { withBaseAssets } from './assetPath'
+import { characterNarrativelyRevealed } from '../data/trial/characterReveal'
 
 export type ArchiveTab = 'world' | 'chapters' | 'characters' | 'items' | 'evidence' | 'dialogue'
 
@@ -27,6 +28,7 @@ const chapterUnlocked = (chapterId: 'G01' | 'G02', session: GameSession | null):
   chapterId === 'G01' || session?.flags.g01_handoff_to_g02 === true
 
 const characterUnlocked = (characterId: string, session: GameSession | null, meta: TrialUiMeta): boolean => {
+  if (!characterNarrativelyRevealed(characterId, session)) return false
   if (meta.seenCharacterCards.includes(characterId)) return true
   return session?.unlockedCharacterIds.includes(characterId) === true
 }

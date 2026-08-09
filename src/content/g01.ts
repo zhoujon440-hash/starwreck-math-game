@@ -84,8 +84,8 @@ export const G01_SCN01: SceneDefinition = {
     S5: {
       id: 'S5',
       title: '启动校验',
-      objective: '等待七码完成不可跳过的启动校验',
-      narrative: '托架开始供电。七码正在逐段恢复感知与导航核心。',
+      objective: '观察并复现托架的四段启动信号',
+      narrative: '托架开始供电。完成不可跳过的信号记忆校验后，设备才能恢复感知。',
       safeCheckpoint: true,
     },
     S6: {
@@ -178,6 +178,15 @@ export const G01_SCN01: SceneDefinition = {
       activeStates: ['S4'],
       requiredCompletedHotspotIds: ['HS-G01-0008'],
       requiredItemId: 'RUNTIME-ITM-G01-FIXED-BUCKLE',
+      scope: 'scene',
+    },
+    {
+      id: 'RUNTIME-HS-G01-01-BOOT-SEQUENCE',
+      kind: 'zoom',
+      ariaLabel: '打开导航设备启动信号校验',
+      area: { x: 64, y: 37, width: 20, height: 48 },
+      activeStates: ['S5'],
+      zoomId: 'PUZ-G01-QIMA-BOOT',
       scope: 'scene',
     },
   ],
@@ -398,10 +407,11 @@ export const G01: ChapterDefinition = {
     },
     {
       id: 'HS-G01-0005',
-      kind: 'inspect',
-      ariaLabel: '合上应急照明保护开关',
+      kind: 'zoom',
+      ariaLabel: '打开应急照明电路近景',
       area: { x: 58, y: 36, width: 6, height: 17 },
       activeStates: ['S4'],
+      zoomId: 'RUNTIME-PUZ-G01-ROTATING-CIRCUIT',
       scope: 'scene',
     },
     {
@@ -418,6 +428,7 @@ export const G01: ChapterDefinition = {
     { from: 'S1', event: 'use:ITM-G01-001:HS-G01-0002', to: 'S2' },
     { from: 'S2', event: 'found:all', to: 'S3' },
     { from: 'S3', event: 'use:ITM-G01-002:HS-G01-0004', to: 'S4' },
+    { from: 'S4', event: 'puzzle:RUNTIME-PUZ-G01-ROTATING-CIRCUIT', to: 'S5' },
     { from: 'S4', event: 'inspect:HS-G01-0005', to: 'S5' },
     { from: 'S5', event: 'inspect:HS-G01-0006', to: 'S6' },
   ],

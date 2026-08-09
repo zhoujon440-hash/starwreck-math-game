@@ -4,7 +4,7 @@
   "version": "0.2.2",
   "demoVersion": "G01-DEMO-0.1.0",
   "g02SliceVersion": "G02-SLICE-0.1.0",
-  "trialVersion": "STARWRECK-TRIAL-0.2.0",
+  "trialVersion": "STARWRECK-TRIAL-0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -37,7 +37,7 @@
     "test:g01-pr-c": "vitest run tests/g01-demo/runtime.test.ts && node --test tests/g01-demo/g01-demo-negative.test.mjs",
     "test:g01-demo": "vitest run tests/g01-demo/runtime.test.ts && node --test tests/g01-demo/g01-demo-negative.test.mjs",
     "test:g02-slice-01": "vitest run tests/g02-slice-01/runtime.test.ts && node --test tests/g02-slice-01/g02-slice-negative.test.mjs",
-    "test:trial-experience": "vitest run tests/trial-experience/runtime.test.ts && node --test tests/trial-experience/trial-experience-negative.test.mjs",
+    "test:trial-experience": "vitest run tests/trial-experience/runtime.test.ts tests/trial-experience/corrective.test.ts && node --test tests/trial-experience/trial-experience-negative.test.mjs",
     "package:g01-demo": "node scripts/package-g01-demo.mjs",
     "package:g02-slice-01": "node scripts/package-g02-slice-01.mjs",
     "package:trial-experience": "node scripts/package-trial-experience.mjs",

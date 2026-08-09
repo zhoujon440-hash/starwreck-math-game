@@ -3,6 +3,7 @@ import type { GameSession } from '../game/types'
 import type { DialogueNode } from '../types/dialogue'
 import { DialogueDataLoader } from './DialogueDataLoader'
 import { DialogueHistory } from './DialogueHistory'
+import { presentDialogueNode } from '../data/dialogue/presentation'
 
 export type DialogueStatePort = {
   snapshot: GameSession
@@ -19,7 +20,9 @@ export class DialogueRunner {
 
   get current(): DialogueNode | null {
     const id = this.port.snapshot.dialogue.currentDialogueId
-    return id && this.port.snapshot.dialogue.active ? this.loader.get(id) : null
+    return id && this.port.snapshot.dialogue.active
+      ? presentDialogueNode(this.port.snapshot, this.loader.get(id))
+      : null
   }
 
   start(dialogueId: string): void {
@@ -66,10 +69,11 @@ export class DialogueRunner {
   }
 
   #applyNode(draft: GameSession, node: DialogueNode): void {
+    const presentedNode = presentDialogueNode(draft, node)
     if (!draft.dialogue.readDialogueIds.includes(node.dialogue_id)) {
       draft.dialogue.readDialogueIds.push(node.dialogue_id)
     }
-    draft.dialogueHistory = this.#history.append(draft.dialogueHistory, node)
+    draft.dialogueHistory = this.#history.append(draft.dialogueHistory, presentedNode)
     Object.assign(draft.flags, node.writes_variables)
     if (node.updates_scene_state) {
       draft.sceneState = node.updates_scene_state

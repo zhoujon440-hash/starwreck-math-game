@@ -110,10 +110,24 @@ export type SafeRecoveryState = {
   enteredAt: string
 }
 
+export type TrialMechanicStatus = 'initial' | 'error' | 'partial' | 'complete'
+
+export type TrialMechanicProgress = {
+  mechanicType: import('../data/trial/sceneExperiences').TrialMechanicType
+  status: TrialMechanicStatus
+  confirmedSteps: string[]
+  values: Record<string, string | number | boolean>
+  mistakes: number
+}
+
 export type GameSession = {
   schemaVersion: 2
   chapterId: string
   currentSceneId: string
+  /** The furthest active story task. Revisit navigation never changes it. */
+  mainlineSceneId: string
+  unlockedSceneIds: string[]
+  completedSceneIds: string[]
   sceneState: SceneStateId
   sceneStates: Record<string, SceneStateId>
   activeRuntimeNodeId: string | null
@@ -125,6 +139,7 @@ export type GameSession = {
   completedPuzzleIds: string[]
   hosProgress: Record<string, string[]>
   puzzleProgress: Record<string, boolean | number | string>
+  mechanicProgress: Record<string, TrialMechanicProgress>
   hintCount: number
   hintLevels: Record<string, number>
   flags: Record<string, boolean | number | string>

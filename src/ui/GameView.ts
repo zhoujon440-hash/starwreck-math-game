@@ -12,6 +12,8 @@ import { characterData } from '../data/characters'
 import { G01_DIALOGUE } from '../data/dialogue/g01'
 import { G02_DIALOGUE } from '../data/dialogue/g02'
 import { g02HintById } from '../data/hints/g02'
+import { PLAYER_SCENE_IDS, SCENE_EXPERIENCES, sceneExperience } from '../data/trial/sceneExperiences'
+import { characterNarrativelyRevealed } from '../data/trial/characterReveal'
 import { DialogueDataLoader } from '../services/DialogueDataLoader'
 import { DialogueRunner } from '../services/DialogueRunner'
 import type {
@@ -21,6 +23,8 @@ import type {
   HotspotDefinition,
   ItemDefinition,
 } from '../game/types'
+import { TrialMechanicPanel } from './TrialMechanicPanel'
+import type { TrialMechanicAction } from '../game/minigames/trialMechanics'
 
 const escapeHtml = (value: string): string =>
   value.replace(
@@ -62,6 +66,7 @@ export class GameView {
   readonly #drag: InventoryDragCoordinator
   readonly #dialogueRunner: DialogueRunner
   readonly #portrait = new CharacterPortrait()
+  readonly #trialMechanic = new TrialMechanicPanel()
   #session: GameSession
   #selectedItemId: string | null = null
   #cabinetOpen = false
@@ -73,13 +78,13 @@ export class GameView {
   #profileOpen = false
   #journalOpen = false
   #menuOpen = false
+  #mapOpen = false
   #puzzleOpen = false
   #activeZoomId: string | null = null
   #pendingZoomId: string | null = null
   #toast = ''
   #toastTimer: number | undefined
   #hintTimer: number | undefined
-  #bootTimer: number | undefined
   #recoveryDialogueTimer: number | undefined
   #cargoDangerTimer: number | undefined
   #routeWindowTimer: number | undefined
@@ -107,6 +112,10 @@ export class GameView {
       this.#useItem(itemId, targetId)
     })
     root.addEventListener('click', this.#handleClick)
+    root.addEventListener('change', this.#handleMechanicChange)
+    root.addEventListener('dragstart', this.#handleMechanicDragStart)
+    root.addEventListener('dragover', this.#handleMechanicDragOver)
+    root.addEventListener('drop', this.#handleMechanicDrop)
   }
 
   mount(): void {
@@ -126,7 +135,8 @@ export class GameView {
       }
       if (
         session.currentSceneId === 'SCN-G01-01' &&
-        session.sceneState !== 'S3'
+        !['S3', 'S5'].includes(session.sceneState) &&
+        this.#activeZoomId !== 'PUZ-G01-QIMA-BOOT'
       ) {
         this.#puzzleOpen = false
       }
@@ -148,9 +158,12 @@ export class GameView {
     this.#unsubscribe?.()
     this.#drag.destroy()
     this.root.removeEventListener('click', this.#handleClick)
+    this.root.removeEventListener('change', this.#handleMechanicChange)
+    this.root.removeEventListener('dragstart', this.#handleMechanicDragStart)
+    this.root.removeEventListener('dragover', this.#handleMechanicDragOver)
+    this.root.removeEventListener('drop', this.#handleMechanicDrop)
     if (this.#toastTimer) window.clearTimeout(this.#toastTimer)
     if (this.#hintTimer) window.clearTimeout(this.#hintTimer)
-    if (this.#bootTimer) window.clearTimeout(this.#bootTimer)
     if (this.#recoveryDialogueTimer) window.clearTimeout(this.#recoveryDialogueTimer)
     if (this.#cargoDangerTimer) window.clearTimeout(this.#cargoDangerTimer)
     if (this.#routeWindowTimer) window.clearTimeout(this.#routeWindowTimer)
@@ -164,6 +177,14 @@ export class GameView {
 
   #render(): void {
     const scene = this.engine.currentSceneDefinition
+    const experience = sceneExperience(scene.id)
+    const mainlineExperience = sceneExperience(this.#session.mainlineSceneId)
+    const revisiting = Boolean(experience && scene.id !== this.#session.mainlineSceneId)
+    const revealedMissionGoal =
+      scene.id === 'SCN-G01-01' &&
+      this.#session.flags.qima_current_mission_issued === true
+        ? '前往中控台，找回船上第一张维修任务单。'
+        : null
     const isScn00 = scene.id === 'SCN-G01-00'
     const isScn01 = scene.id === 'SCN-G01-01'
     const isScn02 = scene.id === 'SCN-G01-02'
@@ -265,7 +286,10 @@ export class GameView {
           </div>
           <nav class="story-tools" aria-label="剧情工具">
             <button data-action="open-menu">主菜单</button>
-            <button data-action="open-journal">任务与证据</button>
+            <button data-action="visit-previous" ${PLAYER_SCENE_IDS.indexOf(scene.id) <= 0 ? 'disabled' : ''}>上一场景</button>
+            <button data-action="open-map">场景地图</button>
+            ${revisiting ? '<button class="return-task-action" data-action="return-current-task">返回当前任务</button>' : ''}
+            <button data-action="open-journal">任务记录</button>
             <button data-action="open-history">对话历史</button>
             <button data-action="open-profile">角色档案</button>
           </nav>
@@ -312,10 +336,11 @@ export class GameView {
             </div>
           </div>
 
-          <aside class="objective-card">
-            <span>当前目标 · ${DEBUG_UI ? escapeHtml(scene.id) : escapeHtml(isScn00 ? PLAYER_SCENE_TITLE : scene.playerTitle)}</span>
-            <strong>${escapeHtml(state.objective)}</strong>
-            <p>${escapeHtml(state.narrative)}</p>
+          <aside class="objective-card task-strip" data-task-scene="${escapeHtml(this.#session.mainlineSceneId)}" data-viewed-scene="${escapeHtml(scene.id)}">
+            <span>${revisiting ? '回访场景' : '当前任务'} · ${escapeHtml(experience?.title ?? (isScn00 ? PLAYER_SCENE_TITLE : scene.playerTitle))}</span>
+            <strong>${escapeHtml(revisiting ? (mainlineExperience?.mainGoal ?? state.objective) : (revealedMissionGoal ?? experience?.mainGoal ?? state.objective))}</strong>
+            <p><b>当前步骤：</b>${escapeHtml(experience?.stepByState[this.#session.sceneState] ?? state.objective)}</p>
+            <small>${revisiting ? `主线仍在“${escapeHtml(mainlineExperience?.title ?? this.#session.mainlineSceneId)}”，回访不会改变进度。` : `${escapeHtml(state.narrative)} · 本关机关：${escapeHtml(experience?.mechanicName ?? '场景互动')}`}</small>
           </aside>
 
           ${
@@ -662,6 +687,7 @@ export class GameView {
         ${this.#profileOpen ? this.#profileTemplate() : ''}
         ${this.#journalOpen ? this.#journalTemplate() : ''}
         ${this.#menuOpen ? this.#menuTemplate() : ''}
+        ${this.#mapOpen ? this.#sceneMapTemplate() : ''}
 
         <div class="toast ${this.#toast ? 'is-visible' : ''}" role="status" aria-live="polite">
           ${escapeHtml(this.#toast)}
@@ -674,12 +700,6 @@ export class GameView {
         </div>
       </main>
     `)
-    if (isScn01 && this.#session.sceneState === 'S5') {
-      this.#scheduleBootSequence()
-    } else if (this.#bootTimer) {
-      window.clearTimeout(this.#bootTimer)
-      this.#bootTimer = undefined
-    }
     if (
       isScn01 &&
       this.#session.sceneState === 'S6' &&
@@ -970,6 +990,10 @@ export class GameView {
   }
 
   #activePuzzleTemplate(): string {
+    const experience = sceneExperience(this.#session.currentSceneId)
+    if (experience && this.#activeZoomId === experience.mechanicId) {
+      return this.#trialMechanic.render(this.#session)
+    }
     if (this.#activeZoomId === 'RUNTIME-PUZ-G02-PULSE-SCAN') {
       return this.#g02PulsePuzzleTemplate()
     }
@@ -2016,34 +2040,6 @@ export class GameView {
     }, 250)
   }
 
-  #scheduleBootSequence(): void {
-    if (this.#bootTimer) return
-    this.#bootTimer = window.setTimeout(() => {
-      this.#bootTimer = undefined
-      if (
-        this.#session.currentSceneId !== 'SCN-G01-01' ||
-        this.#session.sceneState !== 'S5'
-      ) {
-        return
-      }
-      const result = this.engine.completePuzzle('PUZ-G01-QIMA-BOOT')
-      if (!result.ok) {
-        this.#handleResult(result)
-        return
-      }
-      this.engine.updateStory((draft) => {
-        draft.characterStates['CHAR-QIMA'] = 'normal'
-        draft.flags.g01_scn01_complete = true
-        draft.flags.g01_qima_online = true
-        draft.flags.world_star_core_count = 0
-        draft.characterDiscoveries['CHAR-QIMA'] = [
-          '在导航核心舱完成离线、受损、启动中到正常的恢复',
-          '启动记录显示离线四分十二秒',
-        ]
-      })
-    }, 3_200)
-  }
-
   #scheduleRecoveryDialogue(): void {
     if (this.#recoveryDialogueTimer) return
     this.#recoveryDialogueTimer = window.setTimeout(() => {
@@ -2056,6 +2052,53 @@ export class GameView {
         this.#dialogueRunner.start('DLG-G01-0004')
       }
     }, 700)
+  }
+
+  #performMechanic(action: TrialMechanicAction): void {
+    const sceneId = this.#session.currentSceneId
+    const experience = sceneExperience(sceneId)
+    const result = this.engine.performTrialMechanic(action)
+    const completed = Boolean(
+      experience && this.engine.snapshot.completedPuzzleIds.includes(experience.mechanicId),
+    )
+    if (completed) {
+      if (sceneId === 'SCN-G02-01') {
+        this.#dialogueRunner.startTrigger('SCN-G02-01', '救援完成')
+      } else if (sceneId === 'SCN-G02-02') {
+        this.#dialogueRunner.startTrigger('SCN-G02-02', '档案播放完成')
+      } else if (sceneId === 'SCN-G01-06') {
+        this.#dialogueRunner.startTrigger('SCN-G01-06', '波形解析')
+      }
+    }
+    this.#handleResult(result)
+  }
+
+  #handleMechanicChange = (event: Event): void => {
+    const input = (event.target as HTMLElement).closest<HTMLInputElement>('[data-mechanic-range]')
+    if (!input) return
+    const target = input.dataset.mechanicRange
+    if (!target) return
+    this.#performMechanic({ kind: 'set', target, value: Number(input.value) })
+  }
+
+  #handleMechanicDragStart = (event: DragEvent): void => {
+    const token = (event.target as HTMLElement).closest<HTMLElement>('[data-mechanic-draggable]')
+    const target = token?.dataset.mechanicTarget
+    if (!target || !event.dataTransfer) return
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('application/x-starwreck-mechanic', target)
+  }
+
+  #handleMechanicDragOver = (event: DragEvent): void => {
+    if ((event.target as HTMLElement).closest('[data-mechanic-dropzone]')) event.preventDefault()
+  }
+
+  #handleMechanicDrop = (event: DragEvent): void => {
+    if (!(event.target as HTMLElement).closest('[data-mechanic-dropzone]')) return
+    const target = event.dataTransfer?.getData('application/x-starwreck-mechanic')
+    if (!target) return
+    event.preventDefault()
+    this.#performMechanic({ kind: 'choose', target })
   }
 
   #handleClick = (event: MouseEvent): void => {
@@ -2251,6 +2294,11 @@ export class GameView {
             'RUNTIME-PUZ-G01-IMPACT-DAMPING',
             'RUNTIME-PUZ-G02-PULSE-SCAN',
             'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION',
+            'RUNTIME-PUZ-G01-ROTATING-CIRCUIT',
+            'PUZ-G01-QIMA-BOOT',
+            'RUNTIME-PUZ-G01-GARBAGE-ROUTE',
+            'RUNTIME-PUZ-G02-CRANE-COUNTERWEIGHT',
+            'RUNTIME-PUZ-G02-BORROW-RETURN',
           ].includes(this.#activeZoomId ?? '')
         ) {
           this.#puzzleOpen = true
@@ -2266,7 +2314,50 @@ export class GameView {
         break
       case 'close-puzzle':
         this.#puzzleOpen = false
+        this.#activeZoomId = null
         this.#render()
+        break
+      case 'mechanic-choose': {
+        const target = actionElement.dataset.mechanicTarget
+        if (target) this.#performMechanic({ kind: 'choose', target })
+        break
+      }
+      case 'mechanic-rotate': {
+        const target = actionElement.dataset.mechanicTarget
+        const current = Number(actionElement.dataset.mechanicValue ?? 0)
+        if (target) this.#performMechanic({ kind: 'set', target, value: (current + 1) % 4 })
+        break
+      }
+      case 'mechanic-submit':
+        this.#performMechanic({ kind: 'submit' })
+        break
+      case 'mechanic-reset':
+        this.#handleResult(this.engine.resetTrialMechanic())
+        break
+      case 'open-map':
+        this.#mapOpen = true
+        this.#render()
+        break
+      case 'close-map':
+        this.#mapOpen = false
+        this.#render()
+        break
+      case 'visit-scene': {
+        const sceneId = actionElement.dataset.sceneId
+        if (sceneId) {
+          this.#mapOpen = false
+          this.#selectedItemId = null
+          this.#handleResult(this.engine.visitScene(sceneId))
+        }
+        break
+      }
+      case 'visit-previous':
+        this.#selectedItemId = null
+        this.#handleResult(this.engine.visitPreviousScene())
+        break
+      case 'return-current-task':
+        this.#selectedItemId = null
+        this.#handleResult(this.engine.returnToMainline())
         break
       case 'rotate-chip': {
         const rotation = (Number(this.#session.puzzleProgress.chip_rotation ?? 90) + 90) % 360
@@ -2918,7 +3009,9 @@ export class GameView {
   }
 
   #profileTemplate(): string {
-    const unlocked = this.#session.unlockedCharacterIds
+    const unlocked = this.#session.unlockedCharacterIds.filter((characterId) =>
+      characterNarrativelyRevealed(characterId, this.#session),
+    )
       .map((characterId) => characterData.get(characterId))
     return `
       <div class="modal-backdrop" data-action="close-profile"></div>
@@ -2974,19 +3067,13 @@ export class GameView {
       this.#session.currentSceneId === 'G02-BOUNDARY' ||
       this.#session.currentSceneId.startsWith('SCN-G02-') ||
       this.#session.currentSceneId === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY'
-    const tasks = [
-      ['恢复拾光号应急照明', this.#session.sceneStates['SCN-G01-00'] === 'S6'],
-      ['修复七码导航核心', this.#session.sceneStates['SCN-G01-01'] === 'S6'],
-      ['建立船上第一张任务单', this.#session.sceneStates['SCN-G01-02'] === 'S6'],
-      ['封堵漏气货舱', this.#session.sceneStates['SCN-G01-03'] === 'S6'],
-      ['补全星图缺口', this.#session.sceneStates['SCN-G01-04'] === 'S6'],
-      ['穿过垃圾雨航线', this.#session.sceneStates['SCN-G01-05'] === 'S6'],
-      ['锁定锈环星求救源', this.#session.sceneStates['SCN-G01-06'] === 'S6'],
-      ['抵达旧屏幕谷外缘', this.#session.flags.g01_scn07_complete === true],
-      ['扫描蓝色封存脉冲', this.#session.flags.g02_intro_scan_done === true],
-      ['救下阿铆并识别三类资源', this.#session.flags.g02_almao_rescued === true && Number(this.#session.flags.g02_resource_labels ?? 0) === 3],
-      ['恢复旧电视墙借用档案', this.#session.flags.g02_archive_restored === true],
-    ] as const
+    const mainlineOrder = Math.max(0, PLAYER_SCENE_IDS.indexOf(this.#session.mainlineSceneId))
+    const tasks = SCENE_EXPERIENCES.filter((entry) => entry.order <= mainlineOrder).map((entry) => ({
+      ...entry,
+      done: this.#session.completedSceneIds.includes(entry.sceneId) || this.#session.sceneStates[entry.sceneId] === 'S6',
+      active: entry.sceneId === this.#session.mainlineSceneId,
+      state: this.#session.sceneStates[entry.sceneId] ?? 'S0',
+    }))
     const evidence = [
       ['货舱漏气记录', this.#session.flags.g01_scn03_evidence_leak_confirmed === true],
       ['货舱测压读数', this.#session.flags.g01_scn03_evidence_pressure_reading === true],
@@ -3007,7 +3094,7 @@ export class GameView {
         </header>
         <div class="journal-grid">
           <article><h3>任务进度</h3><ol>${tasks
-            .map(([label, done]) => `<li class="${done ? 'is-complete' : ''}"><i></i>${escapeHtml(label)}<small>${done ? '完成' : '进行中'}</small></li>`)
+            .map((task) => `<li class="${task.done ? 'is-complete' : ''} ${task.active ? 'is-current' : ''}"><i></i><div><strong>${escapeHtml(task.title)}</strong><span>${escapeHtml(task.done ? task.completionResult : task.stepByState[task.state])}</span></div><small>${task.done ? '完成' : task.active ? '当前任务' : '可回访'}</small></li>`)
             .join('')}</ol></article>
           <article><h3>已取得证据</h3><ul>${evidence
             .filter(([, found]) => found)
@@ -3024,6 +3111,29 @@ export class GameView {
         </div>
       </section>
     `
+  }
+
+  #sceneMapTemplate(): string {
+    const mainlineOrder = Math.max(0, PLAYER_SCENE_IDS.indexOf(this.#session.mainlineSceneId))
+    return `
+      <div class="modal-backdrop" data-action="close-map"></div>
+      <section class="story-modal scene-map-modal" role="dialog" aria-modal="true" aria-labelledby="scene-map-title">
+        <header><div><span>已解锁旅程</span><h2 id="scene-map-title">场景地图</h2></div><button class="icon-button" data-action="close-map" aria-label="关闭场景地图">×</button></header>
+        <p>可以回访已解锁场景；一次性物品、证据、对白和人物卡不会重复生成。</p>
+        <ol class="scene-map-route">
+          ${SCENE_EXPERIENCES.map((entry) => {
+            const unlocked = this.#session.unlockedSceneIds.includes(entry.sceneId)
+            const completed = this.#session.completedSceneIds.includes(entry.sceneId)
+            const currentTask = entry.sceneId === this.#session.mainlineSceneId
+            const viewing = entry.sceneId === this.#session.currentSceneId
+            return `<li class="${unlocked ? 'is-unlocked' : 'is-locked'} ${completed ? 'is-complete' : ''} ${currentTask ? 'is-current-task' : ''} ${viewing ? 'is-viewing' : ''}">
+              <span>${entry.order + 1}</span><div><strong>${escapeHtml(entry.title)}</strong><small>${currentTask ? '当前任务' : completed ? '已完成，可回访' : unlocked ? '已解锁' : entry.order > mainlineOrder ? '随剧情解锁' : '尚未开放'}</small></div>
+              <button data-action="visit-scene" data-scene-id="${entry.sceneId}" ${unlocked ? '' : 'disabled'}>${viewing ? '正在查看' : unlocked ? '前往' : '锁定'}</button>
+            </li>`
+          }).join('')}
+        </ol>
+        ${this.#session.currentSceneId !== this.#session.mainlineSceneId ? '<button class="primary-action" data-action="return-current-task">返回当前任务</button>' : ''}
+      </section>`
   }
 
   #menuTemplate(): string {

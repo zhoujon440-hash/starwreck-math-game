@@ -2,6 +2,7 @@ import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
 import { enterTrialRuntime } from './helpers/trial-entry'
+import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 const cabinetItemHotspots = [
   ['ITM-G01-002', 'HOS-G01-001-01'],
@@ -357,6 +358,7 @@ test('visual acceptance covers calibrated layers, disappearance and browser relo
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
   await expectHudDoesNotCover(page, 'HS-G01-0005')
   await clickHotspotCenter(page, 'HS-G01-0005')
+  await solveTrialMechanic(page, 'rotating-circuit')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S5/)
 
   await page.reload()

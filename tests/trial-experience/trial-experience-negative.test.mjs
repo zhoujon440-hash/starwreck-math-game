@@ -18,6 +18,11 @@ const mutations = [
   'reset-single-confirm',
   'archive-missing-dialogue',
   'version-wrong',
+  'duplicate-mechanic',
+  'missing-scene-story',
+  'revisit-regresses-mainline',
+  'qima-card-early',
+  'dark-shell',
 ]
 
 for (const mutation of mutations) {

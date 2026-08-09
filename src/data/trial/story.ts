@@ -38,12 +38,12 @@ export const STORY_INTRO_CARDS: StoryCardDefinition[] = [
   },
   {
     id: 'WORLD-XINGYU-QIMA',
-    eyebrow: '同行者',
-    title: '星宇与七码',
-    body: '星宇负责观察和动手，导航智能体七码负责记录、分析已取得的证据，并在获得授权后连接已探索的路径。',
+    eyebrow: '失联信号',
+    title: '星宇与受损导航设备',
+    body: '星宇负责观察和动手。船尾有一台失联的导航设备，身份与功能只有在找到零件、完成修复和启动后才会揭示。',
     image: '/assets/g01/scn-g01-01/background/SCENE-G01-002_navigation_core_cabin.webp',
     sourcePaths: ['docs/story/G01-G13/G01.md', 'src/data/characters/index.ts'],
-    characterIds: ['CHAR-XINGYU', 'CHAR-QIMA'],
+    characterIds: ['CHAR-XINGYU'],
   },
   {
     id: 'WORLD-RUST-RING',

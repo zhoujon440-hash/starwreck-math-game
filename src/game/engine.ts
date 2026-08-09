@@ -10,6 +10,13 @@ import type {
   SceneStateId,
 } from './types'
 import { g02HintById, g02HintFor } from '../data/hints/g02'
+import { PLAYER_SCENE_IDS, sceneExperience } from '../data/trial/sceneExperiences'
+import {
+  applyTrialMechanicAction,
+  initialMechanicProgress,
+  TRIAL_MECHANICS,
+  type TrialMechanicAction,
+} from './minigames/trialMechanics'
 import type { SaveRepository } from './save'
 
 type Listener = (session: GameSession) => void
@@ -22,6 +29,9 @@ const createSession = (chapter: ChapterDefinition): GameSession => ({
   schemaVersion: 2,
   chapterId: chapter.id,
   currentSceneId: 'SCN-G01-00',
+  mainlineSceneId: 'SCN-G01-00',
+  unlockedSceneIds: ['SCN-G01-00'],
+  completedSceneIds: [],
   sceneState: chapter.initialState,
   sceneStates: { 'SCN-G01-00': chapter.initialState },
   activeRuntimeNodeId: null,
@@ -33,6 +43,7 @@ const createSession = (chapter: ChapterDefinition): GameSession => ({
   completedPuzzleIds: [],
   hosProgress: {},
   puzzleProgress: {},
+  mechanicProgress: {},
   hintCount: 0,
   hintLevels: {},
   flags: {
@@ -149,6 +160,7 @@ export class GameEngine {
     }
 
     const next = this.#nextSession()
+    const firstVisit = !next.sceneStates[sceneId]
     next.currentSceneId = sceneId
     next.sceneState = next.sceneStates[sceneId] ?? scene.initialState
     next.sceneStates[sceneId] = next.sceneState
@@ -177,12 +189,15 @@ export class GameEngine {
         return { ok: false, message: '必须先恢复旧电视墙借用规则档案。' }
       }
       next.flags.g02_slice_01_complete = true
+      next.mainlineSceneId = sceneId
     } else if (sceneId === 'SCN-G01-01') {
-      next.characterStates['CHAR-QIMA'] = 'offline'
+      if (firstVisit) next.characterStates['CHAR-QIMA'] = 'offline'
       next.flags.g01_scn01_entered = true
     } else if (sceneId === 'SCN-G01-02') {
-      next.flags.g01_task_log_unlocked = false
-      next.flags.g01_map_unlocked = false
+      if (firstVisit) {
+        next.flags.g01_task_log_unlocked = false
+        next.flags.g01_map_unlocked = false
+      }
       next.flags.g01_scn02_entered = true
     } else if (sceneId === 'SCN-G01-03') {
       next.flags.g01_scn03_entered = true
@@ -212,6 +227,12 @@ export class GameEngine {
         message: '交接画面只能在完成SCN-G01-07后由正式交接动作进入。',
       }
     }
+    const enteredOrder = PLAYER_SCENE_IDS.indexOf(sceneId)
+    const mainlineOrder = PLAYER_SCENE_IDS.indexOf(next.mainlineSceneId)
+    if (enteredOrder >= 0) {
+      if (!next.unlockedSceneIds.includes(sceneId)) next.unlockedSceneIds.push(sceneId)
+      if (enteredOrder > mainlineOrder) next.mainlineSceneId = sceneId
+    }
     this.#commit(next)
     this.saves.saveCheckpoint(next)
     const messages: Record<string, string> = {
@@ -230,6 +251,61 @@ export class GameEngine {
       'SCN-G01-07': '拾光号进入锈环星近地轨道，开始落点扫描。',
     }
     return { ok: true, message: messages[sceneId] ?? '已进入目标舱段。' }
+  }
+
+  /** Visit a previously unlocked scene without changing the active story task. */
+  visitScene(sceneId: string): ActionResult {
+    if (!PLAYER_SCENE_IDS.includes(sceneId)) {
+      return { ok: false, message: '这个位置不在当前场景地图中。' }
+    }
+    if (!this.#session.unlockedSceneIds.includes(sceneId)) {
+      return { ok: false, message: '这个场景尚未随剧情解锁。' }
+    }
+    if (this.#session.safeRecovery || this.#session.dialogue.active) {
+      return { ok: false, message: '请先完成当前安全恢复或对白。' }
+    }
+    const scene = this.chapter.scenes?.find((candidate) => candidate.id === sceneId)
+    const initialState = sceneId === 'SCN-G01-00' ? this.chapter.initialState : scene?.initialState
+    if (!initialState) return { ok: false, message: '目标场景不可用。' }
+    const next = this.#nextSession()
+    next.currentSceneId = sceneId
+    next.sceneState = next.sceneStates[sceneId] ?? initialState
+    next.sceneStates[sceneId] = next.sceneState
+    next.activeRuntimeNodeId = null
+    next.safeRecovery = null
+    this.#commit(next)
+    return { ok: true, message: `已回访${sceneExperience(sceneId)?.title ?? '已解锁场景'}；当前主线任务没有改变。` }
+  }
+
+  visitPreviousScene(): ActionResult {
+    const order = PLAYER_SCENE_IDS.indexOf(this.#session.currentSceneId)
+    if (order <= 0) return { ok: false, message: '这里已经是当前旅程最早的场景。' }
+    for (let index = order - 1; index >= 0; index -= 1) {
+      const candidate = PLAYER_SCENE_IDS[index]
+      if (this.#session.unlockedSceneIds.includes(candidate)) return this.visitScene(candidate)
+    }
+    return { ok: false, message: '没有可返回的已解锁场景。' }
+  }
+
+  returnToMainline(): ActionResult {
+    if (this.#session.currentSceneId === this.#session.mainlineSceneId) {
+      return { ok: false, message: '你已经位于当前任务场景。' }
+    }
+    if (PLAYER_SCENE_IDS.includes(this.#session.mainlineSceneId)) {
+      return this.visitScene(this.#session.mainlineSceneId)
+    }
+    const scene = this.chapter.scenes?.find(
+      (candidate) => candidate.id === this.#session.mainlineSceneId,
+    )
+    if (!scene) return { ok: false, message: '当前任务边界不可用。' }
+    const next = this.#nextSession()
+    next.currentSceneId = scene.id
+    next.sceneState = next.sceneStates[scene.id] ?? scene.initialState
+    next.sceneStates[scene.id] = next.sceneState
+    next.activeRuntimeNodeId = null
+    next.safeRecovery = null
+    this.#commit(next)
+    return { ok: true, message: '已返回当前任务边界。' }
   }
 
   subscribe(listener: Listener): () => void {
@@ -398,7 +474,20 @@ export class GameEngine {
 
     const next = this.#nextSession()
     next.completedPuzzleIds.push(puzzleId)
-    if (puzzleId === 'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION') {
+    if (puzzleId === 'PUZ-G01-QIMA-BOOT') {
+      next.characterStates['CHAR-QIMA'] = 'normal'
+      next.flags.g01_scn01_complete = true
+      next.flags.g01_qima_online = true
+      next.flags.world_star_core_count = 0
+      next.puzzleProgress.qima_boot_sequence = 'signal-memory:verified'
+      next.characterDiscoveries['CHAR-QIMA'] = [
+        '在导航核心舱完成离线、受损、启动中到正常的恢复',
+        '启动记录显示离线四分十二秒',
+      ]
+    } else if (puzzleId === 'RUNTIME-PUZ-G01-ROTATING-CIRCUIT') {
+      next.flags.g01_scn00_circuit_stable = true
+      next.puzzleProgress.emergency_circuit = 'input>relay>protection-switch'
+    } else if (puzzleId === 'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION') {
       next.flags.g01_scn03_evidence_pressure_reading = true
       next.puzzleProgress.pressure_reading = 'safe-window-90s'
     } else if (puzzleId === 'TUT-MECH-002') {
@@ -426,6 +515,21 @@ export class GameEngine {
     } else if (puzzleId === 'RUNTIME-PUZ-G01-IMPACT-DAMPING') {
       next.flags.g01_scn07_impact_stabilized = true
       next.puzzleProgress.impact_damping = 'attitude>buffer>landing-lock'
+    } else if (puzzleId === 'RUNTIME-PUZ-G01-GARBAGE-ROUTE') {
+      next.flags.g01_scn05_safe_landing_locked = true
+      next.flags.g01_scn05_window_confirmed = true
+      next.flags.g01_scn05_window_open = false
+      next.flags.g01_scn05_window_closed_at = now()
+      next.puzzleProgress.garbage_route = 'node-a>node-b>bypass-window>safe-landing'
+    } else if (puzzleId === 'RUNTIME-PUZ-G02-CRANE-COUNTERWEIGHT') {
+      next.flags.g02_almao_rescued = true
+      next.flags.g02_crane_balanced = true
+      next.characterStates['CHAR-ALMAO'] = 'relieved'
+      next.characterStates['CHAR-ZHENG'] = 'warning'
+      next.puzzleProgress.g02_crane_counterweight = '2L>1R>3L:balanced'
+    } else if (puzzleId === 'RUNTIME-PUZ-G02-BORROW-RETURN') {
+      next.flags.g02_archive_restored = true
+      next.puzzleProgress.g02_borrow_return = 'borrow>use>return:two-records-restored'
     } else if (puzzleId === 'RUNTIME-PUZ-G02-PULSE-SCAN') {
       if (
         next.currentSceneId !== 'SCN-G02-00' ||
@@ -478,6 +582,38 @@ export class GameEngine {
 
     this.#commit(next)
     return { ok: true, message: '电路稳定，新的舱段权限已解锁。' }
+  }
+
+  performTrialMechanic(action: TrialMechanicAction): ActionResult {
+    const experience = sceneExperience(this.#session.currentSceneId)
+    if (!experience) return { ok: false, message: '当前场景没有独立机关。' }
+    const current = this.#session.mechanicProgress[experience.mechanicId]
+    if (current?.status === 'complete') return { ok: false, message: '这项机关已经完成。' }
+    const progress = applyTrialMechanicAction(this.#session.currentSceneId, current, action)
+    const next = this.#nextSession()
+    next.mechanicProgress[experience.mechanicId] = progress
+    if (experience.mechanicType === 'pattern-decode' && progress.status === 'complete') {
+      next.puzzleProgress.g02_pulse_interval = 3
+      next.puzzleProgress.g02_pulse_gain = 2
+      next.puzzleProgress.g02_pulse_window = 3
+    }
+    this.#commit(next)
+    if (progress.status === 'complete') return this.completePuzzle(experience.mechanicId)
+    if (progress.status === 'error') {
+      return { ok: false, message: '这一步没有接通；关键物与已经确认的进度全部保留。' }
+    }
+    return { ok: true, message: progress.status === 'partial' ? '这一步已确认。' : '机关已复位。' }
+  }
+
+  resetTrialMechanic(): ActionResult {
+    const experience = sceneExperience(this.#session.currentSceneId)
+    if (!experience) return { ok: false, message: '当前场景没有独立机关。' }
+    const next = this.#nextSession()
+    next.mechanicProgress[experience.mechanicId] = initialMechanicProgress(
+      this.#session.currentSceneId,
+    )
+    this.#commit(next)
+    return { ok: true, message: '只重置了本次机关尝试。' }
   }
 
   inspect(hotspotId: string): ActionResult {
@@ -763,16 +899,27 @@ export class GameEngine {
     if (hint.hotspot.kind === 'inspect') {
       return this.inspect(hint.hotspot.id)
     }
-    if (hint.hotspot.zoomId === 'TUT-MECH-002') {
-      return this.completePuzzle('TUT-MECH-002')
+    const experience = sceneExperience(sceneId)
+    if (experience && hint.hotspot.zoomId === experience.mechanicId) {
+      const definition = TRIAL_MECHANICS[experience.mechanicType]
+      const progress = this.#session.mechanicProgress[experience.mechanicId] ??
+        initialMechanicProgress(sceneId)
+      if (definition.sequence) {
+        const nextToken = definition.sequence[progress.confirmedSteps.length]
+        return nextToken
+          ? this.performTrialMechanic({ kind: 'choose', target: nextToken })
+          : { ok: false, message: '机关步骤已经全部确认。' }
+      }
+      const nextValue = Object.entries(definition.targetValues ?? {}).find(
+        ([target, value]) => Number(progress.values[target] ?? -1) !== value,
+      )
+      return nextValue
+        ? this.performTrialMechanic({ kind: 'set', target: nextValue[0], value: nextValue[1] })
+        : { ok: false, message: '机关参数已经全部确认。' }
     }
     if (
       hint.hotspot.zoomId &&
-      [
-        'RUNTIME-PUZ-G01-SIGNAL-ALIGNMENT',
-        'RUNTIME-PUZ-G01-LANDING-TRIANGULATION',
-        'RUNTIME-PUZ-G01-IMPACT-DAMPING',
-      ].includes(hint.hotspot.zoomId)
+      ['RUNTIME-PUZ-G01-LANDING-TRIANGULATION'].includes(hint.hotspot.zoomId)
     ) {
       return this.completePuzzle(hint.hotspot.zoomId)
     }
@@ -864,16 +1011,16 @@ export class GameEngine {
 
     if (definition.effect === 'advance_pulse_control') {
       if (this.#session.sceneState !== 'S2') {
-        return { ok: false, message: '先进入封存脉冲取样窗，再让七码校准一个控制量。' }
+        return { ok: false, message: '先进入脉冲规律解码台，再让七码确认一个合法图形。' }
       }
-      const targets = { interval: 3, gain: 2, window: 3 } as const
-      const control = (Object.keys(targets) as Array<keyof typeof targets>).find(
-        (candidate) =>
-          Number(this.#session.puzzleProgress[`g02_pulse_${candidate}`] ?? 1) !==
-          targets[candidate],
-      )
-      if (!control) return { ok: false, message: '三个控制量都已校准，请亲自封存取样。' }
-      return this.setG02PulseControl(control, targets[control])
+      const experience = sceneExperience('SCN-G02-00')
+      const definition = TRIAL_MECHANICS['pattern-decode']
+      const progress = this.#session.mechanicProgress[experience!.mechanicId] ??
+        initialMechanicProgress('SCN-G02-00')
+      const nextToken = definition.sequence?.[progress.confirmedSteps.length]
+      return nextToken
+        ? this.performTrialMechanic({ kind: 'choose', target: nextToken })
+        : { ok: false, message: '三格规律都已确认，请关闭近景继续调查。' }
     }
 
     if (definition.effect === 'assign_one_resource_label') {
@@ -1072,6 +1219,7 @@ export class GameEngine {
     next.flags.g01_handoff_to_g02 = true
     next.flags.world_star_core_count = 0
     next.currentSceneId = 'G02-BOUNDARY'
+    next.mainlineSceneId = 'G02-BOUNDARY'
     next.sceneState = 'S0'
     next.sceneStates['G02-BOUNDARY'] = 'S0'
     next.activeRuntimeNodeId = null
@@ -1280,6 +1428,23 @@ export class GameEngine {
   #normalizeRestoredSession(): void {
     this.#session.activeRuntimeNodeId ??= null
     this.#session.safeRecovery ??= null
+    this.#session.mainlineSceneId ??= this.#session.currentSceneId
+    this.#session.unlockedSceneIds ??= ['SCN-G01-00']
+    this.#session.completedSceneIds ??= []
+    this.#session.mechanicProgress ??= {}
+    if (
+      this.#session.flags.g01_qima_online === true ||
+      this.#session.sceneStates['SCN-G01-01'] === 'S6' ||
+      this.#session.dialogue.readDialogueIds.includes('DLG-G01-0025')
+    ) this.#session.flags.qima_identity_revealed = true
+    if (
+      this.#session.flags.g02_almao_rescued === true ||
+      this.#session.dialogue.readDialogueIds.includes('DLG-G02-0003')
+    ) this.#session.flags.almao_identity_revealed = true
+    if (
+      Number(this.#session.flags.g02_resource_labels ?? 0) > 0 ||
+      this.#session.dialogue.readDialogueIds.includes('DLG-G02-0005')
+    ) this.#session.flags.zheng_identity_revealed = true
     this.#session.flags.world_star_core_count = 0
     this.#enforceFrozenInvariants(this.#session)
     const resourceLabels = Number(this.#session.flags.g02_resource_labels ?? 0)
@@ -1381,6 +1546,21 @@ export class GameEngine {
   }
 
   #commit(next: GameSession): void {
+    const currentExperience = sceneExperience(next.currentSceneId)
+    if (currentExperience) {
+      if (!next.unlockedSceneIds.includes(next.currentSceneId)) {
+        next.unlockedSceneIds.push(next.currentSceneId)
+      }
+      if (next.sceneState === 'S6') {
+        if (!next.completedSceneIds.includes(next.currentSceneId)) {
+          next.completedSceneIds.push(next.currentSceneId)
+        }
+        const following = PLAYER_SCENE_IDS[currentExperience.order + 1]
+        if (following && !next.unlockedSceneIds.includes(following)) {
+          next.unlockedSceneIds.push(following)
+        }
+      }
+    }
     this.#enforceFrozenInvariants(next)
     this.#session = next
     this.saves.save(this.#session)
@@ -1410,10 +1590,15 @@ export class GameEngine {
     session.flags.ability_shrink = false
     session.flags.ability_clone = false
 
+    const postG01Mainline =
+      session.currentSceneId === 'G02-BOUNDARY' ||
+      session.mainlineSceneId === 'G02-BOUNDARY' ||
+      session.currentSceneId.startsWith('SCN-G02-') ||
+      session.mainlineSceneId.startsWith('SCN-G02-') ||
+      session.currentSceneId.startsWith('RUNTIME-G02-') ||
+      session.mainlineSceneId.startsWith('RUNTIME-G02-')
     const reachedBoundary =
-      (session.currentSceneId === 'G02-BOUNDARY' ||
-        session.currentSceneId.startsWith('SCN-G02-') ||
-        session.currentSceneId === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY') &&
+      postG01Mainline &&
       session.flags.g01_scn07_complete === true &&
       session.flags.g01_landing_scanned === true
     session.flags.g01_chapter_complete = reachedBoundary

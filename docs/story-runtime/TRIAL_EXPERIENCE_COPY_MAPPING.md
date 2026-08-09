@@ -1,6 +1,6 @@
 # 试用版文案来源映射
 
-版本：`STARWRECK-TRIAL-0.2.0`
+版本：`STARWRECK-TRIAL-0.3.0`
 
 本文件记录体验层文案的正式依据。运行时只做中性概述，不新增世界事实，不改变冻结剧情。
 
@@ -13,6 +13,8 @@
 | 星宇、七码、阿铆、郑人物资料 | `src/data/trial/characters.ts` | `src/data/characters/index.ts`、G01/G02正式运行时资料 |
 | G01/G02全部25件背包物品 | `src/data/trial/items.ts` | 各场景 `ItemDefinition`、正式场景合同、已登记物品图标 |
 | 已取得证据与对白历史 | `src/ui/ArchiveView.ts` | schema v2 `GameSession.evidenceIds`、`dialogueHistory` |
+| 十一场剧情目标、当前步骤、人物反馈和下一场理由 | `src/data/trial/sceneExperiences.ts` | G01/G02正式场景状态、剧情对白与任务记录 |
+| 七码身份揭示与当前任务发布 | `src/data/dialogue/g01.ts`、`src/data/dialogue/presentation.ts` | 冻结对白保留；运行时在修复启动前隐藏身份 |
 
 ## 文案边界
 

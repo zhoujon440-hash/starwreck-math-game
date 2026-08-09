@@ -91,7 +91,7 @@ test('new browser presents title, sourced intro and legal G01 start', async ({ p
   await capture(page, info, '02-story-intro.png')
   await page.locator('[data-trial-action="intro-next"]').click()
   await page.locator('[data-trial-action="intro-next"]').click()
-  await expect(page.locator('[data-story-card-id="WORLD-XINGYU-QIMA"]')).toContainText('星宇与七码')
+  await expect(page.locator('[data-story-card-id="WORLD-XINGYU-QIMA"]')).toContainText('受损导航设备')
   await capture(page, info, '03-xingyu-qima-intro.png')
 
   await page.locator('[data-trial-action="intro-skip"]').click()
@@ -216,6 +216,8 @@ test('Almao and Zheng character cards appear once at their formal first encounte
   await page.locator('[data-hotspot-id="RUNTIME-HS-G02-01-OBSERVE"]').click()
   await expect(page.locator('[data-item-card-id="RUNTIME-ITM-G02-MAGNETIC-GRAPNEL"]')).toBeVisible()
   await page.locator('[data-trial-action="dismiss-card"]').click()
+  await page.getByRole('button', { name: '下一句' }).click()
+  await page.getByRole('button', { name: '继续探索' }).click()
   await expect(page.locator('[data-character-card-id="CHAR-ALMAO"]')).toBeVisible()
   await capture(page, info, '12-almao-first-card.png')
   await page.locator('[data-trial-action="dismiss-card"]').click()
@@ -223,6 +225,13 @@ test('Almao and Zheng character cards appear once at their formal first encounte
     page.locator('[data-drop-target="HS-G02-0003"]'),
   )
   await page.locator('[data-hotspot-id="RUNTIME-HS-G02-01-RESCUE-CONFIRM"]').click()
+  for (const token of ['weight-2-left', 'weight-1-right', 'weight-3-left']) {
+    await page.locator(`[data-mechanic-target="${token}"]`).click()
+  }
+  await expect(page.locator('[data-mechanic-status="complete"]')).toBeVisible()
+  await page.getByRole('button', { name: '关闭吊臂配重救援' }).click()
+  await page.getByRole('button', { name: '下一句' }).click()
+  await page.getByRole('button', { name: '继续探索' }).click()
   await expect(page.locator('[data-character-card-id="CHAR-ZHENG"]')).toBeVisible()
   await capture(page, info, '13-zheng-first-card.png')
   await page.locator('[data-trial-action="dismiss-card"]').click()

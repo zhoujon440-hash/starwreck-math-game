@@ -39,7 +39,7 @@ export const G01_SCN05: SceneDefinition = {
     { id: 'RUNTIME-HS-G01-05-BYPASS-TOOL-SLOT', kind: 'hidden-item', ariaLabel: '从驾驶舱左侧工具槽取出旁路板', area: { x: 16, y: 66, width: 10, height: 16 }, activeStates: ['S2'], itemId: 'ITM-G01-012', scope: 'scene' },
     { id: 'HS-G01-0023', kind: 'use-target', ariaLabel: '中央控制台旁路板插槽', area: { x: 52, y: 76, width: 13, height: 15 }, activeStates: ['S3'], requiredItemId: 'ITM-G01-012', scope: 'scene' },
     { id: 'RUNTIME-HS-G01-05-REOPEN-WINDOW', kind: 'inspect', ariaLabel: '重新启动已安装的旁路板', area: { x: 52, y: 76, width: 13, height: 15 }, activeStates: ['S3'], requiredCompletedHotspotIds: ['HS-G01-0023'], scope: 'scene' },
-    { id: 'HS-G01-0024', kind: 'inspect', ariaLabel: '确认舷窗右上方安全落点', area: { x: 77, y: 15, width: 13, height: 18 }, activeStates: ['S4'], scope: 'scene' },
+    { id: 'HS-G01-0024', kind: 'zoom', ariaLabel: '打开垃圾雨航线规划台', area: { x: 77, y: 15, width: 13, height: 18 }, activeStates: ['S4'], zoomId: 'RUNTIME-PUZ-G01-GARBAGE-ROUTE', scope: 'scene' },
     { id: 'RUNTIME-HS-G01-05-LANDING-CONFIRM', kind: 'inspect', ariaLabel: '锁定安全着陆航线', area: { x: 76, y: 14, width: 15, height: 21 }, activeStates: ['S5'], scope: 'scene' },
   ],
   transitions: [
@@ -50,6 +50,7 @@ export const G01_SCN05: SceneDefinition = {
     { from: 'S2', event: 'found:all', to: 'S3' },
     { from: 'S3', event: 'use:ITM-G01-012:HS-G01-0023', to: 'S4' },
     { from: 'S3', event: 'inspect:RUNTIME-HS-G01-05-REOPEN-WINDOW', to: 'S4' },
+    { from: 'S4', event: 'puzzle:RUNTIME-PUZ-G01-GARBAGE-ROUTE', to: 'S5' },
     { from: 'S4', event: 'inspect:HS-G01-0024', to: 'S5' },
     { from: 'S5', event: 'inspect:RUNTIME-HS-G01-05-LANDING-CONFIRM', to: 'S6' },
   ],

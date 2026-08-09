@@ -210,10 +210,11 @@ export const G02_SCN02: SceneDefinition = {
     },
     {
       id: 'RUNTIME-HS-G02-02-ARCHIVE',
-      kind: 'inspect',
-      ariaLabel: '读取三块主屏拼合出的借用规则档案',
+      kind: 'zoom',
+      ariaLabel: '打开三屏借用档案逻辑配对',
       area: { x: 31, y: 20, width: 39, height: 42 },
       activeStates: ['S5'],
+      zoomId: 'RUNTIME-PUZ-G02-BORROW-RETURN',
       scope: 'scene',
     },
     {
@@ -242,6 +243,7 @@ export const G02_SCN02: SceneDefinition = {
     },
     { from: 'S4', event: 'use:ITM-G02-004:HS-G02-0010', to: 'S5' },
     { from: 'S5', event: 'inspect:RUNTIME-HS-G02-02-ARCHIVE', to: 'S6' },
+    { from: 'S5', event: 'puzzle:RUNTIME-PUZ-G02-BORROW-RETURN', to: 'S6' },
     { from: 'S2', event: 'inspect:RUNTIME-HS-G02-02-DANGER', to: 'S2' },
     { from: 'S3', event: 'inspect:RUNTIME-HS-G02-02-DANGER', to: 'S3' },
     { from: 'S4', event: 'inspect:RUNTIME-HS-G02-02-DANGER', to: 'S4' },

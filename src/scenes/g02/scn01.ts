@@ -92,10 +92,11 @@ export const G02_SCN01: SceneDefinition = {
     },
     {
       id: 'RUNTIME-HS-G02-01-RESCUE-CONFIRM',
-      kind: 'inspect',
-      ariaLabel: '确认挂索受力并让阿铆落到安全平台',
+      kind: 'zoom',
+      ariaLabel: '打开吊臂配重救援机关',
       area: { x: 41, y: 52, width: 24, height: 30 },
       activeStates: ['S2'],
+      zoomId: 'RUNTIME-PUZ-G02-CRANE-COUNTERWEIGHT',
       scope: 'scene',
     },
     {
@@ -150,6 +151,7 @@ export const G02_SCN01: SceneDefinition = {
       to: 'S2',
     },
     { from: 'S2', event: 'inspect:RUNTIME-HS-G02-01-RESCUE-CONFIRM', to: 'S3' },
+    { from: 'S2', event: 'puzzle:RUNTIME-PUZ-G02-CRANE-COUNTERWEIGHT', to: 'S3' },
     { from: 'S3', event: 'inspect:HS-G02-0005', to: 'S4' },
     { from: 'S3', event: 'inspect:HS-G02-0006', to: 'S4' },
     { from: 'S3', event: 'inspect:HS-G02-0007', to: 'S4' },

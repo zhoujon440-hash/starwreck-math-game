@@ -44,7 +44,7 @@ export const G02_DIALOGUE: DialogueNode[] = [
     sequence: 3,
     trigger_condition: '进入救援区',
     next_dialogue_id: 'DLG-G02-0004',
-    writes_variables: {},
+    writes_variables: { almao_identity_revealed: true },
     grants_item: null,
     updates_character_state: { 'CHAR-ALMAO': 'trapped' },
     updates_scene_state: null,
@@ -78,7 +78,7 @@ export const G02_DIALOGUE: DialogueNode[] = [
     sequence: 5,
     trigger_condition: '救援完成',
     next_dialogue_id: 'DLG-G02-0006',
-    writes_variables: {},
+    writes_variables: { zheng_identity_revealed: true },
     grants_item: null,
     updates_character_state: {
       'CHAR-ALMAO': 'relieved',

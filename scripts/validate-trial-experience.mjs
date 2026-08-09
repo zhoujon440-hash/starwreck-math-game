@@ -24,6 +24,15 @@ let items = read('src/data/trial/items.ts')
 let meta = read('src/game/uiMetaSave.ts')
 let save = read('src/game/save.ts')
 let archive = read('src/ui/ArchiveView.ts')
+let experiences = read('src/data/trial/sceneExperiences.ts')
+let mechanics = read('src/game/minigames/trialMechanics.ts')
+let mechanicPanel = read('src/ui/TrialMechanicPanel.ts')
+let gameView = read('src/ui/GameView.ts')
+let engine = read('src/game/engine.ts')
+let gameTypes = read('src/game/types.ts')
+let characterReveal = read('src/data/trial/characterReveal.ts')
+let dialoguePresentation = read('src/data/dialogue/presentation.ts')
+let styles = read('src/styles.css')
 let packageConfig = json('package.json')
 const assetProvenance = json('docs/art/TRIAL_EXPERIENCE_ASSET_PROVENANCE.json')
 
@@ -45,6 +54,11 @@ if (mutation) {
     'reset-single-confirm': () => { settings = settings.replace('reset-stage-two', 'reset-confirm') },
     'archive-missing-dialogue': () => { archive = archive.replace("['dialogue', '对话历史']", "['dialogue-removed', '对话历史']") },
     'version-wrong': () => { packageConfig.trialVersion = 'STARWRECK-TRIAL-0.1.0' },
+    'duplicate-mechanic': () => { experiences = experiences.replace("mechanicType: 'signal-memory'", "mechanicType: 'rotating-circuit'") },
+    'missing-scene-story': () => { experiences = experiences.replace('nextReason:', 'removedNextReason:') },
+    'revisit-regresses-mainline': () => { engine = engine.replace('if (enteredOrder > mainlineOrder) next.mainlineSceneId = sceneId', 'next.mainlineSceneId = sceneId') },
+    'qima-card-early': () => { app += "\nconst earlyCard = ['CHAR-QIMA']" },
+    'dark-shell': () => { styles = styles.replace('--light-panel: #ffffff', '--light-panel: #08111d') },
   }
   if (!actions[mutation]) failures.push(`TRIAL-FIXTURE-001: unknown mutation ${mutation}`)
   else actions[mutation]()
@@ -56,7 +70,7 @@ for (const action of ['continue', 'new-game', 'chapters', 'archive', 'settings',
   check(title.includes(`data-trial-action="${action}"`), 'TRIAL-ENTRY-003', `title action ${action} is missing`)
 }
 check(title.includes('disabled aria-disabled="true"'), 'TRIAL-ENTRY-004', 'continue is not disabled without a save')
-check(title.includes('STARWRECK-TRIAL-0.2.0'), 'TRIAL-ENTRY-005', 'formal trial version is missing from title')
+check(title.includes('STARWRECK-TRIAL-0.3.0'), 'TRIAL-ENTRY-005', 'formal trial version is missing from title')
 check(title.includes('pwaInstallAvailable') && title.includes('fullscreenAvailable'), 'TRIAL-ENTRY-006', 'capability-gated install/fullscreen actions are missing')
 check(!/(账号|密码|短信|第三方登录|云账户)/.test(title), 'TRIAL-ENTRY-007', 'fake online account UI is present')
 
@@ -73,6 +87,33 @@ for (const source of [
 check(app.includes("data-trial-action=\"intro-skip\"") || read('src/ui/StoryIntro.ts').includes('data-trial-action="intro-skip"'), 'TRIAL-STORY-004', 'story intro cannot be skipped')
 check(app.includes('#meta.introSeen = true'), 'TRIAL-STORY-005', 'intro seen state is not persisted')
 check(app.includes("#showChapterGuide('G02', 'handoff')"), 'TRIAL-STORY-006', 'G01-to-G02 recap interception is missing')
+
+const sceneIds = [...experiences.matchAll(/sceneId:\s*'([^']+)'/g)].map((match) => match[1])
+const mechanicTypes = [...experiences.matchAll(/mechanicType:\s*'([^']+)'/g)].map((match) => match[1])
+check(sceneIds.length === 11 && new Set(sceneIds).size === 11, 'TRIAL-FLOW-001', 'the trial must contain exactly eleven unique player scenes')
+check(mechanicTypes.length === 11 && new Set(mechanicTypes).size === 11, 'TRIAL-FLOW-002', 'each player scene must use a distinct mechanicType')
+for (const field of ['entryReason:', 'openingEvent:', 'mainGoal:', 'stepByState:', 'searchGoal:', 'combineGoal:', 'characterFeedback:', 'completionResult:', 'nextReason:']) {
+  check((experiences.match(new RegExp(field, 'g')) ?? []).length === 12, 'TRIAL-FLOW-003', `scene experience field ${field} is incomplete`)
+}
+check(mechanics.includes("'initial'" ) && mechanics.includes("'error'") && mechanics.includes("'partial'") && mechanics.includes("'complete'"), 'TRIAL-MECHANIC-001', 'four-state mechanic lifecycle is incomplete')
+check(mechanicPanel.includes('data-mechanic-draggable') && mechanicPanel.includes('data-mechanic-range'), 'TRIAL-MECHANIC-002', 'real drag and pointer/range controls are missing')
+check(!mechanicPanel.includes('data-answer='), 'TRIAL-MECHANIC-003', 'an exposed answer button is present')
+check(gameView.includes('performTrialMechanic') && gameView.includes('data-action="open-map"'), 'TRIAL-MECHANIC-004', 'mechanics or scene map are not wired into the runtime')
+
+check(gameTypes.includes('mainlineSceneId') && gameTypes.includes('unlockedSceneIds') && gameTypes.includes('completedSceneIds'), 'TRIAL-REVISIT-001', 'save model does not separate viewed scene from mainline')
+check(engine.includes('visitScene(sceneId: string)') && engine.includes('returnToMainline()'), 'TRIAL-REVISIT-002', 'scene revisit navigation is incomplete')
+check(engine.includes('if (enteredOrder > mainlineOrder) next.mainlineSceneId = sceneId'), 'TRIAL-REVISIT-003', 'revisit can regress or overwrite mainline progress')
+check(engine.includes("return { ok: false, message: '这个场景尚未随剧情解锁。' }"), 'TRIAL-REVISIT-004', 'locked scene access does not fail closed')
+
+check(story.includes('星宇与受损导航设备') && !story.includes("title: '星宇与七码'"), 'TRIAL-REVEAL-001', 'Qima identity is disclosed before the repair story')
+check(characterReveal.includes('qima_identity_revealed') && app.includes('characterNarrativelyRevealed'), 'TRIAL-REVEAL-002', 'character cards are not gated by narrative reveal')
+check(!app.includes("const earlyCard = ['CHAR-QIMA']"), 'TRIAL-REVEAL-003', 'Qima character card is forced before narrative reveal')
+check(app.includes("this.#engine?.snapshot.dialogue.active === true"), 'TRIAL-REVEAL-004', 'character cards can interrupt their reveal dialogue')
+check(dialoguePresentation.includes("导航核心？回答。"), 'TRIAL-REVEAL-005', 'pre-reveal dialogue still exposes Qima identity')
+
+check(styles.includes('--light-panel: #ffffff') && styles.includes('--light-canvas: #f3f5f7'), 'TRIAL-LIGHT-001', 'light UI palette is missing or darkened')
+check(styles.includes('.trial-title-screen') && styles.includes('.topbar') && styles.includes('.trial-card') && styles.includes('.story-modal'), 'TRIAL-LIGHT-002', 'light shell does not cover all primary player surfaces')
+check(styles.includes('.scene-treatment') && gameView.includes("style=\"background-image:url('${sceneArt}')\""), 'TRIAL-LIGHT-003', 'scene artwork is no longer preserved inside the light shell')
 
 for (const id of ['CHAR-XINGYU', 'CHAR-QIMA', 'CHAR-ALMAO', 'CHAR-ZHENG']) {
   check(characters.includes(`id: '${id}'`), 'TRIAL-CHAR-001', `${id} profile is missing`)
@@ -125,7 +166,7 @@ const forbiddenCopy = /schema(?:\s+v?\d+)?|项目负责人|验收|交付边界|�
 check(formalUi.every((source) => !forbiddenCopy.test(source)), 'TRIAL-COPY-001', 'formal player UI exposes development copy')
 check(!app.includes('SCN-G02-03A') && !app.includes('SCN-G02-03B') && !app.includes('SCN-G02-03C') && !app.includes('SCN-G02-03D'), 'TRIAL-SCOPE-001', 'later G02 scene entry was implemented')
 
-check(assetProvenance.version === 'STARWRECK-TRIAL-0.2.0', 'TRIAL-ASSET-001', 'asset provenance version mismatch')
+check(assetProvenance.version === 'STARWRECK-TRIAL-0.3.0', 'TRIAL-ASSET-001', 'asset provenance version mismatch')
 check(assetProvenance.new_runtime_asset_count === 0 && assetProvenance.new_runtime_assets.length === 0, 'TRIAL-ASSET-002', 'unreported new runtime assets are present')
 check(assetProvenance.forbidden_sources.pr_5_assets_used === false, 'TRIAL-ASSET-003', 'PR #5 art is declared in use')
 check(assetProvenance.forbidden_sources.third_party_network_assets_used === false, 'TRIAL-ASSET-004', 'third-party art is declared in use')
@@ -151,7 +192,7 @@ for (const path of [
 ]) {
   check(existsSync(resolve(root, path)), 'TRIAL-DELIVERY-001', `required delivery file missing: ${path}`)
 }
-check(packageConfig.trialVersion === 'STARWRECK-TRIAL-0.2.0', 'TRIAL-DELIVERY-002', 'trial version mismatch')
+check(packageConfig.trialVersion === 'STARWRECK-TRIAL-0.3.0', 'TRIAL-DELIVERY-002', 'trial version mismatch')
 check(packageConfig.scripts['validate:trial-experience'] === 'node scripts/validate-trial-experience.mjs', 'TRIAL-DELIVERY-003', 'validator script is not registered')
 check(packageConfig.scripts['test:trial-experience']?.includes('trial-experience-negative.test.mjs'), 'TRIAL-DELIVERY-004', 'negative test command is not registered')
 check(packageConfig.scripts['package:trial-experience'] === 'node scripts/package-trial-experience.mjs', 'TRIAL-DELIVERY-005', 'production package command is not registered')

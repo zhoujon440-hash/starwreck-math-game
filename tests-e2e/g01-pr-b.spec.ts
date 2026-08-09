@@ -2,6 +2,7 @@ import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
 import { enterTrialRuntime } from './helpers/trial-entry'
+import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 const scn04ItemIds = [
   'RUNTIME-ITM-G01-010-A',
@@ -158,6 +159,10 @@ test('SCN-G01-04 full HOPA, soft recovery, history and profile evidence', async 
   await primeHint(page, 'HS-G01-0018')
   await capture(page, info, '07-scn04-hint-level3-before-step.png')
   await page.locator('[data-action="hint"]').click()
+  await page.waitForTimeout(550)
+  await clickHotspot(page, 'HS-G01-0018')
+  await expect(page.locator('[data-trial-mechanic="star-map-snap"]')).toHaveAttribute('data-mechanic-status', 'partial')
+  await solveTrialMechanic(page, 'star-map-snap')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
   await expect(page.locator('[data-action="trigger-pr-b-soft-fail"]')).toHaveCount(0)
   await capture(page, info, '08-scn04-hint-level3-completed-calibration-step.png')
@@ -229,6 +234,7 @@ test('SCN-G01-05 ordered route, window failure, save recovery and boundary', asy
   await clickHotspot(page, 'RUNTIME-HS-G01-05-REOPEN-WINDOW')
   await expect(page.locator('[data-route-window="active"]')).toBeVisible()
   await clickHotspot(page, 'HS-G01-0024')
+  await solveTrialMechanic(page, 'garbage-route')
   await clickHotspot(page, 'RUNTIME-HS-G01-05-LANDING-CONFIRM')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S6/)
   await capture(page, info, '29-scn05-complete-boundary.png')

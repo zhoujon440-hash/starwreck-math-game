@@ -2,6 +2,7 @@ import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
 import { enterTrialRuntime } from './helpers/trial-entry'
+import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 const collectBrowserErrors = (page: Page): string[] => {
   const errors: string[] = []
@@ -246,9 +247,7 @@ const advanceCargoTo = async (
   if (stage === 'S3') return
 
   await clickHotspot(page, 'RUNTIME-HS-G01-03-GAUGE-PUZZLE')
-  for (const name of ['隔离外舱读数', '读取裂口压差', '锁定安全时间窗']) {
-    await page.getByRole('button', { name }).click()
-  }
+  await solveTrialMechanic(page, 'airflow-maze')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
   await page
     .locator('[data-inventory-item="ITM-G01-008"]')
@@ -291,11 +290,9 @@ test('SCN-G01-02 completes a real scene-search, close-up, puzzle and drag flow',
   await page.getByRole('button', { name: '记下路径' }).click()
 
   await clickHotspot(page, 'RUNTIME-HS-G01-02-TASK-PUZZLE')
-  await expect(page.getByRole('heading', { name: '排列维修依赖' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '任务依赖排序' })).toBeVisible()
   await capture(page, testInfo, '05-scn02-dependency-puzzle.png')
-  for (const name of ['测量货舱压力', '封堵外壳裂口', '启动货舱复压']) {
-    await page.getByRole('button', { name: new RegExp(name) }).click()
-  }
+  await solveTrialMechanic(page, 'task-order')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
 
   const maintenanceSheet = page.locator(
@@ -386,9 +383,7 @@ test('SCN-G01-03 preserves real HOS and repair progress across soft failure and 
 
   await clickHotspot(page, 'RUNTIME-HS-G01-03-GAUGE-PUZZLE')
   await capture(page, testInfo, '11-scn03-pressure-closeup.png')
-  for (const name of ['隔离外舱读数', '读取裂口压差', '锁定安全时间窗']) {
-    await page.getByRole('button', { name }).click()
-  }
+  await solveTrialMechanic(page, 'airflow-maze')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
 
   await tape.click()
