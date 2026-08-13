@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { dragMechanicToken } from './helpers/reliable-drag'
 import { solveTrialMechanic, type TrialMechanicType } from './helpers/trial-mechanics'
 
 test.use({ trace: 'retain-on-failure', video: 'off' })
@@ -88,7 +89,7 @@ const expectNoQimaIdentityLeak = async (page: Page) => {
 
 const dragMechanic = async (page: Page, type: string, token: string, slot: string) => {
   const panel = page.locator(`[data-trial-mechanic="${type}"]`)
-  await panel.locator(`[data-mechanic-draggable][data-mechanic-target="${token}"]`).dragTo(panel.locator(`[data-mechanic-dropzone="${slot}"]`))
+  await dragMechanicToken(page, panel, token, slot)
 }
 
 test('all eleven levels expose distinct real controls and four persistent states', async ({ page }, info) => {

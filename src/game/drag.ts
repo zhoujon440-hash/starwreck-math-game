@@ -52,6 +52,10 @@ export class InventoryDragCoordinator {
   }
 
   #handleDragStart = (event: DragEvent): void => {
+    if (this.#pointerDrag) {
+      event.preventDefault()
+      return
+    }
     const element = (event.target as HTMLElement).closest<HTMLElement>(
       '[data-inventory-item], [data-mechanism-item]',
     )
@@ -95,7 +99,7 @@ export class InventoryDragCoordinator {
   }
 
   #handlePointerDown = (event: PointerEvent): void => {
-    if (event.pointerType === 'mouse') return
+    if (event.pointerType === 'mouse' && event.button !== 0) return
     const element = (event.target as HTMLElement).closest<HTMLElement>(
       '[data-inventory-item], [data-mechanism-item]',
     )

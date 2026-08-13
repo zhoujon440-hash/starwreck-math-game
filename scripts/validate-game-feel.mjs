@@ -22,6 +22,7 @@ let panel = read('src/ui/TrialMechanicPanel.ts')
 let styles = read('src/styles.css')
 let workflow = read('.github/workflows/trial-game-feel-gate.yml')
 let e2e = read('tests-e2e/trial-game-feel.spec.ts') + read('tests-e2e/trial-game-feel-recorded.spec.ts')
+let dragProof = read('tests-e2e/helpers/reliable-drag.ts')
 
 const mutations = {
   'missing-presentation': () => { presentations = presentations.replace("'SCN-G02-02',", "'SCN-G02-02-REMOVED',") },
@@ -94,7 +95,17 @@ for (const command of [
 ]) check(workflow.includes(`npm run ${command}`), 'GAME-FEEL-CI-001', `Trial Game Feel Gate skips ${command}`)
 check(workflow.includes('1366x768') && workflow.includes('1920x1080'), 'GAME-FEEL-CI-002', 'both desktop resolutions are not explicit in CI')
 check(e2e.includes("trace: 'on'") && e2e.includes("video: 'on'"), 'GAME-FEEL-E2E-001', 'video and trace recording are missing')
-check(e2e.includes('dragTo(') && e2e.includes('data-game-stage') && e2e.includes('data-world-visual-state'), 'GAME-FEEL-E2E-002', 'real scene/drag/world-change behavior is not covered')
+check(
+  dragProof.includes('page.mouse.down()') &&
+    dragProof.includes('page.mouse.move(') &&
+    dragProof.includes('page.mouse.up()') &&
+    dragProof.includes('isComplete') &&
+    e2e.includes('dragMechanicToken') &&
+    e2e.includes('data-game-stage') &&
+    e2e.includes('data-world-visual-state'),
+  'GAME-FEEL-E2E-002',
+  'real scene/drag/world-change behavior is not covered',
+)
 check(!presentations.includes('SCN-G02-03') && !gameView.includes('SCN-G02-03'), 'GAME-FEEL-SCOPE-001', 'SCN-G02-03+ gameplay is out of scope')
 check(!app.includes('starwreck:trial:v3:'), 'GAME-FEEL-SAVE-001', 'legacy schema v2 compatibility must not be replaced')
 

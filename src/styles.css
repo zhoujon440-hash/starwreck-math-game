@@ -4141,6 +4141,10 @@ body, #app { background: var(--light-canvas); color: var(--light-text); }
 .game-stage-runtime { z-index: 3; }
 .stage-fx-layer { z-index: 5; }
 
+/* Formal hotspots remain the authoritative pickup/use layer. Runtime device art
+   must never intercept an overlapping inventory drop before its mechanic opens. */
+.game-stage-world-plane > .hotspot-layer { z-index: 6; }
+
 .stage-device {
   position: absolute;
   z-index: 2;

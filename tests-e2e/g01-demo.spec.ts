@@ -1,4 +1,5 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { dragInventoryItem, dragWithMouse } from './helpers/reliable-drag'
 import { enterTrialRuntime } from './helpers/trial-entry'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
@@ -222,9 +223,7 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
     await hotspot.click()
   }
   const drag = async (itemId: string, targetId: string): Promise<void> => {
-    await page
-      .locator(`[data-inventory-item="${itemId}"]`)
-      .dragTo(page.locator(`[data-drop-target="${targetId}"]`))
+    await dragInventoryItem(page, itemId, targetId)
   }
 
   await page.goto('/')
@@ -314,7 +313,9 @@ test('new game continuously traverses SCN00—SCN07 and stops at the G02 boundar
     await clickId(id)
   }
   await capture(page, info, 'full-scn03-02-middle-emergency-supplies.png')
-  await drag('ITM-G01-009', 'HS-G01-0014')
+  await dragWithMouse(page, page.locator('[data-inventory-item="ITM-G01-009"]'), page.locator('[data-drop-target="HS-G01-0014"]'), {
+    isComplete: async () => (await page.locator('.game-shell').getAttribute('class'))?.includes('state-S3') ?? false,
+  })
   await advanceDialogue(page)
   await clickId('RUNTIME-HS-G01-03-GAUGE-PUZZLE')
   await solveTrialMechanic(page, 'airflow-maze')

@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
+import { dragInventoryItem, dragWithMouse } from './helpers/reliable-drag'
 import { enterTrialRuntime } from './helpers/trial-entry'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
@@ -239,9 +240,9 @@ const advanceCargoTo = async (
   await expect(page.locator('.game-shell')).toHaveClass(/state-S2/)
   if (stage === 'S2') return
 
-  await page
-    .locator('[data-inventory-item="ITM-G01-009"]')
-    .dragTo(page.locator('[data-drop-target="HS-G01-0014"]'))
+  await dragWithMouse(page, page.locator('[data-inventory-item="ITM-G01-009"]'), page.locator('[data-drop-target="HS-G01-0014"]'), {
+    isComplete: async () => (await page.locator('.game-shell').getAttribute('class'))?.includes('state-S3') ?? false,
+  })
   await advanceDialogue(page)
   await expect(page.locator('.game-shell')).toHaveClass(/state-S3/)
   if (stage === 'S3') return
@@ -249,9 +250,7 @@ const advanceCargoTo = async (
   await clickHotspot(page, 'RUNTIME-HS-G01-03-GAUGE-PUZZLE')
   await solveTrialMechanic(page, 'airflow-maze')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
-  await page
-    .locator('[data-inventory-item="ITM-G01-008"]')
-    .dragTo(page.locator('[data-drop-target="HS-G01-0015-PATCH"]'))
+  await dragInventoryItem(page, 'ITM-G01-008', 'HS-G01-0015-PATCH')
   await expect(
     page.locator('[data-inventory-item="ITM-G01-008"]'),
   ).toHaveCount(0)
@@ -308,9 +307,7 @@ test('SCN-G01-02 completes a real scene-search, close-up, puzzle and drag flow',
   const mapKey = page.locator(
     '[data-inventory-item="RUNTIME-ITM-G01-STAR-MAP-KEY"]',
   )
-  await mapKey.dragTo(
-    page.locator('[data-drop-target="RUNTIME-HS-G01-02-MAP-KEY"]'),
-  )
+  await dragInventoryItem(page, 'RUNTIME-ITM-G01-STAR-MAP-KEY', 'RUNTIME-HS-G01-02-MAP-KEY')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S5/)
   await expect(mapKey).toHaveCount(0)
   await capture(page, testInfo, '06-scn02-map-unlocked.png')
@@ -318,9 +315,7 @@ test('SCN-G01-02 completes a real scene-search, close-up, puzzle and drag flow',
   await page.reload()
   await expect(page.locator('.game-shell')).toHaveClass(/state-S5/)
   await expect(maintenanceSheet).toBeVisible()
-  await maintenanceSheet.dragTo(
-    page.locator('[data-drop-target="HS-G01-0011"]'),
-  )
+  await dragInventoryItem(page, 'RUNTIME-ITM-G01-MAINTENANCE-SHEET', 'HS-G01-0011')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S6/)
   await expect(page.locator('[data-dialogue-id="DLG-G01-0008"]')).toBeVisible()
   await capture(page, testInfo, '07-scn02-task-chain-complete.png')
@@ -375,7 +370,9 @@ test('SCN-G01-03 preserves real HOS and repair progress across soft failure and 
   await capture(page, testInfo, '10b-scn03-wrong-use-after-item-kept.png')
 
   const gauge = page.locator('[data-inventory-item="ITM-G01-009"]')
-  await gauge.dragTo(page.locator('[data-drop-target="HS-G01-0014"]'))
+  await dragWithMouse(page, gauge, page.locator('[data-drop-target="HS-G01-0014"]'), {
+    isComplete: async () => (await page.locator('.game-shell').getAttribute('class'))?.includes('state-S3') ?? false,
+  })
   await expect(page.locator('.game-shell')).toHaveClass(/state-S3/)
   await expect(gauge).toBeVisible()
   await expect(page.locator('[data-dialogue-id="DLG-G01-0010"]')).toBeVisible()
@@ -390,7 +387,7 @@ test('SCN-G01-03 preserves real HOS and repair progress across soft failure and 
   await clickHotspot(page, 'HS-G01-0015-PATCH')
   await expect(tape).toBeVisible()
   const patch = page.locator('[data-inventory-item="ITM-G01-008"]')
-  await patch.dragTo(page.locator('[data-drop-target="HS-G01-0015-PATCH"]'))
+  await dragInventoryItem(page, 'ITM-G01-008', 'HS-G01-0015-PATCH')
   await expect(patch).toHaveCount(0)
   await capture(page, testInfo, '12-scn03-patch-installed.png')
 
@@ -430,13 +427,13 @@ test('SCN-G01-03 preserves real HOS and repair progress across soft failure and 
   await page.getByRole('button', { name: /从 S4 保留进度继续/ }).click()
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
   await capture(page, testInfo, '13c-scn03-resumed-at-pre-failure-state.png')
-  await tape.dragTo(page.locator('[data-drop-target="HS-G01-0015-TAPE"]'))
+  await dragInventoryItem(page, 'ITM-G01-007', 'HS-G01-0015-TAPE')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S5/)
 
   const key = page.locator(
     '[data-inventory-item="RUNTIME-ITM-G01-REPRESS-KEY"]',
   )
-  await key.dragTo(page.locator('[data-drop-target="HS-G01-0016"]'))
+  await dragInventoryItem(page, 'RUNTIME-ITM-G01-REPRESS-KEY', 'HS-G01-0016')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S6/)
   await expect(page.locator('[data-dialogue-id="DLG-G01-0011"]')).toBeVisible()
   await capture(page, testInfo, '14-scn03-repress-dialogue.png')

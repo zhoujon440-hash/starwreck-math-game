@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
+import { dragInventoryItem, dragWithMouse } from './helpers/reliable-drag'
 import { enterTrialRuntime } from './helpers/trial-entry'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
@@ -388,11 +389,11 @@ test('desktop drag keeps a wrongly dropped fuse and advances on the correct targ
   await reachS3(page)
 
   const fuse = page.locator('[data-inventory-item="ITM-G01-002"]')
-  await fuse.dragTo(page.locator('[data-drop-target="HS-G01-0002"]'))
+  await dragWithMouse(page, fuse, page.locator('[data-drop-target="HS-G01-0002"]'))
   await expect(page.locator('.game-shell')).toHaveClass(/state-S3/)
   await expect(fuse).toBeVisible()
 
-  await fuse.dragTo(page.locator('[data-drop-target="HS-G01-0004"]'))
+  await dragInventoryItem(page, 'ITM-G01-002', 'HS-G01-0004')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
   await expect(page.locator('[data-inventory-item="ITM-G01-002"]')).toHaveCount(0)
   expect(browserErrors).toEqual([])

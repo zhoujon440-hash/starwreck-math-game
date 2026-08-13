@@ -479,10 +479,13 @@ for (const evidence of [
 ]) {
   check(e2eCode.includes(evidence), 'G02-E2E-002', `${evidence} evidence capture missing`)
 }
+const reliableDragCode = readFileSync('tests-e2e/helpers/reliable-drag.ts', 'utf8')
 check(
-  e2eCode.includes('.dragTo(') &&
+  e2eCode.includes('dragWithMouse(') &&
     e2eCode.includes('data-mechanism-item') &&
-    e2eCode.includes('data-resource-slot'),
+    e2eCode.includes('data-resource-slot') &&
+    reliableDragCode.includes('page.mouse.down()') &&
+    reliableDragCode.includes('page.mouse.up()'),
   'G02-E2E-005',
   'non-text mechanisms lack real pointer/drag Playwright proof',
 )

@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test } from '@playwright/test'
+import { dragMechanicToken } from './helpers/reliable-drag'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 test.use({ trace: 'on', video: 'on' })
@@ -50,11 +51,7 @@ test('records real crane counterweight dragging and the resulting rescue world s
   const stage = page.locator('[data-game-stage="SCN-G02-01"]')
   await stage.locator('.stage-device-entry').click()
   const panel = stage.locator('[data-trial-mechanic="crane-counterweight"]')
-  for (let attempt = 0; attempt < 2 && await panel.getAttribute('data-mechanic-status') === 'initial'; attempt += 1) {
-    await panel.locator('[data-mechanic-draggable][data-mechanic-target="weight-1"]').dragTo(
-      panel.locator('[data-mechanic-dropzone="right-far"]'),
-    )
-  }
+  await dragMechanicToken(page, panel, 'weight-1', 'right-far')
   await expect(panel).toHaveAttribute('data-mechanic-status', 'partial')
   await solveTrialMechanic(page, 'crane-counterweight', { close: false })
   await expect(stage).toHaveAttribute('data-camera-mode', 'success')

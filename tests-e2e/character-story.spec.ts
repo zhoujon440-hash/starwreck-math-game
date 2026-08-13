@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { dragInventoryItem, dragWithMouse } from './helpers/reliable-drag'
 import { enterTrialRuntime } from './helpers/trial-entry'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
@@ -128,9 +129,7 @@ test('SCN-G01-01 completes the formal HOPA recovery loop and restores from save'
   ]) {
     await clickHotspot(page, hotspotId)
   }
-  await page.locator('[data-inventory-item="ITM-G01-002"]').dragTo(
-    page.locator('[data-drop-target="HS-G01-0004"]'),
-  )
+  await dragInventoryItem(page, 'ITM-G01-002', 'HS-G01-0004')
   await clickHotspot(page, 'HS-G01-0005')
   await solveTrialMechanic(page, 'rotating-circuit')
   await page.getByRole('button', { name: '沿船尾通道前进' }).click()
@@ -186,25 +185,17 @@ test('SCN-G01-01 completes the formal HOPA recovery loop and restores from save'
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
 
   const chip = page.locator('[data-inventory-item="ITM-G01-004"]')
-  await chip.dragTo(page.locator('[data-drop-target="HS-G01-0007-CONTACT"]'))
+  await dragWithMouse(page, chip, page.locator('[data-drop-target="HS-G01-0007-CONTACT"]'))
   await expect(chip).toBeVisible()
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
   await expect(page.getByRole('status')).toContainText('接口不匹配')
   await capture(page, testInfo, '08-wrong-use-keeps-item.png')
 
-  await page.locator('[data-inventory-item="ITM-G01-005"]').dragTo(
-    page.locator('[data-drop-target="HS-G01-0007-CONTACT"]'),
-  )
-  await page.locator('[data-inventory-item="ITM-G01-006"]').dragTo(
-    page.locator('[data-drop-target="HS-G01-0007-FUSE"]'),
-  )
-  await page.locator('[data-inventory-item="ITM-G01-004"]').dragTo(
-    page.locator('[data-drop-target="HS-G01-0008"]'),
-  )
+  await dragInventoryItem(page, 'ITM-G01-005', 'HS-G01-0007-CONTACT')
+  await dragInventoryItem(page, 'ITM-G01-006', 'HS-G01-0007-FUSE')
+  await dragInventoryItem(page, 'ITM-G01-004', 'HS-G01-0008')
   await capture(page, testInfo, '09-correct-repair-progress.png')
-  await page
-    .locator('[data-inventory-item="RUNTIME-ITM-G01-FIXED-BUCKLE"]')
-    .dragTo(page.locator('[data-drop-target="RUNTIME-HS-G01-0008-BUCKLE"]'))
+  await dragInventoryItem(page, 'RUNTIME-ITM-G01-FIXED-BUCKLE', 'RUNTIME-HS-G01-0008-BUCKLE')
 
   await expect(page.locator('[data-qima-state="booting"]')).toBeVisible()
   await expect(page.locator('[data-boot-sequence="non-skippable"]')).toBeVisible()

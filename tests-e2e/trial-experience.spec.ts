@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { dragInventoryItem } from './helpers/reliable-drag'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 test.use({ trace: 'retain-on-failure', video: 'off' })
@@ -223,9 +224,7 @@ test('Almao and Zheng character cards appear once at their formal first encounte
   await expect(page.locator('[data-character-unlock="CHAR-ALMAO"]')).toBeVisible()
   await expect(page.locator('[data-character-card-id="CHAR-ALMAO"]')).toHaveCount(0)
   await capture(page, info, '12-almao-nonblocking-unlock.png')
-  await page.locator('[data-inventory-item="RUNTIME-ITM-G02-MAGNETIC-GRAPNEL"]').dragTo(
-    page.locator('[data-drop-target="HS-G02-0003"]'),
-  )
+  await dragInventoryItem(page, 'RUNTIME-ITM-G02-MAGNETIC-GRAPNEL', 'HS-G02-0003')
   await page.locator('[data-hotspot-id="RUNTIME-HS-G02-01-RESCUE-CONFIRM"]').click()
   await solveTrialMechanic(page, 'crane-counterweight', { close: false })
   await expect(page.locator('[data-mechanic-status="complete"]')).toBeVisible()

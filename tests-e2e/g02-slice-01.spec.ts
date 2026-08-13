@@ -1,4 +1,5 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { dragInventoryItem, dragWithMouse } from './helpers/reliable-drag'
 import { enterTrialRuntime } from './helpers/trial-entry'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
@@ -106,9 +107,7 @@ const drag = async (
   itemId: string,
   targetId: string,
 ): Promise<void> => {
-  await page
-    .locator(`[data-inventory-item="${itemId}"]`)
-    .dragTo(page.locator(`[data-drop-target="${targetId}"]`))
+  await dragInventoryItem(page, itemId, targetId)
 }
 
 const assignResourceLabel = async (
@@ -118,7 +117,9 @@ const assignResourceLabel = async (
 ): Promise<void> => {
   const label = page.locator(`[data-mechanism-item="${labelId}"]`)
   const slot = page.locator(`[data-resource-slot="${slotId}"]`)
-  await label.dragTo(slot, { force: true })
+  await dragWithMouse(page, label, slot, {
+    isComplete: async () => await slot.locator(`[data-mechanism-item="${labelId}"]`).count() > 0,
+  })
   await expect(slot.locator(`[data-mechanism-item="${labelId}"]`)).toBeVisible()
 }
 
@@ -289,9 +290,7 @@ test.setTimeout(240_000)
     .getByRole('button', { name: '打开资源归属证据近景并完成分类' })
     .click()
   await capture(page, info, '11a-scn01-resource-slots-initial.png')
-  await page
-    .locator('[data-mechanism-item="RUNTIME-G02-LABEL-DOUBLE-RING"]')
-    .dragTo(page.locator('[data-resource-slot="RUNTIME-G02-SLOT-DISCARDED"]'))
+  await dragWithMouse(page, page.locator('[data-mechanism-item="RUNTIME-G02-LABEL-DOUBLE-RING"]'), page.locator('[data-resource-slot="RUNTIME-G02-SLOT-DISCARDED"]'))
   await expect(page.locator('.toast')).toContainText('不吻合')
   await capture(page, info, '11b-scn01-resource-wrong-retained.png')
   await page.getByRole('button', { name: '关闭资源归属分析' }).click()
@@ -378,7 +377,8 @@ test.setTimeout(240_000)
   await expect(page.locator('.game-shell')).toHaveClass(/state-S2/)
   await capture(page, info, '17a-scn02-formal-hint-one-key-only.png')
 
-  await drag(page, 'ITM-G02-006', 'HS-G02-0008')
+  await page.locator('[data-inventory-item="ITM-G02-006"]').click()
+  await page.locator('[data-hotspot-id="HS-G02-0008"]').click()
   await expect(page.getByRole('status')).toContainText('接口不匹配')
   await expect(page.locator('[data-inventory-item="ITM-G02-006"]')).toBeVisible()
   await capture(page, info, '18-scn02-wrong-use-not-consumed.png')

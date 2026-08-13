@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test'
+import { dragMechanicToken, dragWithMouse } from './helpers/reliable-drag'
 import { solveTrialMechanic, type TrialMechanicType } from './helpers/trial-mechanics'
 
 test.use({ trace: 'retain-on-failure', video: 'off' })
@@ -79,27 +80,22 @@ const outputScreenshot = async (page: Page, info: TestInfo, name: string) => {
   await page.screenshot({ path: join(directory, name), fullPage: true, animations: 'disabled' })
 }
 
-const drag = async (panel: Locator, token: string, slot: string) =>
-  panel.locator(`[data-mechanic-draggable][data-mechanic-target="${token}"]`).dragTo(
-    panel.locator(`[data-mechanic-dropzone="${slot}"]`),
-  )
-
-const makeOneRealMove = async (panel: Locator, type: TrialMechanicType) => {
+const makeOneRealMove = async (page: Page, panel: Locator, type: TrialMechanicType) => {
   if (type === 'rotating-circuit') await panel.locator('[data-mechanic-target="input-junction"]').click()
   else if (type === 'signal-memory') {
     await panel.locator('[data-action="mechanic-play"]').click()
     await panel.locator('[data-mechanic-target="amber"]').click()
-  } else if (type === 'task-order') await drag(panel, 'pressure', 'timeline-1')
+  } else if (type === 'task-order') await dragMechanicToken(page, panel, 'pressure', 'timeline-1')
   else if (type === 'airflow-maze') await panel.locator('[data-mechanic-target="inlet"]').click()
   else if (type === 'star-map-snap') {
     await panel.locator('[data-action="mechanic-rotate"][data-mechanic-target="fragment-a"]').click()
-    await drag(panel, 'fragment-a', 'star-slot-a')
+    await dragMechanicToken(page, panel, 'fragment-a', 'star-slot-a')
   } else if (type === 'garbage-route') await panel.locator('[data-mechanic-target="node-a"]').click()
   else if (type === 'waveform-tuning') await panel.locator('[data-mechanic-range="frequency"]').fill('62')
   else if (type === 'attitude-balance') await panel.locator('[data-mechanic-range="pitch"]').fill('50')
   else if (type === 'pattern-decode') await panel.locator('[data-mechanic-range="pulse-1"]').fill('3')
-  else if (type === 'crane-counterweight') await drag(panel, 'weight-1', 'right-far')
-  else await drag(panel, 'borrow-heater', 'heater-borrow')
+  else if (type === 'crane-counterweight') await dragMechanicToken(page, panel, 'weight-1', 'right-far')
+  else await dragMechanicToken(page, panel, 'borrow-heater', 'heater-borrow')
 }
 
 test('1366x768 and 1920x1080 are the explicit Game Feel acceptance resolutions', async ({ page }, info) => {
@@ -125,7 +121,7 @@ mechanics.forEach((mechanic, index) => {
     const panel = stage.locator(`[data-trial-mechanic="${mechanic.type}"]`)
     await expect(panel).toHaveAttribute('data-device-surface', 'true')
     await expect(panel).not.toHaveAttribute('aria-modal', 'true')
-    await makeOneRealMove(panel, mechanic.type)
+    await makeOneRealMove(page, panel, mechanic.type)
     await expect(panel).toHaveAttribute('data-mechanic-status', 'partial')
     await outputScreenshot(page, info, `${String(index + 1).padStart(2, '0')}-${mechanic.type}-device.png`)
 
@@ -160,13 +156,17 @@ test('a wrong inventory drop bounces back and a correct drop snaps without block
   session.inventoryItemIds = ['ITM-G01-002']
   await seed(page, session)
   const item = page.locator('[data-inventory-item="ITM-G01-002"]')
-  const wrong = page.locator('.game-stage-viewport')
-  await item.dragTo(wrong)
+  const wrong = page.locator('[data-drop-target="HS-G01-0002"]')
+  await dragWithMouse(page, item, wrong, {
+    isComplete: async () => await page.locator('.game-shell').getAttribute('data-drop-feedback') === 'bounce',
+  })
   await expect(page.locator('.game-shell')).toHaveAttribute('data-drop-feedback', 'bounce')
   await expect(item).toBeVisible()
   await outputScreenshot(page, info, 'inventory-wrong-drop-bounce.png')
   const correct = page.locator('[data-drop-target="HS-G01-0004"]')
-  await item.dragTo(correct)
+  await dragWithMouse(page, item, correct, {
+    isComplete: async () => await page.locator('[data-inventory-item="ITM-G01-002"]').count() === 0,
+  })
   await expect(page.locator('.game-shell')).toHaveAttribute('data-drop-feedback', 'snap')
   await expect(item).toHaveCount(0)
   await outputScreenshot(page, info, 'inventory-correct-drop-snap.png')
