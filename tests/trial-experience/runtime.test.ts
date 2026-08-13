@@ -19,7 +19,7 @@ describe('trial experience shell', () => {
       uiMetaRecoveredSafely: false,
     })
     expect(html).toContain('星骸拾荒者')
-    expect(html).toContain('STARWRECK-TRIAL-0.3.0')
+    expect(html).toContain('STARWRECK-TRIAL-0.4.0')
     expect(html).toMatch(/data-trial-action="continue"[^>]*disabled/)
     for (const label of ['继续游戏', '新游戏', '章节选择', '故事档案', '设置', '制作人员']) {
       expect(html).toContain(label)

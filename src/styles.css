@@ -748,6 +748,7 @@ button:focus-visible {
 
 .hotspot-layer {
   z-index: 4;
+  pointer-events: none;
 }
 
 .scene-hotspot {
@@ -756,6 +757,7 @@ button:focus-visible {
   border: 0;
   border-radius: 7px;
   cursor: pointer;
+  pointer-events: auto;
   background: transparent;
   transition:
     box-shadow 180ms ease,
@@ -4055,4 +4057,482 @@ body, #app { background: var(--light-canvas); color: var(--light-text); }
   .scene-map-route { grid-template-columns: 1fr; }
   .mechanic-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mechanic-drag-layout { grid-template-columns: 1fr; }
+}
+
+/* STARWRECK-TRIAL-0.4.0 — scene runtime and game-feel layer. The approved
+   scene art remains the world; these rules only place runtime objects, camera,
+   device controls, FX and the lightweight HUD over that art. */
+.has-game-stage {
+  grid-template-rows: 48px minmax(0, 1fr);
+  background: #dfe5e8;
+}
+
+.has-game-stage .topbar {
+  z-index: 80;
+  grid-template-columns: minmax(240px, 1fr) auto;
+  min-height: 48px;
+  padding: 0 15px;
+  border-bottom: 1px solid rgba(116, 135, 146, .34);
+  color: #1e2b33;
+  background: rgba(252, 253, 253, .94);
+  box-shadow: 0 5px 18px rgba(23, 37, 48, .13);
+  backdrop-filter: blur(12px);
+}
+
+.has-game-stage .brand-mark {
+  width: 28px;
+  height: 28px;
+  color: #28736d;
+  border-color: rgba(40, 115, 109, .25);
+  background: #e6f2f0;
+  box-shadow: none;
+}
+
+.has-game-stage .brand-lockup p { color: #1e2b33; font-size: 12px; }
+.has-game-stage .brand-lockup div > span,
+.has-game-stage .save-status { color: #697983; }
+.has-game-stage .state-readout,
+.has-game-stage .story-tools { display: none; }
+
+.scene-frame.game-stage {
+  --stage-accent: #76e0d0;
+  --stage-warning: #f1b45c;
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  background: #071019;
+  box-shadow: none;
+}
+
+.game-stage-viewport {
+  overflow: hidden;
+  border-radius: 2px;
+  background: #071019;
+  box-shadow: 0 0 0 1px rgba(188, 215, 217, .14), 0 24px 70px rgba(0, 0, 0, .42);
+}
+
+.game-stage-world-plane {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(0, 0, 0) scale(1);
+  transform-origin: var(--camera-x, 50%) var(--camera-y, 50%);
+  transition: transform .58s cubic-bezier(.18, .78, .2, 1), filter .45s ease;
+  will-change: transform;
+}
+
+.game-stage.camera-focus .game-stage-world-plane,
+.game-stage.camera-mechanic .game-stage-world-plane {
+  transform: scale(var(--camera-scale, 1.45));
+  filter: brightness(.72) saturate(.82);
+}
+
+.game-stage.camera-success .game-stage-world-plane {
+  transform: scale(calc(var(--camera-scale, 1) * 1.025));
+  filter: brightness(1.14) saturate(1.12);
+}
+
+.game-stage-runtime,
+.stage-fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.game-stage-runtime { z-index: 3; }
+.stage-fx-layer { z-index: 5; }
+
+.stage-device {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  transition: filter .25s ease, box-shadow .3s ease, border-color .25s ease, transform .2s ease;
+}
+
+.stage-device-entry {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  cursor: zoom-in;
+  pointer-events: auto;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.stage-device:has(.stage-device-entry):hover,
+.stage-device:has(.stage-device-entry:focus-visible) {
+  border-color: transparent;
+  background: radial-gradient(circle at 50% 50%, rgba(83, 210, 199, .09), transparent 68%);
+  box-shadow: none;
+}
+
+.stage-device:has(.stage-device-entry:active) { transform: scale(.985); }
+.stage-device .device-energy-path,
+.stage-device .device-world-change {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .45s ease, transform .55s ease;
+}
+
+.stage-device .device-energy-path {
+  inset: 10%;
+  border: 0;
+  border-radius: 46%;
+  background: radial-gradient(ellipse at 50% 52%, rgba(118, 224, 208, .34), rgba(118, 224, 208, .08) 42%, transparent 72%);
+  filter: blur(8px);
+}
+
+.stage-device .device-world-change {
+  display: none;
+}
+
+.stage-device.state-partial .device-energy-path { opacity: .42; animation: stage-device-breathe 1.8s ease-in-out infinite; }
+.stage-device.state-complete .device-energy-path { opacity: .72; }
+.stage-device.state-complete .device-world-change { opacity: 0; }
+
+.stage-fx-layer i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  opacity: 0;
+  background: #bdfff5;
+  box-shadow: 0 0 12px #7ce2d3;
+}
+
+.stage-fx-layer.state-complete i { opacity: .24; animation: stage-particle 1.8s ease-in-out infinite; }
+.stage-fx-layer.state-complete i:nth-child(2) { animation-delay: .35s; }
+.stage-fx-layer.state-complete i:nth-child(3) { animation-delay: .7s; }
+
+.stage-world-status {
+  position: absolute;
+  z-index: 5;
+  left: 18px;
+  bottom: 112px;
+  max-width: 300px;
+  padding: 7px 11px;
+  border: 1px solid rgba(171, 215, 214, .22);
+  border-radius: 999px;
+  color: #e7f5f3;
+  font-size: 11px;
+  letter-spacing: .04em;
+  opacity: .72;
+  background: rgba(5, 14, 21, .66);
+  backdrop-filter: blur(8px);
+}
+
+.stage-device.state-complete.effect-power,
+.stage-device.state-complete.effect-signal,
+.stage-device.state-complete.effect-waveform,
+.stage-device.state-complete.effect-pulse { filter: drop-shadow(0 0 18px rgba(87, 226, 207, .6)); }
+.stage-device.state-complete.effect-starmap,
+.stage-device.state-complete.effect-route { filter: drop-shadow(0 0 22px rgba(110, 194, 255, .62)); }
+.stage-device.state-complete.effect-crane { transform: translateY(-3.5%); }
+.stage-device.state-complete.effect-horizon { transform: rotate(0deg); }
+
+.has-game-stage[data-world-visual-state='complete'] .scene-treatment {
+  background: linear-gradient(180deg, rgba(2, 8, 12, .08), transparent 64%, rgba(1, 5, 9, .45)), radial-gradient(circle at 50% 46%, rgba(116, 224, 208, .08), transparent 58%);
+}
+
+.scene-hud {
+  position: absolute;
+  z-index: 34;
+  top: 14px;
+  right: 15px;
+  left: 15px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.scene-hud-objective {
+  max-width: min(540px, 57vw);
+  padding: 9px 13px;
+  border: 1px solid rgba(190, 210, 214, .48);
+  border-radius: 12px;
+  color: #1d2c34;
+  background: rgba(252, 253, 253, .88);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, .16);
+  backdrop-filter: blur(10px);
+}
+
+.scene-hud-objective span,
+.scene-hud-objective small { display: block; color: #64757e; font-size: 9px; letter-spacing: .08em; }
+.scene-hud-objective strong { display: block; margin-top: 3px; font-size: 12px; line-height: 1.35; }
+.scene-hud nav { display: flex; gap: 6px; pointer-events: auto; }
+.scene-hud button {
+  min-width: 38px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(190, 210, 214, .5);
+  border-radius: 10px;
+  color: #29414a;
+  background: rgba(252, 253, 253, .9);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .13);
+  backdrop-filter: blur(10px);
+}
+.scene-hud button:hover:not(:disabled) { border-color: #58a79f; color: #176b63; transform: translateY(-1px); }
+.scene-hud button:active:not(:disabled) { transform: translateY(1px) scale(.97); }
+.legacy-objective-card { display: none !important; }
+.has-game-stage .scene-counter { display: none; }
+
+.has-game-stage .inventory-hud {
+  right: 15px;
+  bottom: 13px;
+  left: auto;
+  width: min(760px, calc(100vw - 30px));
+  min-height: 66px;
+  grid-template-columns: 76px minmax(0, 1fr) 54px;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid rgba(190, 210, 214, .52);
+  border-radius: 13px;
+  color: #1e2b33;
+  background: rgba(252, 253, 253, .9);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(12px);
+}
+
+.has-game-stage .inventory-heading { padding-left: 7px; border-left-color: #d69742; }
+.has-game-stage .inventory-heading > span { font-size: 12px; }
+.has-game-stage .inventory-heading small { margin-top: 2px; color: #71818a; font-size: 7px; }
+.has-game-stage .inventory-item { min-width: 145px; min-height: 48px; color: #1f3038; background: #f7f9fa; }
+.has-game-stage .inventory-item:hover { border-color: #5aa8a0; transform: translateY(-2px); }
+.has-game-stage .inventory-item[data-dragging='true'] { opacity: .4; transform: scale(.94); }
+.has-game-stage .inventory-item span small { display: none; }
+.has-game-stage .inventory-detail-button { color: #63747c; background: #f4f7f8; }
+.has-game-stage .hint-button { min-width: 50px; color: #176a63; background: #e8f5f3; }
+
+.inventory-drag-ghost {
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  left: 0;
+  display: grid;
+  width: 86px;
+  min-height: 66px;
+  place-items: center;
+  pointer-events: none;
+  border: 2px solid #69bcb2;
+  border-radius: 14px;
+  color: #1e3138;
+  font-size: 10px;
+  background: rgba(250, 253, 253, .95);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .28), 0 0 24px rgba(91, 208, 194, .25);
+  transform: translate3d(-200px, -200px, 0);
+}
+.inventory-drag-ghost img { width: 46px; height: 38px; object-fit: contain; }
+
+.has-game-stage[data-drop-candidate] [data-drop-target] { transition: box-shadow .18s ease, filter .18s ease; }
+.has-game-stage[data-drop-candidate] [data-drop-target]:hover,
+.has-game-stage [data-drop-target].is-compatible { box-shadow: inset 0 0 0 2px rgba(116, 224, 208, .82), 0 0 30px rgba(86, 219, 202, .34); }
+.has-game-stage[data-drop-feedback='bounce'] .inventory-hud { animation: stage-bounce .38s ease; }
+.has-game-stage[data-drop-feedback='snap'] .stage-device { animation: stage-snap .65s ease; }
+
+.game-stage-focus {
+  position: absolute;
+  z-index: 45;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(46px, 5vw, 74px) clamp(18px, 5vw, 80px) 84px;
+  animation: stage-focus-in .42s cubic-bezier(.17, .78, .22, 1) both;
+  background: radial-gradient(circle at var(--camera-x, 50%) var(--camera-y, 50%), rgba(21, 50, 59, .22), rgba(3, 8, 13, .72));
+  backdrop-filter: blur(2px);
+}
+
+.game-stage-focus .modal-backdrop { display: none; }
+.game-stage-focus .zoom-modal,
+.game-stage-focus .device-focus-surface {
+  position: relative;
+  z-index: 1;
+  top: auto;
+  left: auto;
+  width: min(1080px, 100%);
+  max-height: 100%;
+  margin: 0;
+  overflow: auto;
+  border: 1px solid rgba(145, 211, 207, .3);
+  border-radius: 18px;
+  color: #eef8f7;
+  background: linear-gradient(145deg, rgba(7, 20, 28, .9), rgba(13, 34, 42, .79));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .52), inset 0 0 42px rgba(84, 213, 201, .06);
+  transform: none;
+  backdrop-filter: blur(10px);
+}
+
+.game-stage-focus .zoom-modal > header,
+.device-focus-surface > header {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 13px;
+  border-bottom: 1px solid rgba(150, 211, 208, .2);
+  background: rgba(4, 14, 20, .38);
+}
+
+.device-focus-surface > header span { color: #8bcfc7; font-size: 9px; letter-spacing: .12em; }
+.device-focus-surface h2 { margin: 2px 0 0; color: #f3fbfa; font-size: 18px; }
+.stage-return-button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(144, 208, 204, .35);
+  border-radius: 9px;
+  color: #cfe6e3;
+  background: rgba(233, 247, 245, .08);
+}
+
+.device-focus-surface .mechanic-instruction { margin: 8px 14px 3px; color: #acc4c5; font-size: 11px; }
+.device-control-deck { padding: 0 14px; }
+.device-focus-surface .mechanic-visual {
+  min-height: 180px;
+  border-color: rgba(126, 199, 195, .24);
+  background: rgba(5, 17, 24, .72);
+  box-shadow: inset 0 0 38px rgba(64, 196, 184, .06);
+}
+.device-focus-surface .mechanic-card-tray,
+.device-focus-surface .mechanic-token,
+.device-focus-surface .circuit-junction,
+.device-focus-surface .mechanic-slider,
+.device-focus-surface .memory-key,
+.device-focus-surface .maze-node,
+.device-focus-surface .route-node,
+.device-focus-surface .mechanic-drop-slot {
+  border-color: rgba(138, 196, 194, .3);
+  color: #e7f3f2;
+  background: rgba(15, 37, 45, .85);
+}
+.device-focus-surface .mechanic-drop-slot.is-filled,
+.device-focus-surface .mechanic-token.is-confirmed,
+.device-focus-surface .maze-node.is-confirmed,
+.device-focus-surface .route-node.is-confirmed { color: #d9fff9; background: rgba(52, 142, 132, .34); }
+.device-focus-surface .mechanic-status { margin: 6px 14px; background: rgba(236, 246, 246, .09); color: #bed0d0; }
+.device-focus-surface .mechanic-status.is-error { background: rgba(168, 61, 61, .22); color: #ffcaca; }
+.device-focus-surface .mechanic-status.is-partial { background: rgba(177, 121, 40, .22); color: #ffe0aa; }
+.device-focus-surface .mechanic-status.is-complete { background: rgba(46, 145, 132, .25); color: #cafff8; }
+.device-focus-surface > footer { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 14px 12px; border: 0; background: transparent; }
+
+.device-focus-surface.mechanic-rotating-circuit { background: linear-gradient(100deg, rgba(8,24,30,.96), rgba(18,43,45,.88)); box-shadow: inset 18px 0 0 rgba(210,155,71,.13), inset -18px 0 0 rgba(81,204,190,.1), 0 24px 80px rgba(0,0,0,.52); }
+.device-focus-surface.mechanic-signal-memory { width: min(820px, 88%); border-radius: 30px; background: radial-gradient(circle at 50% 42%, rgba(48,117,125,.34), transparent 35%), rgba(5,17,24,.92); }
+.device-focus-surface.mechanic-task-order { background: linear-gradient(180deg, rgba(11,30,37,.96), rgba(18,39,46,.9)); box-shadow: inset 0 5px 0 rgba(97,205,192,.13), 0 24px 80px rgba(0,0,0,.52); }
+.device-focus-surface.mechanic-airflow-maze { background: radial-gradient(circle at 72% 40%, rgba(95,173,183,.16), transparent 35%), rgba(5,20,28,.94); }
+.device-focus-surface.mechanic-star-map-snap { border-radius: 24px 24px 9px 9px; background: radial-gradient(circle at 63% 46%, rgba(87,145,221,.2), transparent 38%), rgba(4,14,25,.94); }
+.device-focus-surface.mechanic-garbage-route { width: min(1120px, 100%); background: radial-gradient(ellipse at 50% 40%, rgba(71,120,156,.22), transparent 52%), rgba(4,13,22,.94); }
+.device-focus-surface.mechanic-waveform-tuning { width: min(900px, 92%); border-radius: 8px; background: repeating-linear-gradient(90deg, rgba(8,25,31,.95) 0 78px, rgba(11,34,40,.95) 78px 80px); }
+.device-focus-surface.mechanic-attitude-balance { background: linear-gradient(180deg, rgba(21,54,64,.94), rgba(20,36,39,.96)); }
+.device-focus-surface.mechanic-pattern-decode { width: min(940px, 94%); background: radial-gradient(circle at 50% 45%, rgba(54,129,120,.2), transparent 44%), rgba(7,20,25,.96); }
+.device-focus-surface.mechanic-crane-counterweight { width: min(1120px, 100%); background: linear-gradient(180deg, rgba(22,33,35,.94), rgba(27,22,17,.93)); }
+.device-focus-surface.mechanic-borrow-use-return { width: min(1080px, 100%); border-radius: 10px; background: linear-gradient(110deg, rgba(17,31,34,.96), rgba(29,38,35,.93)); }
+
+.game-stage-focus .qima-hos-content,
+.game-stage-focus .cabinet-layout { min-height: 0; }
+.game-stage-focus .hos-list { color: #d7e5e5; background: rgba(4, 15, 21, .76); }
+.game-stage-focus .qima-hos-art,
+.game-stage-focus .cabinet-scene { border-radius: 0 0 0 16px; }
+
+.has-game-stage .story-panel.complete-panel,
+.has-game-stage .story-panel.intro-panel {
+  z-index: 38;
+  width: min(390px, calc(100vw - 34px));
+  padding: 14px 16px;
+  border-radius: 14px;
+  color: #223139;
+  background: rgba(252, 253, 253, .9);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(12px);
+}
+.has-game-stage .dialogue-card {
+  z-index: 40;
+  top: auto;
+  bottom: 94px;
+  left: 18px;
+  width: min(650px, 55vw);
+  min-height: 96px;
+  grid-template-columns: 92px 1fr;
+  color: #1d2d34;
+  border-color: rgba(185, 208, 211, .52);
+  border-radius: 15px;
+  background: rgba(252, 253, 253, .92);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .2);
+}
+.has-game-stage .dialogue-card span { color: #24746c; }
+.has-game-stage .dialogue-card p { color: #27383f; }
+
+.has-game-stage .toast {
+  top: auto;
+  right: 18px;
+  bottom: 92px;
+  left: auto;
+  min-width: 0;
+  max-width: 310px;
+  border-radius: 12px;
+  background: rgba(252, 253, 253, .94);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
+  transform: translateY(10px);
+}
+.has-game-stage .toast.is-visible { transform: translateY(0); }
+
+.character-unlock-toast {
+  position: fixed;
+  z-index: 180;
+  right: 18px;
+  bottom: 104px;
+  display: grid;
+  min-width: 210px;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid rgba(100, 165, 159, .42);
+  border-radius: 12px;
+  color: #21343b;
+  background: rgba(252, 253, 253, .95);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, .2);
+  animation: stage-focus-in .28s ease both;
+}
+.character-unlock-toast span { color: #66777f; font-size: 9px; letter-spacing: .08em; }
+.character-unlock-toast strong { color: #176d65; font-size: 14px; }
+
+@keyframes stage-device-breathe { 0%,100% { opacity:.3 } 50% { opacity:.72 } }
+@keyframes stage-particle { 0% { transform: translate(-80px, 50px) scale(.4); opacity:0 } 35% { opacity:.8 } 100% { transform: translate(100px, -85px) scale(1.15); opacity:0 } }
+@keyframes stage-focus-in { from { opacity:0; transform:scale(.985) } to { opacity:1; transform:scale(1) } }
+@keyframes stage-bounce { 0%,100% { transform:translateX(0) } 25% { transform:translateX(-8px) } 55% { transform:translateX(6px) } 78% { transform:translateX(-3px) } }
+@keyframes stage-snap { 0% { filter:brightness(1) } 45% { filter:brightness(1.55) drop-shadow(0 0 20px rgba(112,231,215,.8)) } 100% { filter:brightness(1) } }
+
+@media (max-width: 1366px), (max-height: 768px) {
+  .has-game-stage { grid-template-rows: 42px minmax(0, 1fr); }
+  .has-game-stage .topbar { min-height: 42px; }
+  .scene-hud { top: 8px; right: 9px; left: 9px; }
+  .scene-hud-objective { padding: 6px 10px; }
+  .scene-hud button { min-width: 34px; min-height: 32px; }
+  .has-game-stage .inventory-hud { right: 9px; bottom: 8px; width: min(660px, calc(100vw - 18px)); min-height: 58px; }
+  .stage-world-status { left: 10px; bottom: 78px; }
+  .game-stage-focus { padding: 42px 14px 68px; }
+  .device-focus-surface .mechanic-visual { min-height: 118px; margin: 6px 0; }
+  .device-focus-surface .mechanic-instruction { margin-top: 5px; }
+  .device-focus-surface > footer { padding-bottom: 7px; }
+  .has-game-stage .dialogue-card { bottom: 72px; min-height: 84px; }
+  .has-game-stage .toast { bottom: 73px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-stage-world-plane,
+  .stage-device,
+  .stage-device .device-energy-path,
+  .stage-device .device-world-change { transition-duration: 0s !important; animation: none !important; }
+  .game-stage-focus { animation: none !important; }
+}
+
+:root[data-reduced-motion='true'] .game-stage-world-plane,
+:root[data-reduced-motion='true'] .stage-device,
+:root[data-reduced-motion='true'] .stage-device .device-energy-path,
+:root[data-reduced-motion='true'] .stage-device .device-world-change {
+  transition-duration: 0s !important;
+  animation: none !important;
 }

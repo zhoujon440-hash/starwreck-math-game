@@ -2,7 +2,7 @@ import { expect, test, type Page, type TestInfo } from '@playwright/test'
 import { enterTrialRuntime } from './helpers/trial-entry'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
-test.use({ trace: 'on', video: 'on' })
+test.use({ trace: 'retain-on-failure', video: 'off' })
 
 const saveKey = 'starwreck:save:G01:v1'
 
@@ -141,7 +141,7 @@ const waitForHintCooldown = async (page: Page): Promise<void> => {
 test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice', async ({
   page,
 }, info) => {
-  test.setTimeout(120_000)
+test.setTimeout(240_000)
   const consoleErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())

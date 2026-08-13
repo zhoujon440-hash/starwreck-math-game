@@ -14,6 +14,7 @@ import { G02_DIALOGUE } from '../data/dialogue/g02'
 import { presentIdentityMarkup } from '../data/dialogue/presentation'
 import { g02HintById } from '../data/hints/g02'
 import { PLAYER_SCENE_IDS, SCENE_EXPERIENCES, sceneExperience } from '../data/trial/sceneExperiences'
+import { scenePresentation, sceneWorldVisualState } from '../data/trial/scenePresentation'
 import { characterNarrativelyRevealed } from '../data/trial/characterReveal'
 import { DialogueDataLoader } from '../services/DialogueDataLoader'
 import { DialogueRunner } from '../services/DialogueRunner'
@@ -26,6 +27,9 @@ import type {
 } from '../game/types'
 import { TrialMechanicPanel } from './TrialMechanicPanel'
 import type { TrialMechanicAction } from '../game/minigames/trialMechanics'
+import { GameStage } from '../game-scene/GameStage'
+import { SceneCamera } from '../game-scene/SceneCamera'
+import { SceneHud } from '../game-scene/SceneHud'
 
 const escapeHtml = (value: string): string =>
   value.replace(
@@ -68,6 +72,9 @@ export class GameView {
   readonly #dialogueRunner: DialogueRunner
   readonly #portrait = new CharacterPortrait()
   readonly #trialMechanic = new TrialMechanicPanel()
+  readonly #gameStage = new GameStage()
+  readonly #sceneCamera = new SceneCamera()
+  readonly #sceneHud = new SceneHud()
   #session: GameSession
   #selectedItemId: string | null = null
   #cabinetOpen = false
@@ -89,6 +96,7 @@ export class GameView {
   #recoveryDialogueTimer: number | undefined
   #cargoDangerTimer: number | undefined
   #routeWindowTimer: number | undefined
+  #cameraReturnTimer: number | undefined
   #unsubscribe: (() => void) | undefined
 
   constructor(
@@ -108,9 +116,9 @@ export class GameView {
       ) {
         const result = this.engine.assignG02ResourceLabel(itemId, targetId)
         this.#handleResult(result)
-        return
+        return result.ok
       }
-      this.#useItem(itemId, targetId)
+      return this.#useItem(itemId, targetId)
     })
     root.addEventListener('click', this.#handleClick)
     root.addEventListener('change', this.#handleMechanicChange)
@@ -121,7 +129,18 @@ export class GameView {
 
   mount(): void {
     this.#unsubscribe = this.engine.subscribe((session) => {
+      const previousSceneId = this.#session.currentSceneId
       this.#session = session
+      if (previousSceneId !== session.currentSceneId) {
+        if (this.#cameraReturnTimer) {
+          window.clearTimeout(this.#cameraReturnTimer)
+          this.#cameraReturnTimer = undefined
+        }
+        this.#sceneCamera.returnToScene()
+        this.#activeZoomId = null
+        this.#cabinetOpen = false
+        this.#puzzleOpen = false
+      }
       if (
         session.currentSceneId === 'SCN-G01-00' &&
         session.sceneState !== 'S2'
@@ -168,6 +187,7 @@ export class GameView {
     if (this.#recoveryDialogueTimer) window.clearTimeout(this.#recoveryDialogueTimer)
     if (this.#cargoDangerTimer) window.clearTimeout(this.#cargoDangerTimer)
     if (this.#routeWindowTimer) window.clearTimeout(this.#routeWindowTimer)
+    if (this.#cameraReturnTimer) window.clearTimeout(this.#cameraReturnTimer)
   }
 
   enterG02Slice(): void {
@@ -226,7 +246,12 @@ export class GameView {
         }
       : scene.states[this.#session.sceneState]
     const activeHotspots = this.engine.activeHotspots()
-    const sceneHotspots = activeHotspots.filter((hotspot) => hotspot.scope !== 'zoom')
+    const mechanicHotspot = experience
+      ? activeHotspots.find((hotspot) => hotspot.scope !== 'zoom' && hotspot.zoomId === experience.mechanicId)
+      : undefined
+    const sceneHotspots = activeHotspots.filter(
+      (hotspot) => hotspot.scope !== 'zoom' && hotspot.id !== mechanicHotspot?.id,
+    )
     const inventoryItems = this.#session.inventoryItemIds
       .map((itemId) => itemById(this.engine.allItems, itemId))
       .filter((item): item is ItemDefinition => Boolean(item))
@@ -244,14 +269,28 @@ export class GameView {
       isScn00 && ['S0', 'S1'].includes(this.#session.sceneState)
         ? '/assets/g01-cockpit-cabinet-closed-v2.png'
         : scene.art
+    const presentation = scenePresentation(scene.id)
+    const worldVisualState = presentation
+      ? sceneWorldVisualState(this.#session, presentation)
+      : 'initial'
+    const mechanicAvailable = Boolean(
+      experience &&
+      (this.#activeZoomId === experience.mechanicId ||
+        activeHotspots.some((hotspot) => hotspot.zoomId === experience.mechanicId)),
+    )
+    const stageObjective = revisiting
+      ? (mainlineExperience?.stepByState[this.#session.sceneState] ?? mainlineExperience?.mainGoal ?? state.objective)
+      : (revealedMissionGoal ?? experience?.stepByState[this.#session.sceneState] ?? state.objective)
 
     this.root.innerHTML = presentIdentityMarkup(this.#session, this.#withBaseAssets(`
       <main
-        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery || isPrCRecovery || isG02Recovery ? 'is-cargo-safe-recovery' : ''}"
+        class="game-shell has-game-stage state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery || isPrCRecovery || isG02Recovery ? 'is-cargo-safe-recovery' : ''}"
         data-debug-ui="${DEBUG_UI}"
         data-scene-id="${scene.id}"
         data-runtime-node-id="${escapeHtml(this.#session.activeRuntimeNodeId ?? 'scene-active')}"
         data-cabinet-visual-state="${cabinetVisualState}"
+        data-camera-mode="${this.#sceneCamera.mode}"
+        data-world-visual-state="${worldVisualState}"
       >
         <header class="topbar">
           <div class="brand-lockup">
@@ -296,8 +335,9 @@ export class GameView {
           </nav>
         </header>
 
-        <section class="scene-frame" aria-label="${escapeHtml(scene.title)}">
-          <div class="scene-canvas" data-scene-canvas>
+        <section class="scene-frame game-stage camera-${this.#sceneCamera.mode}" aria-label="${escapeHtml(scene.title)}" data-game-stage="${escapeHtml(scene.id)}" data-camera-mode="${this.#sceneCamera.mode}" data-camera-target="${escapeHtml(this.#sceneCamera.targetId ?? 'scene')}" data-world-visual-state="${worldVisualState}" style="${this.#sceneCamera.style()}">
+          <div class="scene-canvas game-stage-viewport" data-scene-canvas data-stage-layer="background">
+            <div class="game-stage-world-plane" data-stage-layer="world">
             <div
               class="scene-art"
               style="background-image:url('${sceneArt}')"
@@ -327,6 +367,7 @@ export class GameView {
             ${isScn04 || isScn05 ? this.#prBSceneLayersTemplate() : ''}
             ${isScn06 || isScn07 || isG02Boundary ? this.#prCSceneLayersTemplate() : ''}
             ${isG02Scene || isG02ReadOnly ? this.#g02SceneLayersTemplate() : ''}
+            ${this.#gameStage.runtimeLayer(this.#session, presentation, worldVisualState, this.#sceneCamera, mechanicAvailable, experience?.mechanicId, mechanicHotspot?.id, mechanicHotspot?.ariaLabel)}
             <div class="scene-treatment" aria-hidden="true"></div>
             <div class="foreground-layer" aria-hidden="true"></div>
             ${this.#collectibleLayersTemplate('scene')}
@@ -335,9 +376,22 @@ export class GameView {
               ${sceneHotspots.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}
               ${this.#sceneUtilityTargetsTemplate()}
             </div>
+            </div>
+            ${this.#cabinetOpen || this.#puzzleOpen
+              ? `<div class="game-stage-focus" data-stage-layer="mechanic" data-focus-kind="${this.#puzzleOpen ? 'mechanic' : 'focus'}">${this.#cabinetOpen ? this.#activeZoomTemplate() : ''}${this.#puzzleOpen ? this.#activePuzzleTemplate() : ''}</div>`
+              : ''}
           </div>
 
-          <aside class="objective-card task-strip" data-task-scene="${escapeHtml(this.#session.mainlineSceneId)}" data-viewed-scene="${escapeHtml(scene.id)}">
+          ${this.#sceneHud.render({
+            sceneTitle: experience?.title ?? scene.playerTitle,
+            objective: stageObjective,
+            revisiting,
+            mainlineTitle: mainlineExperience?.title,
+            showReturnToTask: revisiting,
+            previousAvailable: PLAYER_SCENE_IDS.indexOf(scene.id) > 0,
+          })}
+
+          <aside class="objective-card task-strip legacy-objective-card" aria-hidden="true" data-task-scene="${escapeHtml(this.#session.mainlineSceneId)}" data-viewed-scene="${escapeHtml(scene.id)}">
             <span>${revisiting ? '回访场景' : '当前任务'} · ${escapeHtml(experience?.title ?? (isScn00 ? PLAYER_SCENE_TITLE : scene.playerTitle))}</span>
             <strong>${escapeHtml(revisiting ? (mainlineExperience?.mainGoal ?? state.objective) : (revealedMissionGoal ?? experience?.mainGoal ?? state.objective))}</strong>
             <p><b>当前步骤：</b>${escapeHtml(experience?.stepByState[this.#session.sceneState] ?? state.objective)}</p>
@@ -682,8 +736,6 @@ export class GameView {
           </footer>
         </section>
 
-        ${this.#cabinetOpen ? this.#activeZoomTemplate() : ''}
-        ${this.#puzzleOpen ? this.#activePuzzleTemplate() : ''}
         ${this.#historyOpen ? this.#historyTemplate() : ''}
         ${this.#profileOpen ? this.#profileTemplate() : ''}
         ${this.#journalOpen ? this.#journalTemplate() : ''}
@@ -815,7 +867,7 @@ export class GameView {
       return `
         <button
           class="scene-hotspot danger-soft-fail-hotspot"
-          style="left:73%;top:5%;width:10%;height:15%"
+          style="left:73%;top:12%;width:10%;height:13%"
           data-action="trigger-cargo-soft-fail"
           aria-label="在氧压临界时继续检查裂口"
         ><span class="sr-only">触发氧压临界安全回退</span></button>
@@ -2055,14 +2107,43 @@ export class GameView {
     }, 700)
   }
 
+  #focusStage(targetId: string | null, mechanic: boolean): void {
+    const entry = scenePresentation(this.#session.currentSceneId)
+    if (!entry || !targetId) return
+    if (this.#cameraReturnTimer) {
+      window.clearTimeout(this.#cameraReturnTimer)
+      this.#cameraReturnTimer = undefined
+    }
+    this.#sceneCamera.focusOn(targetId, entry.device.focus, mechanic)
+  }
+
+  #showWorldSuccess(closeFocus: boolean): void {
+    const completedTargetId = this.#activeZoomId
+    this.#sceneCamera.showSuccess()
+    if (this.#cameraReturnTimer) window.clearTimeout(this.#cameraReturnTimer)
+    this.#cameraReturnTimer = window.setTimeout(() => {
+      this.#cameraReturnTimer = undefined
+      if (closeFocus && this.#activeZoomId !== completedTargetId) return
+      if (closeFocus) {
+        this.#puzzleOpen = false
+        this.#cabinetOpen = false
+        this.#activeZoomId = null
+      }
+      this.#sceneCamera.returnToScene()
+      this.#render()
+    }, 3_500)
+  }
+
   #performMechanic(action: TrialMechanicAction): void {
     const sceneId = this.#session.currentSceneId
     const experience = sceneExperience(sceneId)
+    this.#sceneCamera.showMechanic()
     const result = this.engine.performTrialMechanic(action)
     const completed = Boolean(
       experience && this.engine.snapshot.completedPuzzleIds.includes(experience.mechanicId),
     )
     if (completed) {
+      this.#showWorldSuccess(true)
       if (sceneId === 'SCN-G02-01') {
         this.#dialogueRunner.startTrigger('SCN-G02-01', '救援完成')
       } else if (sceneId === 'SCN-G02-02') {
@@ -2148,6 +2229,7 @@ export class GameView {
             this.#activeZoomId = this.#pendingZoomId
             this.#pendingZoomId = null
             this.#cabinetOpen = true
+            this.#focusStage(this.#activeZoomId, false)
             this.#render()
           }
           if (
@@ -2284,6 +2366,7 @@ export class GameView {
         else this.#showToast('先从背包选择道具，或直接把道具拖到这里。')
         break
       }
+      case 'open-stage-mechanic':
       case 'open-cabinet':
         this.#activeZoomId = actionElement.dataset.zoomId ?? null
         if (
@@ -2305,19 +2388,23 @@ export class GameView {
           ].includes(this.#activeZoomId ?? '')
         ) {
           this.#puzzleOpen = true
+          this.#focusStage(this.#activeZoomId, true)
         } else {
           this.#cabinetOpen = true
+          this.#focusStage(this.#activeZoomId, false)
         }
         this.#render()
         break
       case 'close-cabinet':
         this.#cabinetOpen = false
         this.#activeZoomId = null
+        this.#sceneCamera.returnToScene()
         this.#render()
         break
       case 'close-puzzle':
         this.#puzzleOpen = false
         this.#activeZoomId = null
+        this.#sceneCamera.returnToScene()
         this.#render()
         break
       case 'mechanic-choose': {
@@ -2714,7 +2801,7 @@ export class GameView {
     }
   }
 
-  #useItem(itemId: string, targetId: string): void {
+  #useItem(itemId: string, targetId: string): boolean {
     const result = this.engine.useItem(itemId, targetId)
     if (result.ok) {
       this.#selectedItemId = null
@@ -2780,6 +2867,7 @@ export class GameView {
       }
     }
     this.#handleResult(result)
+    return result.ok
   }
 
   #handleG02InspectDialogue(hotspotId: string): void {
@@ -2801,7 +2889,11 @@ export class GameView {
       return
     }
 
-    if (result.hotspot.scope === 'zoom') this.#cabinetOpen = true
+    if (result.hotspot.scope === 'zoom') {
+      this.#cabinetOpen = true
+      this.#activeZoomId = result.hotspot.zoomId ?? this.#activeZoomId
+      this.#focusStage(this.#activeZoomId, false)
+    }
     this.#hintAvailableAt = Date.now() + HINT_COOLDOWN_MS
     if (result.level >= 2) this.#hintedHotspotId = result.hotspot.id
     this.#render()
@@ -2865,6 +2957,8 @@ export class GameView {
         )
       } else if (result.hotspot.zoomId === 'PUZ-G01-CHIP-ORIENTATION') {
         this.#puzzleOpen = true
+        this.#activeZoomId = result.hotspot.zoomId
+        this.#focusStage(this.#activeZoomId, true)
         this.engine.updateStory((draft) => {
           draft.puzzleProgress.chip_rotation = 180
         })
@@ -2872,6 +2966,8 @@ export class GameView {
         result.hotspot.zoomId === 'RUNTIME-PUZ-G01-TASK-DEPENDENCY'
       ) {
         this.#puzzleOpen = true
+        this.#activeZoomId = result.hotspot.zoomId
+        this.#focusStage(this.#activeZoomId, true)
         this.engine.updateStory((draft) => {
           draft.puzzleProgress.task_dependency_step = Math.max(
             1,
@@ -2882,6 +2978,8 @@ export class GameView {
         result.hotspot.zoomId === 'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION'
       ) {
         this.#puzzleOpen = true
+        this.#activeZoomId = result.hotspot.zoomId
+        this.#focusStage(this.#activeZoomId, true)
         this.engine.updateStory((draft) => {
           draft.puzzleProgress.pressure_calibration_step = Math.max(
             1,

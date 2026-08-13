@@ -1,6 +1,8 @@
 import { sceneExperience } from '../data/trial/sceneExperiences'
+import { scenePresentation } from '../data/trial/scenePresentation'
 import { initialMechanicProgress, TRIAL_MECHANICS } from '../game/minigames/trialMechanics'
 import type { GameSession, TrialMechanicProgress } from '../game/types'
+import { MechanicSurface } from '../game-scene/mechanics/MechanicSurface'
 
 const escapeHtml = (value: string): string => value.replace(/[&<>"']/g, (character) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;',
@@ -23,20 +25,25 @@ const statusCopy = { initial: '等待操作', error: '当前操作无效，已�
 const placedAt = (progress: TrialMechanicProgress, token: string): string => String(progress.values[`place:${token}`] ?? '')
 
 export class TrialMechanicPanel {
+  readonly #surface = new MechanicSurface()
+
   render(session: GameSession): string {
     const experience = sceneExperience(session.currentSceneId)
     if (!experience) return ''
     const definition = TRIAL_MECHANICS[experience.mechanicType]
+    const presentation = scenePresentation(session.currentSceneId)
     const progress = session.mechanicProgress[experience.mechanicId] ?? initialMechanicProgress(session.currentSceneId)
-    return `
-      <div class="modal-backdrop trial-mechanic-backdrop" data-action="close-puzzle"></div>
-      <section class="zoom-modal trial-mechanic-panel mechanic-${experience.mechanicType}" role="dialog" aria-modal="true" aria-labelledby="trial-mechanic-title" data-trial-mechanic="${experience.mechanicType}" data-mechanic-id="${experience.mechanicId}" data-mechanic-status="${progress.status}">
-        <header><div><span>独立机关 · ${experience.order + 1}/11</span><h2 id="trial-mechanic-title">${escapeHtml(definition.title)}</h2></div><button class="icon-button" data-action="close-puzzle" aria-label="关闭${escapeHtml(definition.title)}">×</button></header>
-        <p class="mechanic-instruction">${escapeHtml(definition.instruction)}</p>
-        ${this.#interaction(experience.mechanicType, progress)}
-        <div class="mechanic-status is-${progress.status}" role="status"><i aria-hidden="true"></i><span>${statusCopy[progress.status]}</span><small>错误 ${progress.mistakes} 次</small></div>
-        <footer><button class="secondary-action" data-action="mechanic-reset">重置本次尝试</button>${this.#needsSubmit(experience.mechanicType) ? '<button class="primary-action" data-action="mechanic-submit">提交当前结构</button>' : ''}</footer>
-      </section>`
+    return this.#surface.render({
+      title: definition.title,
+      subtitle: presentation?.device.label ?? '场景设备特写',
+      mechanicType: experience.mechanicType,
+      mechanicId: experience.mechanicId,
+      status: progress.status,
+      instruction: definition.instruction,
+      interaction: this.#interaction(experience.mechanicType, progress),
+      statusMarkup: `<div class="mechanic-status is-${progress.status}" role="status"><i aria-hidden="true"></i><span>${statusCopy[progress.status]}</span><small>错误 ${progress.mistakes} 次</small></div>`,
+      footer: `<button class="secondary-action" data-action="mechanic-reset">重置本次尝试</button>${this.#needsSubmit(experience.mechanicType) ? '<button class="primary-action" data-action="mechanic-submit">提交当前结构</button>' : ''}`,
+    })
   }
 
   #needsSubmit(type: string): boolean {

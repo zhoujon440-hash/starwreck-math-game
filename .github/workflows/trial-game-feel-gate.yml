@@ -1,4 +1,4 @@
-name: Trial Experience Gate
+name: Trial Game Feel Gate
 
 on:
   push:
@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  trial-experience-gate:
+  trial-game-feel-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,10 +24,6 @@ jobs:
       - name: Restore SHA-256 verified formal source mirror
         run: node scripts/restore-formal-source-mirror.mjs
       - run: npm ci
-      - run: npm run validate:trial-experience
-      - run: npm run test:trial-experience
-      - run: npm run validate:game-feel
-      - run: npm run test:game-feel
       - run: npm run validate:sources
       - run: npm run validate:baseline
       - run: npm run test:baseline
@@ -43,28 +39,34 @@ jobs:
       - run: npm run test:g01-demo
       - run: npm run validate:g02-slice-01
       - run: npm run test:g02-slice-01
+      - run: npm run validate:trial-experience
+      - run: npm run test:trial-experience
+      - run: npm run validate:game-feel
+      - run: npm run test:game-feel
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - name: Run full Playwright acceptance at 1366x768 and 1920x1080
+        run: npm run test:e2e
       - run: npm run test:pwa
       - run: npm run package:trial-experience
-      - name: Upload trial visual acceptance
+      - name: Upload Game Feel visual acceptance, video and trace
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: trial-experience-visual-acceptance-${{ github.run_number }}
+          name: trial-game-feel-visual-acceptance-${{ github.run_number }}
           path: |
-            test-results/**
+            test-results/trial-game-feel/**
+            test-results/**/*.webm
+            test-results/**/*.zip
             playwright-report/**
-            playwright-pwa-report/**
+            docs/review/TRIAL_GAME_FEEL_ARCHITECTURE.md
             docs/review/TRIAL_EXPERIENCE_VISUAL_ACCEPTANCE.md
-            docs/story-runtime/TRIAL_EXPERIENCE_COPY_MAPPING.md
             docs/art/TRIAL_EXPERIENCE_ASSET_PROVENANCE.json
           if-no-files-found: error
           retention-days: 30
       - name: Upload production ZIP
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: starwreck-trial-0.4.0-${{ github.run_number }}

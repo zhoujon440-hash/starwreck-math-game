@@ -77,7 +77,7 @@ for (const action of ['continue', 'new-game', 'chapters', 'archive', 'settings',
   check(title.includes(`data-trial-action="${action}"`), 'TRIAL-ENTRY-003', `title action ${action} is missing`)
 }
 check(title.includes('disabled aria-disabled="true"'), 'TRIAL-ENTRY-004', 'continue is not disabled without a save')
-check(title.includes('STARWRECK-TRIAL-0.3.0'), 'TRIAL-ENTRY-005', 'formal trial version is missing from title')
+check(title.includes('STARWRECK-TRIAL-0.4.0'), 'TRIAL-ENTRY-005', 'formal trial version is missing from title')
 check(title.includes('pwaInstallAvailable') && title.includes('fullscreenAvailable'), 'TRIAL-ENTRY-006', 'capability-gated install/fullscreen actions are missing')
 check(!/(账号|密码|短信|第三方登录|云账户)/.test(title), 'TRIAL-ENTRY-007', 'fake online account UI is present')
 
@@ -186,7 +186,7 @@ const forbiddenCopy = /schema(?:\s+v?\d+)?|项目负责人|验收|交付边界|�
 check(formalUi.every((source) => !forbiddenCopy.test(source)), 'TRIAL-COPY-001', 'formal player UI exposes development copy')
 check(!app.includes('SCN-G02-03A') && !app.includes('SCN-G02-03B') && !app.includes('SCN-G02-03C') && !app.includes('SCN-G02-03D'), 'TRIAL-SCOPE-001', 'later G02 scene entry was implemented')
 
-check(assetProvenance.version === 'STARWRECK-TRIAL-0.3.0', 'TRIAL-ASSET-001', 'asset provenance version mismatch')
+check(assetProvenance.version === 'STARWRECK-TRIAL-0.4.0', 'TRIAL-ASSET-001', 'asset provenance version mismatch')
 check(assetProvenance.new_runtime_asset_count === 0 && assetProvenance.new_runtime_assets.length === 0, 'TRIAL-ASSET-002', 'unreported new runtime assets are present')
 check(assetProvenance.forbidden_sources.pr_5_assets_used === false, 'TRIAL-ASSET-003', 'PR #5 art is declared in use')
 check(assetProvenance.forbidden_sources.third_party_network_assets_used === false, 'TRIAL-ASSET-004', 'third-party art is declared in use')
@@ -229,7 +229,7 @@ for (const path of [
 ]) {
   check(existsSync(resolve(root, path)), 'TRIAL-DELIVERY-001', `required delivery file missing: ${path}`)
 }
-check(packageConfig.trialVersion === 'STARWRECK-TRIAL-0.3.0', 'TRIAL-DELIVERY-002', 'trial version mismatch')
+check(packageConfig.trialVersion === 'STARWRECK-TRIAL-0.4.0', 'TRIAL-DELIVERY-002', 'trial version mismatch')
 check(packageConfig.scripts['validate:trial-experience'] === 'node scripts/validate-trial-experience.mjs', 'TRIAL-DELIVERY-003', 'validator script is not registered')
 check(packageConfig.scripts['test:trial-experience']?.includes('trial-experience-negative.test.mjs'), 'TRIAL-DELIVERY-004', 'negative test command is not registered')
 check(packageConfig.scripts['package:trial-experience'] === 'node scripts/package-trial-experience.mjs', 'TRIAL-DELIVERY-005', 'production package command is not registered')

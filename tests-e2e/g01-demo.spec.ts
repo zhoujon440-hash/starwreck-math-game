@@ -2,7 +2,7 @@ import { expect, test, type Page, type TestInfo } from '@playwright/test'
 import { enterTrialRuntime } from './helpers/trial-entry'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
-test.use({ trace: 'on', video: 'on' })
+test.use({ trace: 'retain-on-failure', video: 'off' })
 
 const saveKey = 'starwreck:save:G01:v1'
 

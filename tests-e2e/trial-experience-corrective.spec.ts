@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
 import { solveTrialMechanic, type TrialMechanicType } from './helpers/trial-mechanics'
 
-test.use({ trace: 'on', video: 'on' })
+test.use({ trace: 'retain-on-failure', video: 'off' })
 test.setTimeout(240_000)
 
 const saveKey = 'starwreck:save:G01:v1'
@@ -170,9 +170,10 @@ test('Qima is revealed by repair, boot, self-introduction and mission dialogue b
   }
   await expect(page.locator('[data-dialogue-id="DLG-G01-0028"]')).toContainText('当前任务')
   await page.getByRole('button', { name: '继续探索' }).click()
-  await expect(page.locator('[data-character-card-id="CHAR-QIMA"]')).toBeVisible()
+  await expect(page.locator('[data-character-unlock="CHAR-QIMA"]')).toBeVisible()
+  await expect(page.locator('[data-character-card-id="CHAR-QIMA"]')).toHaveCount(0)
   await expect(page.locator('.task-strip')).toContainText('前往中控台，找回船上第一张维修任务单')
-  await capture(page, info, 'qima-card-after-story-reveal.png')
+  await capture(page, info, 'qima-nonblocking-unlock-after-story-reveal.png')
 })
 
 test('scene map revisits unlocked scenes without regressing the current task', async ({ page }, info) => {

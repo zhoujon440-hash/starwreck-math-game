@@ -97,7 +97,7 @@ export class TitleScreen {
             ${model.pwaInstallAvailable ? '<button data-trial-action="install-pwa">安装到本机</button>' : ''}
             ${model.fullscreenAvailable ? '<button data-trial-action="fullscreen">全屏</button>' : ''}
           </div>
-          <p class="trial-version">STARWRECK-TRIAL-0.3.0 · HTML5 / PWA</p>
+          <p class="trial-version">STARWRECK-TRIAL-0.4.0 · HTML5 / PWA</p>
         </section>
       </main>
     `)

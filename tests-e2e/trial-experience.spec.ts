@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
 import { solveTrialMechanic } from './helpers/trial-mechanics'
 
-test.use({ trace: 'on', video: 'on' })
+test.use({ trace: 'retain-on-failure', video: 'off' })
 
 const saveKey = 'starwreck:save:G01:v1'
 const forbiddenPlayerCopy = /schema(?:\s+v?\d+)?|RUNTIME-[A-Z0-9-]+|项目负责人|验收|交付边界|垂直切片|门禁|测试文字|开发阶段/i
@@ -107,9 +107,10 @@ test('new browser presents title, sourced intro and legal G01 start', async ({ p
   await page.getByRole('button', { name: '下一句' }).click()
   await page.getByRole('button', { name: '继续探索' }).click()
   await page.locator('[data-hotspot-id="HS-G01-0001"]').click()
-  await expect(page.locator('[data-item-card-id="ITM-G01-001"]')).toContainText('获得物品')
-  await capture(page, info, '05-first-item-card.png')
-  await page.locator('[data-trial-action="dismiss-card"]').click()
+  await expect(page.locator('[data-item-card-id="ITM-G01-001"]')).toHaveCount(0)
+  await expect(page.locator('.toast.is-visible')).toBeVisible()
+  await expect(page.locator('[data-inventory-item="ITM-G01-001"]')).toBeVisible()
+  await capture(page, info, '05-first-item-nonblocking-toast.png')
   expect(errors).toEqual([])
 })
 
@@ -215,13 +216,13 @@ test('Almao and Zheng character cards appear once at their formal first encounte
   await page.goto('/')
   await page.locator('[data-trial-action="continue"]').click()
   await page.locator('[data-hotspot-id="RUNTIME-HS-G02-01-OBSERVE"]').click()
-  await expect(page.locator('[data-item-card-id="RUNTIME-ITM-G02-MAGNETIC-GRAPNEL"]')).toBeVisible()
-  await page.locator('[data-trial-action="dismiss-card"]').click()
+  await expect(page.locator('[data-item-card-id="RUNTIME-ITM-G02-MAGNETIC-GRAPNEL"]')).toHaveCount(0)
+  await expect(page.locator('[data-inventory-item="RUNTIME-ITM-G02-MAGNETIC-GRAPNEL"]')).toBeVisible()
   await page.getByRole('button', { name: '下一句' }).click()
   await page.getByRole('button', { name: '继续探索' }).click()
-  await expect(page.locator('[data-character-card-id="CHAR-ALMAO"]')).toBeVisible()
-  await capture(page, info, '12-almao-first-card.png')
-  await page.locator('[data-trial-action="dismiss-card"]').click()
+  await expect(page.locator('[data-character-unlock="CHAR-ALMAO"]')).toBeVisible()
+  await expect(page.locator('[data-character-card-id="CHAR-ALMAO"]')).toHaveCount(0)
+  await capture(page, info, '12-almao-nonblocking-unlock.png')
   await page.locator('[data-inventory-item="RUNTIME-ITM-G02-MAGNETIC-GRAPNEL"]').dragTo(
     page.locator('[data-drop-target="HS-G02-0003"]'),
   )
@@ -231,9 +232,9 @@ test('Almao and Zheng character cards appear once at their formal first encounte
   await page.getByRole('button', { name: '关闭吊臂配重救援' }).click()
   await page.getByRole('button', { name: '下一句' }).click()
   await page.getByRole('button', { name: '继续探索' }).click()
-  await expect(page.locator('[data-character-card-id="CHAR-ZHENG"]')).toBeVisible()
-  await capture(page, info, '13-zheng-first-card.png')
-  await page.locator('[data-trial-action="dismiss-card"]').click()
+  await expect(page.locator('[data-character-unlock="CHAR-ZHENG"]')).toBeVisible()
+  await expect(page.locator('[data-character-card-id="CHAR-ZHENG"]')).toHaveCount(0)
+  await capture(page, info, '13-zheng-nonblocking-unlock.png')
 
   const seen = await page.evaluate(() => JSON.parse(localStorage.getItem('starwreck:ui-meta:v1') ?? '{}').seenCharacterCards)
   expect(seen).toEqual(expect.arrayContaining(['CHAR-ALMAO', 'CHAR-ZHENG']))

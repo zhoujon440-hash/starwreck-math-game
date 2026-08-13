@@ -30,6 +30,8 @@ jobs:
       - run: npm ci
       - run: npm run validate:trial-experience
       - run: npm run test:trial-experience
+      - run: npm run validate:game-feel
+      - run: npm run test:game-feel
       - run: npm run build
         env:
           GITHUB_PAGES: "true"

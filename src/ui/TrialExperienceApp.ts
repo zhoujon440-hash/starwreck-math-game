@@ -63,6 +63,7 @@ export class TrialExperienceApp {
   #libraryOverlay: 'archive' | 'settings' | null = null
   #pendingCards: PendingCard[] = []
   #activeCard: PendingCard | null = null
+  #unlockToastTimer: number | undefined
 
   #present(markup: string, session: GameSession | null = this.#engine?.snapshot ?? this.#storedSession): string {
     return presentIdentityMarkup(session, markup)
@@ -238,7 +239,7 @@ export class TrialExperienceApp {
           <article><h3>正式资料</h3><p>剧情、角色、场景、道具与运行时资产均来自仓库内已登记的冻结资料和项目负责人授权制作记录。</p></article>
           <article><h3>本机存档</h3><p>本作不建立虚假联网账号。玩家档案、设置和进度保存在当前浏览器设备。</p></article>
         </div>
-        <p class="credits-version">STARWRECK-TRIAL-0.3.0</p>
+        <p class="credits-version">STARWRECK-TRIAL-0.4.0</p>
       </main>`)
   }
 
@@ -292,23 +293,37 @@ export class TrialExperienceApp {
 
     const priorItems = new Set([...previous.foundItemIds, ...previous.inventoryItemIds, ...previous.usedItemIds])
     const currentItems = [...new Set([...session.foundItemIds, ...session.inventoryItemIds, ...session.usedItemIds])]
-    for (const itemId of currentItems) {
-      if (!priorItems.has(itemId) && !this.#meta.seenItemCards.includes(itemId) && trialItemById(itemId)) {
-        this.#pendingCards.push({ kind: 'item', id: itemId, firstPickup: true })
-      }
+    const newlyFoundItems = currentItems.filter((itemId) =>
+      !priorItems.has(itemId) && trialItemById(itemId),
+    )
+    if (newlyFoundItems.length) {
+      this.#meta.seenItemCards = [...new Set([...this.#meta.seenItemCards, ...newlyFoundItems])]
+      this.uiMeta.save(this.#meta)
     }
 
     for (const characterId of session.unlockedCharacterIds) {
       if (
         characterNarrativelyRevealed(characterId, session) &&
         !characterNarrativelyRevealed(characterId, previous) &&
-        !this.#meta.seenCharacterCards.includes(characterId) &&
         trialCharacterById(characterId)
       ) {
-        this.#pendingCards.push({ kind: 'character', id: characterId })
+        this.#meta.seenCharacterCards = [...new Set([...this.#meta.seenCharacterCards, characterId])]
+        this.uiMeta.save(this.#meta)
+        this.#showCharacterUnlockToast(characterId)
       }
     }
-    this.#showNextCard()
+  }
+
+  #showCharacterUnlockToast(characterId: string): void {
+    const character = trialCharacterById(characterId)
+    if (!character || this.#libraryOverlay || this.#activeCard) return
+    const host = this.#overlayHost()
+    host.innerHTML = this.#present(`<div class="character-unlock-toast" role="status" data-character-unlock="${characterId}"><span>新人物已加入档案</span><strong>${character.name}</strong></div>`)
+    if (this.#unlockToastTimer) window.clearTimeout(this.#unlockToastTimer)
+    this.#unlockToastTimer = window.setTimeout(() => {
+      this.#unlockToastTimer = undefined
+      if (!this.#libraryOverlay && !this.#activeCard) host.innerHTML = ''
+    }, 2_600)
   }
 
   #showItemCard(itemId: string, firstPickup: boolean): void {
@@ -386,6 +401,8 @@ export class TrialExperienceApp {
     this.#lastGameSession = null
     this.#pendingCards = []
     this.#activeCard = null
+    if (this.#unlockToastTimer) window.clearTimeout(this.#unlockToastTimer)
+    this.#unlockToastTimer = undefined
   }
 
   #saveMeta(): void {

@@ -1,6 +1,6 @@
 # 《星骸拾荒者：十二星门》正式试用版
 
-版本：`STARWRECK-TRIAL-0.3.0`
+版本：`STARWRECK-TRIAL-0.4.0`
 
 公开试玩地址：<https://zhoujon440-hash.github.io/starwreck-math-game/>
 
@@ -28,7 +28,7 @@
 
 ## 部署
 
-生产包为 `release/starwreck-trial-0.3.0.zip`。解压后将文件部署到项目 Pages 根路径；包内保留本说明。SHA-256记录在 `release/starwreck-trial-0.3.0.sha256`。
+生产包为 `release/starwreck-trial-0.4.0.zip`。解压后将文件部署到项目 Pages 根路径；包内保留本说明。SHA-256记录在 `release/starwreck-trial-0.4.0.sha256`。
 
 ## 本地验证
 
@@ -36,6 +36,8 @@
 npm ci
 npm run validate:trial-experience
 npm run test:trial-experience
+npm run validate:game-feel
+npm run test:game-feel
 npm test
 npm run build
 npm run test:e2e
