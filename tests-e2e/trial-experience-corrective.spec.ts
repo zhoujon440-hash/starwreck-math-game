@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
-import { dragMechanicToken } from './helpers/reliable-drag'
+import { dragMechanicToken, dragWithMouse } from './helpers/reliable-drag'
 import { solveTrialMechanic, type TrialMechanicType } from './helpers/trial-mechanics'
 
 test.use({ trace: 'retain-on-failure', video: 'off' })
@@ -92,6 +92,16 @@ const dragMechanic = async (page: Page, type: string, token: string, slot: strin
   await dragMechanicToken(page, panel, token, slot)
 }
 
+const dragMechanicForError = async (page: Page, type: string, token: string, slot: string) => {
+  const panel = page.locator(`[data-trial-mechanic="${type}"]`)
+  await dragWithMouse(
+    page,
+    panel.locator(`[data-mechanic-draggable][data-mechanic-target="${token}"]`),
+    panel.locator(`[data-mechanic-dropzone="${slot}"]`),
+    { isComplete: async () => await panel.getAttribute('data-mechanic-status') === 'error' },
+  )
+}
+
 test('all eleven levels expose distinct real controls and four persistent states', async ({ page }, info) => {
   const errors: string[] = []
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()) })
@@ -108,6 +118,10 @@ test('all eleven levels expose distinct real controls and four persistent states
       await panel.locator('[data-mechanic-target="cyan"]').click()
     } else if (mechanic.type === 'airflow-maze') await panel.locator('[data-mechanic-target="ice-pocket"]').click()
     else if (mechanic.type === 'garbage-route') await panel.locator('[data-mechanic-target="wreck-field"]').click()
+    else if (mechanic.type === 'task-order') await dragMechanicForError(page, mechanic.type, 'pressure', 'timeline-2')
+    else if (mechanic.type === 'star-map-snap') await dragMechanicForError(page, mechanic.type, 'fragment-a', 'star-slot-b')
+    else if (mechanic.type === 'crane-counterweight') await dragMechanicForError(page, mechanic.type, 'weight-1', 'left-far')
+    else if (mechanic.type === 'borrow-use-return') await dragMechanicForError(page, mechanic.type, 'borrow-heater', 'heater-use')
     else await panel.locator('[data-action="mechanic-submit"]').click()
     await expect(panel).toHaveAttribute('data-mechanic-status', 'error')
     await capture(page, info, `${String(index + 1).padStart(2, '0')}-${mechanic.type}-error.png`)

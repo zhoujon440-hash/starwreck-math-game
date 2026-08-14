@@ -1,4 +1,5 @@
 export type SceneHudModel = {
+  chapterLabel: string
   sceneTitle: string
   objective: string
   revisiting: boolean
@@ -16,7 +17,7 @@ export class SceneHud {
     return `
       <aside class="scene-hud" data-scene-hud data-hud-mode="lightweight">
         <div class="scene-hud-objective">
-          <span>${model.revisiting ? '回访' : '当前目标'} · ${escapeHtml(model.sceneTitle)}</span>
+          <span>${escapeHtml(model.chapterLabel)} · ${model.revisiting ? '回访' : '当前目标'} · ${escapeHtml(model.sceneTitle)}</span>
           <strong>${escapeHtml(model.objective)}</strong>
           ${model.revisiting && model.mainlineTitle ? `<small>主线仍在“${escapeHtml(model.mainlineTitle)}”</small>` : ''}
         </div>

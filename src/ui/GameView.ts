@@ -1,6 +1,5 @@
 import { InventoryDragCoordinator } from '../game/drag'
 import type { GameEngine } from '../game/engine'
-import { sceneStateOrder } from '../game/engine'
 import hosManifest from '../../data/source/g01/scn-g01-01/hos_manifest.json'
 import scn02Art from '../../data/source/g01/pr-a/scn-g01-02-art-manifest.json'
 import scn03Art from '../../data/source/g01/pr-a/scn-g01-03-art-manifest.json'
@@ -292,49 +291,6 @@ export class GameView {
         data-camera-mode="${this.#sceneCamera.mode}"
         data-world-visual-state="${worldVisualState}"
       >
-        <header class="topbar">
-          <div class="brand-lockup">
-            <span class="brand-mark" aria-hidden="true">✦</span>
-            <div>
-              <p>星骸拾荒者：十二星门</p>
-              <span>${
-                isG02Scene || isG02ReadOnly || isG02Boundary
-                  ? '第二章 · 锈环星旧屏幕谷'
-                  : `序章 · ${escapeHtml(this.engine.chapter.title)}`
-              }</span>
-            </div>
-          </div>
-
-          <div class="state-readout" aria-label="场景进度">
-            ${DEBUG_UI ? `<span class="state-code">${this.#session.sceneState}</span>` : ''}
-            <div>
-              <strong>${escapeHtml(state.title)}</strong>
-              <div class="state-track" aria-hidden="true">
-                ${sceneStateOrder
-                  .map(
-                    (stateId) =>
-                      `<i class="${sceneStateOrder.indexOf(stateId) <= sceneStateOrder.indexOf(this.#session.sceneState) ? 'is-complete' : ''}"></i>`,
-                  )
-                  .join('')}
-              </div>
-            </div>
-          </div>
-
-          <div class="save-status" title="进度会自动保存在此设备">
-            <i aria-hidden="true"></i>
-            <span>${DEBUG_UI ? `已自动保存 · schema v${this.#session.schemaVersion}` : '已自动保存'}</span>
-          </div>
-          <nav class="story-tools" aria-label="剧情工具">
-            <button data-action="open-menu">主菜单</button>
-            <button data-action="visit-previous" ${PLAYER_SCENE_IDS.indexOf(scene.id) <= 0 ? 'disabled' : ''}>上一场景</button>
-            <button data-action="open-map">场景地图</button>
-            ${revisiting ? '<button class="return-task-action" data-action="return-current-task">返回当前任务</button>' : ''}
-            <button data-action="open-journal">任务记录</button>
-            <button data-action="open-history">对话历史</button>
-            <button data-action="open-profile">角色档案</button>
-          </nav>
-        </header>
-
         <section class="scene-frame game-stage camera-${this.#sceneCamera.mode}" aria-label="${escapeHtml(scene.title)}" data-game-stage="${escapeHtml(scene.id)}" data-camera-mode="${this.#sceneCamera.mode}" data-camera-target="${escapeHtml(this.#sceneCamera.targetId ?? 'scene')}" data-world-visual-state="${worldVisualState}" style="${this.#sceneCamera.style()}">
           <div class="scene-canvas game-stage-viewport" data-scene-canvas data-stage-layer="background">
             <div class="game-stage-world-plane" data-stage-layer="world">
@@ -383,6 +339,9 @@ export class GameView {
           </div>
 
           ${this.#sceneHud.render({
+            chapterLabel: isG02Scene || isG02ReadOnly || isG02Boundary
+              ? '第二章 · 锈环星旧屏幕谷'
+              : `序章 · ${this.engine.chapter.title}`,
             sceneTitle: experience?.title ?? scene.playerTitle,
             objective: stageObjective,
             revisiting,
@@ -2134,7 +2093,7 @@ export class GameView {
     }, 3_500)
   }
 
-  #performMechanic(action: TrialMechanicAction): void {
+  #performMechanic(action: TrialMechanicAction): ActionResult {
     const sceneId = this.#session.currentSceneId
     const experience = sceneExperience(sceneId)
     this.#sceneCamera.showMechanic()
@@ -2153,6 +2112,11 @@ export class GameView {
       }
     }
     this.#handleResult(result)
+    if (action.kind === 'place') {
+      const shell = this.root.querySelector<HTMLElement>('.game-shell')
+      if (shell) shell.dataset.dropFeedback = result.ok ? 'snap' : 'bounce'
+    }
+    return result
   }
 
   #handleMechanicChange = (event: Event): void => {
@@ -2422,9 +2386,6 @@ export class GameView {
         break
       case 'mechanic-submit':
         this.#performMechanic({ kind: 'submit' })
-        break
-      case 'mechanic-reset':
-        this.#handleResult(this.engine.resetTrialMechanic())
         break
       case 'open-map':
         this.#mapOpen = true

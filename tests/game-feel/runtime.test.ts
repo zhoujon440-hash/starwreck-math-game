@@ -83,9 +83,11 @@ describe('Trial Game Feel runtime', () => {
     const html = new MechanicSurface().render({
       title: '设备校准', subtitle: '配电箱', mechanicType: 'rotating-circuit', mechanicId: 'MECH',
       status: 'partial', instruction: '转动接点', interaction: '<button>接点</button>',
-      statusMarkup: '<p>一路接通</p>', footer: '<button>确认</button>',
+      statusMarkup: '<p>一路接通</p>',
     })
     expect(html).toContain('data-device-surface="true"')
+    expect(html).toContain('data-in-world-mechanic="true"')
+    expect(html).not.toContain('trial-mechanic-panel')
     expect(html).toContain('role="region"')
     expect(html).not.toContain('aria-modal')
     expect(html).not.toContain('modal-backdrop')
@@ -97,6 +99,7 @@ describe('Trial Game Feel runtime', () => {
     const interaction = readFileSync('src/game-scene/InteractionController.ts', 'utf8')
     const styles = readFileSync('src/styles.css', 'utf8')
     expect(hud).toContain('scene-hud')
+    expect(hud).toContain('chapterLabel')
     expect(drag).toContain('inventory-drag-ghost')
     expect(drag).toContain('pointermove')
     expect(interaction).toContain("success ? 'snap' : 'bounce'")

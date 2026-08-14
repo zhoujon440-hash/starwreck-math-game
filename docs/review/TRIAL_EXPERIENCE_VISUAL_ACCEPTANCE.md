@@ -26,6 +26,6 @@ CI在 `Trial Experience Gate` 中生成两套成对证据：
 
 GitHub Actions和Pages不再请求Git LFS对象。十九项正式源与三项隔离legacy原件通过GitHub Release `source-baseline-mirror-v1`交付；仓库清单固定整包及22个条目的大小和SHA-256。每个需要正式源的工作流先运行`node scripts/restore-formal-source-mirror.mjs`，再执行原有来源、基线、角色和剧情校验；Pages只检出实际运行时资产。
 
-`Trial Game Feel Gate` 另外生成每个场景三阶段证据：完整场景、设备本体内操作、成功后世界变化。主线机制不得使用统一白色阻断弹窗；白色浅色体系只保留在 HUD、菜单、档案和玩家主动打开的辅助界面。拖拽证据同时覆盖错误位置弹回和正确目标磁吸。
+`Trial Game Feel Gate` 另外生成每个场景四阶段证据：`scene-before`、`object-focus`、`interaction-in-world`、`world-after`。主线机制不得使用统一中央矩形容器、通用提交/重置页脚或全宽网页Topbar；白色浅色体系只保留在轻量 HUD、菜单、档案和玩家主动打开的辅助界面。拖拽证据同时覆盖错误位置弹回和正确目标磁吸；电路、星图、吊臂分别保存真实鼠标操作视频与trace。
 
 CI产物名称将在工作流运行号后附加，最终READY评论提供直接链接。

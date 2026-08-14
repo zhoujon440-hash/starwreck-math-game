@@ -6,6 +6,7 @@ const mutations = [
   'missing-presentation', 'duplicate-device', 'world-state-missing', 'camera-mode-missing',
   'modal-restored', 'drag-bounce-removed', 'blocking-item-card-restored', 'checklist-visible',
   'reduced-motion-removed', 'qima-leak', 'schema-upgrade', 'later-scene', 'skip-existing-gate',
+  'central-panel-restored', 'generic-submit-restored', 'mainline-topbar-restored',
 ]
 
 for (const mutation of mutations) {

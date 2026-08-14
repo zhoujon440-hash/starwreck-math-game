@@ -4540,3 +4540,301 @@ body, #app { background: var(--light-canvas); color: var(--light-text); }
   transition-duration: 0s !important;
   animation: none !important;
 }
+
+/* STARWRECK-TRIAL-0.4.1 — in-world gameplay pass.
+   Mainline mechanics occupy the scene coordinate space itself. These rules
+   deliberately do not create a panel, card, modal, header or form footer. */
+.has-game-stage {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.game-stage.camera-focus .game-stage-world-plane,
+.game-stage.camera-mechanic .game-stage-world-plane {
+  filter: brightness(.83) saturate(.94);
+}
+
+.game-stage-focus[data-focus-kind='mechanic'] {
+  display: block;
+  padding: 0;
+  background: radial-gradient(circle at var(--camera-x, 50%) var(--camera-y, 50%), transparent 0 34%, rgba(2, 8, 12, .1) 68%, rgba(2, 8, 12, .34) 100%);
+  backdrop-filter: none;
+}
+
+.in-world-mechanic {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  color: #eaf8f6;
+  background: transparent;
+  pointer-events: none;
+}
+
+.in-world-mechanic .in-world-guidance {
+  position: absolute;
+  z-index: 8;
+  top: 76px;
+  left: 15px;
+  display: grid;
+  width: min(360px, 32vw);
+  gap: 2px;
+  padding: 8px 11px;
+  border: 1px solid rgba(172, 217, 214, .28);
+  border-radius: 10px;
+  color: #e9f7f5;
+  font-size: 10px;
+  line-height: 1.35;
+  background: rgba(4, 14, 20, .68);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
+  backdrop-filter: blur(7px);
+  pointer-events: none;
+}
+.in-world-guidance small { color: #8fcac4; font-size: 8px; letter-spacing: .08em; }
+.in-world-guidance h2 { margin: 0; color: #e9f7f5; font-size: 12px; }
+.in-world-guidance span { color: #bed0d0; }
+
+.in-world-mechanic > .stage-return-button {
+  position: absolute;
+  z-index: 9;
+  top: 76px;
+  right: 15px;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid rgba(172, 217, 214, .34);
+  border-radius: 9px;
+  color: #e7f3f2;
+  background: rgba(4, 14, 20, .68);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+  backdrop-filter: blur(7px);
+  pointer-events: auto;
+}
+
+.in-world-mechanic > .device-control-deck {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  pointer-events: none;
+}
+.in-world-mechanic .device-control-deck button,
+.in-world-mechanic .device-control-deck input,
+.in-world-mechanic .device-control-deck label,
+.in-world-mechanic [data-mechanic-dropzone] { pointer-events: auto; }
+
+.in-world-mechanic .mechanic-visual,
+.in-world-mechanic .mechanic-card-tray {
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.in-world-mechanic > .mechanic-status {
+  position: absolute;
+  z-index: 8;
+  bottom: 92px;
+  left: 15px;
+  display: flex;
+  width: auto;
+  margin: 0;
+  padding: 6px 9px;
+  border: 1px solid rgba(170, 214, 212, .3);
+  border-radius: 999px;
+  color: #d4e9e6;
+  font-size: 9px;
+  background: rgba(4, 14, 20, .68);
+  backdrop-filter: blur(7px);
+}
+.in-world-mechanic > .mechanic-status small { margin-left: 8px; }
+.in-world-mechanic > .mechanic-status.is-error { color: #ffd3cb; background: rgba(83, 18, 19, .7); animation: in-world-error .42s ease; }
+.in-world-mechanic > .mechanic-status.is-partial { color: #ffe0a8; background: rgba(66, 43, 9, .66); }
+
+/* 01 — connection rotors mounted directly over the distribution box. */
+.in-world-mechanic.mechanic-rotating-circuit .circuit-board {
+  position: absolute;
+  top: 35%;
+  left: 48%;
+  width: 25%;
+  height: 29%;
+  min-height: 0;
+  padding: 0;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3%;
+}
+.in-world-mechanic.mechanic-rotating-circuit .circuit-board::before,
+.in-world-mechanic.mechanic-rotating-circuit .circuit-flow { top: 50%; left: 4%; right: 4%; width: auto; height: 3px; }
+.in-world-mechanic.mechanic-rotating-circuit .circuit-junction {
+  width: 92%;
+  aspect-ratio: 1;
+  justify-self: center;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  color: #dff7f2;
+  background: radial-gradient(circle, rgba(23, 43, 48, .96) 0 38%, rgba(114, 166, 165, .5) 40% 43%, rgba(5, 14, 18, .86) 45% 62%, transparent 64%);
+  filter: drop-shadow(0 4px 8px #000);
+}
+.in-world-mechanic.mechanic-rotating-circuit .circuit-junction i { width: 48%; height: 48%; border-color: #9fddd4; border-left-color: transparent; }
+.in-world-mechanic.mechanic-rotating-circuit .circuit-junction small { position: absolute; bottom: 1%; font-size: 8px; text-shadow: 0 1px 3px #000; }
+.in-world-mechanic .circuit-breaker,
+.in-world-mechanic .signal-lock-lever,
+.in-world-mechanic .attitude-lock-yoke,
+.in-world-mechanic .pulse-sample-lever {
+  position: absolute;
+  border: 2px solid #718b8e;
+  border-radius: 6px;
+  color: #d9ece9;
+  font-size: 8px;
+  background: linear-gradient(90deg, #1c2d30, #587074 48%, #19272a);
+  box-shadow: 0 7px 12px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.18);
+}
+.in-world-mechanic .circuit-breaker { right: -2%; bottom: -31%; width: 25%; height: 40%; }
+.in-world-mechanic .circuit-breaker i,
+.in-world-mechanic .signal-lock-lever i,
+.in-world-mechanic .attitude-lock-yoke i,
+.in-world-mechanic .pulse-sample-lever i { display: block; width: 34%; height: 42%; margin: 0 auto 2px; border-radius: 3px; background: #a96b3e; box-shadow: inset 0 -4px rgba(0,0,0,.26); }
+
+/* 02 — lamps and physical keys stay on the damaged navigation cradle. */
+.in-world-mechanic.mechanic-signal-memory .memory-display {
+  position: absolute;
+  top: 23%;
+  left: 60%;
+  width: 31%;
+  height: 28%;
+  min-height: 0;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(2, 21, 27, .28);
+}
+.in-world-mechanic.mechanic-signal-memory .memory-play { border-color: rgba(139, 218, 207, .65); color: #eafffb; background: rgba(6, 28, 34, .76); }
+.in-world-mechanic.mechanic-signal-memory .memory-inputs { position: absolute; top: 53%; left: 61%; width: 29%; height: 16%; grid-template-columns: repeat(4, 1fr); gap: 4%; }
+.in-world-mechanic.mechanic-signal-memory .memory-key { min-height: 0; padding: 0; border-radius: 50%; color: transparent; background: rgba(5, 20, 25, .72); box-shadow: 0 5px 10px rgba(0,0,0,.55); }
+.in-world-mechanic.mechanic-signal-memory .memory-key i { width: 42%; height: 42%; margin: 0; }
+.in-world-mechanic.mechanic-signal-memory .memory-key span { position: absolute; clip: rect(0 0 0 0); }
+
+/* 03 — maintenance cards lie on the console and move into its timeline rail. */
+.in-world-mechanic.mechanic-task-order .mechanic-drag-layout,
+.in-world-mechanic.mechanic-star-map-snap .mechanic-drag-layout,
+.in-world-mechanic.mechanic-crane-counterweight .mechanic-drag-layout,
+.in-world-mechanic.mechanic-borrow-use-return .mechanic-drag-layout { position: absolute; inset: 0; display: block; }
+.in-world-mechanic.mechanic-task-order .mechanic-card-tray { position: absolute; top: 57%; left: 25%; display: flex; width: 48%; gap: 3%; transform: perspective(500px) rotateX(8deg); }
+.in-world-mechanic.mechanic-task-order .mechanic-token { min-height: 64px; padding: 7px; color: #27383e; background: #e8e1cf; box-shadow: 0 8px 14px rgba(0,0,0,.32); transform: rotate(var(--card-angle, -2deg)); }
+.in-world-mechanic.mechanic-task-order .mechanic-token:nth-child(2) { --card-angle: 2deg; }
+.in-world-mechanic.mechanic-task-order .task-timeline { position: absolute; top: 29%; left: 28%; width: 43%; height: 22%; min-height: 0; padding: 0; grid-template-columns: repeat(3, 1fr); gap: 4%; }
+
+/* 04 — valve handles sit on the cargo pipe cutaway; flow is visible in-pipe. */
+.in-world-mechanic.mechanic-airflow-maze .airflow-board { position: absolute; top: 23%; left: 45%; width: 43%; height: 51%; min-height: 0; padding: 0; }
+.in-world-mechanic.mechanic-airflow-maze .maze-node { width: 64px; height: 44px; padding: 0; border-radius: 50%; color: #d9f2ef; background: radial-gradient(circle, #254b50 0 40%, #13292e 43% 65%, transparent 68%); box-shadow: 0 4px 12px rgba(0,0,0,.5); }
+.in-world-mechanic.mechanic-airflow-maze .maze-node.is-confirmed { background: radial-gradient(circle, #55b9ac 0 40%, #214b47 43% 65%, transparent 68%); }
+
+/* 05 — fragments are loose on the star table and snap into its real apertures. */
+.in-world-mechanic.mechanic-star-map-snap .mechanic-card-tray { position: absolute; top: 60%; left: 22%; display: flex; width: 56%; justify-content: space-around; padding: 0; }
+.in-world-mechanic.mechanic-star-map-snap .star-piece-wrap { position: relative; isolation: isolate; width: 15%; display: grid; grid-template: 1fr / 1fr; }
+.in-world-mechanic.mechanic-star-map-snap .star-piece { min-height: 72px; padding: 0; border: 1px solid rgba(128, 193, 255, .55); border-radius: 42% 58% 48% 52%; color: transparent; background: radial-gradient(circle at 45% 38%, rgba(151, 213, 255, .75) 0 2px, transparent 3px), linear-gradient(135deg, rgba(45, 90, 132, .9), rgba(14, 37, 69, .94)); box-shadow: 0 0 16px rgba(79, 159, 225, .35); }
+.in-world-mechanic.mechanic-star-map-snap .star-piece {
+  position: relative;
+  z-index: 1;
+  min-height: 96px;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  box-shadow: none;
+  filter: drop-shadow(0 8px 8px rgba(0,0,0,.5));
+}
+.in-world-mechanic.mechanic-star-map-snap .star-piece[data-mechanic-target='fragment-a'] { background-image: url('/assets/g01/pr-b/scn-g01-04/items/fragment-a_scene.png'); }
+.in-world-mechanic.mechanic-star-map-snap .star-piece[data-mechanic-target='fragment-b'] { background-image: url('/assets/g01/pr-b/scn-g01-04/items/fragment-b_scene.png'); }
+.in-world-mechanic.mechanic-star-map-snap .star-piece[data-mechanic-target='fragment-c'] { background-image: url('/assets/g01/pr-b/scn-g01-04/items/fragment-c_scene.png'); }
+.in-world-mechanic.mechanic-star-map-snap .star-piece.rotation-1 { transform: rotate(90deg); }
+.in-world-mechanic.mechanic-star-map-snap .star-piece.rotation-2 { transform: rotate(180deg); }
+.in-world-mechanic.mechanic-star-map-snap .star-piece.rotation-3 { transform: rotate(270deg); }
+.in-world-mechanic.mechanic-star-map-snap .star-piece-wrap > button:last-child { position: absolute; z-index: 5; right: -28px; top: calc(50% - 13px); width: 26px; height: 26px; padding: 0; border-radius: 50%; color: transparent; background: rgba(11, 31, 52, .9); box-shadow: 0 0 0 1px rgba(151, 211, 255, .48), 0 5px 10px rgba(0,0,0,.45); }
+.in-world-mechanic.mechanic-star-map-snap .star-piece-wrap > button:last-child::before { content: '↻'; color: #b7dcff; font-size: 15px; }
+.in-world-mechanic.mechanic-star-map-snap .star-snap-board { position: absolute; top: 29%; left: 30%; width: 40%; height: 28%; min-height: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 7%; }
+.in-world-mechanic.mechanic-star-map-snap .mechanic-drop-slot { min-height: 0; padding: 0; border-color: rgba(117, 188, 255, .68); border-radius: 42% 58% 48% 52%; color: transparent; background: rgba(27, 66, 103, .16); box-shadow: inset 0 0 20px rgba(88, 169, 238, .18); }
+.in-world-mechanic.mechanic-star-map-snap .mechanic-drop-slot > * { visibility: hidden; }
+
+/* 06 — navigation nodes live on the forward route glass. */
+.in-world-mechanic.mechanic-garbage-route .route-board { position: absolute; top: 20%; left: 12%; width: 76%; height: 57%; min-height: 0; }
+.in-world-mechanic.mechanic-garbage-route .route-node { color: #e6f5f4; background: rgba(6, 26, 36, .8); box-shadow: 0 0 16px rgba(76, 170, 212, .24); }
+
+/* 07 — waveform screen and three hardware faders share the comms console. */
+.in-world-mechanic.mechanic-waveform-tuning .waveform-board { position: absolute; top: 24%; left: 35%; width: 48%; height: 28%; min-height: 0; background: rgba(2, 25, 29, .28); }
+.in-world-mechanic.mechanic-waveform-tuning .mechanic-controls { position: absolute; top: 56%; left: 38%; width: 43%; height: 15%; grid-template-columns: repeat(3, 1fr); gap: 4%; }
+.in-world-mechanic.mechanic-waveform-tuning .mechanic-slider { min-height: 0; padding: 5px; grid-template: auto 1fr auto / 1fr; color: #dff6f2; background: rgba(5, 28, 31, .68); }
+.in-world-mechanic.mechanic-waveform-tuning .mechanic-slider {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-shadow: 0 1px 3px #000;
+}
+.in-world-mechanic.mechanic-waveform-tuning .signal-lock-lever { right: -18%; bottom: 0; width: 15%; height: 100%; }
+
+/* 08 — the world horizon itself tilts while the console yokes are adjusted. */
+.in-world-mechanic.mechanic-attitude-balance .attitude-board { position: absolute; inset: 15% 14% 20%; min-height: 0; background: transparent; }
+.in-world-mechanic.mechanic-attitude-balance .attitude-board .horizon { width: 100%; box-shadow: 0 0 13px rgba(136, 229, 219, .72); }
+.in-world-mechanic.mechanic-attitude-balance .mechanic-controls { position: absolute; bottom: 18%; left: 31%; width: 39%; grid-template-columns: repeat(2, 1fr); }
+.in-world-mechanic.mechanic-attitude-balance .mechanic-slider { min-height: 58px; color: #e5f6f4; background: rgba(7, 25, 28, .7); }
+.in-world-mechanic.mechanic-attitude-balance .mechanic-slider { border: 0; background: transparent; box-shadow: none; text-shadow: 0 1px 3px #000; }
+.in-world-mechanic.mechanic-attitude-balance .attitude-lock-yoke { right: -22%; bottom: 0; width: 18%; height: 100%; }
+
+/* 09 — pulse columns rise directly from the abandoned sampling screen. */
+.in-world-mechanic.mechanic-pattern-decode .pulse-wave-board { position: absolute; top: 22%; left: 22%; width: 56%; height: 48%; min-height: 0; padding: 0 9%; background: transparent; }
+.in-world-mechanic.mechanic-pattern-decode .pulse-cell { height: 100%; color: #e3f4f1; }
+.in-world-mechanic.mechanic-pattern-decode .pulse-sample-lever { right: -13%; bottom: 5%; width: 14%; height: 38%; }
+
+/* 10 — weights, hooks, cable and rescue arm are one physical scene system. */
+.in-world-mechanic.mechanic-crane-counterweight .mechanic-card-tray { position: absolute; bottom: 16%; left: 8%; display: flex; width: 27%; height: 18%; align-items: flex-end; justify-content: space-around; padding: 0; }
+.in-world-mechanic.mechanic-crane-counterweight .mechanic-token { width: 27%; min-height: 44px; padding: 0; border: 3px double #685441; border-radius: 6px; color: transparent; background: linear-gradient(90deg, #6e6253, #ad9a7f 48%, #5f5448); box-shadow: 0 10px 12px rgba(0,0,0,.45); }
+.in-world-mechanic.mechanic-crane-counterweight .mechanic-token:nth-child(2) { min-height: 58px; }
+.in-world-mechanic.mechanic-crane-counterweight .mechanic-token:nth-child(3) { min-height: 74px; }
+.in-world-mechanic.mechanic-crane-counterweight .crane-board { position: absolute; top: 13%; left: 23%; width: 69%; height: 61%; min-height: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 9%; }
+.in-world-mechanic.mechanic-crane-counterweight .crane-board .crane-beam { display: none; }
+.in-world-mechanic.mechanic-crane-counterweight .mechanic-drop-slot { align-self: end; min-height: 43%; padding: 0; border: 0; border-radius: 50%; color: transparent; background: radial-gradient(circle at 50% 12%, transparent 0 7px, #a8875d 8px 11px, transparent 12px), linear-gradient(90deg, transparent 48%, rgba(195, 174, 139, .76) 49% 51%, transparent 52%); }
+.in-world-mechanic.mechanic-crane-counterweight .mechanic-drop-slot > * { visibility: hidden; }
+.in-world-mechanic.mechanic-crane-counterweight .mechanic-drop-slot.is-filled { filter: drop-shadow(0 0 11px rgba(104, 224, 207, .8)); }
+
+/* 11 — record cards remain physical paperwork on the archive workbench. */
+.in-world-mechanic.mechanic-borrow-use-return .archive-record-tray { position: absolute; bottom: 12%; left: 14%; display: grid; width: 30%; height: 32%; grid-template-columns: repeat(3, 1fr); gap: 4%; padding: 0; }
+.in-world-mechanic.mechanic-borrow-use-return .mechanic-token { min-height: 0; padding: 4px; color: #283a3b; font-size: 8px; background: #d8d4bd; box-shadow: 0 6px 10px rgba(0,0,0,.35); }
+.in-world-mechanic.mechanic-borrow-use-return .archive-logic-board { position: absolute; top: 24%; left: 47%; width: 39%; height: 45%; min-height: 0; padding: 0; grid-template-columns: 60px repeat(3, 1fr); gap: 3%; }
+.in-world-mechanic.mechanic-borrow-use-return .archive-logic-board b { color: #c7dcd8; text-shadow: 0 1px 3px #000; }
+.in-world-mechanic.mechanic-borrow-use-return .mechanic-drop-slot { min-height: 0; color: #c9d9d7; background: rgba(8, 27, 30, .52); }
+
+.in-world-mechanic[data-mechanic-status='error'] [data-mechanic-draggable] { animation: in-world-bounce .42s ease; }
+.in-world-mechanic[data-mechanic-status='partial'] .circuit-flow,
+.in-world-mechanic[data-mechanic-status='partial'] .safe-pipe,
+.in-world-mechanic[data-mechanic-status='partial'] .safe-edge { filter: drop-shadow(0 0 8px rgba(102, 229, 213, .75)); }
+
+@keyframes in-world-error { 0%,100% { transform: translateX(0) } 30% { transform: translateX(-5px) } 65% { transform: translateX(4px) } }
+@keyframes in-world-bounce { 0%,100% { transform: translate(0,0) } 35% { transform: translate(-8px,-4px) } 70% { transform: translate(5px,2px) } }
+
+.has-game-stage .boot-sequence {
+  top: 14%;
+  left: 61%;
+  width: 30%;
+  padding: 10px 13px;
+  border-radius: 8px;
+  background: rgba(3, 16, 22, .62);
+  box-shadow: inset 0 0 24px rgba(82, 211, 203, .08);
+  transform: none;
+}
+.has-game-stage .boot-sequence > strong { font-size: 12px; }
+.has-game-stage .boot-wave { height: 18px; }
+
+@media (max-width: 1366px), (max-height: 768px) {
+  .has-game-stage { grid-template-rows: minmax(0, 1fr); }
+  .in-world-mechanic .in-world-guidance { top: 52px; width: min(330px, 34vw); padding: 6px 9px; }
+  .in-world-mechanic > .stage-return-button { top: 52px; }
+  .in-world-mechanic > .mechanic-status { bottom: 72px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .in-world-mechanic *,
+  .in-world-mechanic *::before,
+  .in-world-mechanic *::after { transition-duration: 0s !important; animation: none !important; }
+}

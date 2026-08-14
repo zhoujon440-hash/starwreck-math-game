@@ -38,6 +38,9 @@ const mutations = {
   'schema-upgrade': () => { app = app.replace("starwreck:trial:runtime-active", "starwreck:trial:v3:runtime-active") },
   'later-scene': () => { presentations += "\n// SCN-G02-03 gameplay\n" },
   'skip-existing-gate': () => { workflow = workflow.replace('npm run validate:trial-experience', 'echo skipped-trial-experience') },
+  'central-panel-restored': () => { surface = surface.replace('class="in-world-mechanic', 'class="trial-mechanic-panel') },
+  'generic-submit-restored': () => { panel += '\n<button data-action="mechanic-submit">提交当前结构</button>\n' },
+  'mainline-topbar-restored': () => { gameView = gameView.replace('<section class="scene-frame', '<header class="topbar"></header><section class="scene-frame') },
 }
 if (mutation) {
   const apply = mutations[mutation]
@@ -69,11 +72,16 @@ check(stage.includes('data-scene-object=') && stage.includes('data-world-visual-
 check(hud.includes('scene-hud') && hud.includes('data-action="open-map"') && hud.includes('data-action="open-journal"') && hud.includes('data-action="open-history"') && hud.includes('data-action="open-profile"') && hud.includes('data-action="return-current-task"'), 'GAME-FEEL-HUD-001', 'lightweight scene HUD is incomplete')
 check(styles.includes('.legacy-objective-card { display: none !important; }'), 'GAME-FEEL-HUD-002', 'legacy webpage checklist is visible')
 
-check(surface.includes('data-device-surface="true"') && surface.includes('role="region"'), 'GAME-FEEL-MECHANIC-001', 'device-local mechanic surface is missing')
+check(surface.includes('data-device-surface="true"') && surface.includes('data-in-world-mechanic="true"') && surface.includes('role="region"'), 'GAME-FEEL-MECHANIC-001', 'in-world mechanic surface is missing')
 check(!surface.includes('aria-modal="true"') && !surface.includes('modal-backdrop'), 'GAME-FEEL-MECHANIC-002', 'main mechanics must not use a blocking modal')
 check(panel.includes('MechanicSurface') && panel.includes('this.#surface.render'), 'GAME-FEEL-MECHANIC-003', 'eleven mechanics are not routed through the device surface')
-const mechanicClasses = [...styles.matchAll(/\.device-focus-surface\.mechanic-([a-z-]+)\s*\{/g)].map((match) => match[1])
+const mechanicClasses = [...styles.matchAll(/\.in-world-mechanic\.mechanic-([a-z-]+)\s+[^\{]+\{/g)].map((match) => match[1])
 check(new Set(mechanicClasses).size === 11, 'GAME-FEEL-MECHANIC-004', 'eleven mechanisms need distinct device presentations')
+check(surface.includes('class="in-world-mechanic') && !surface.includes('trial-mechanic-panel') && !surface.includes('<header>') && !surface.includes('<footer>'), 'GAME-FEEL-MECHANIC-005', 'main mechanic is still wrapped in a central webpage panel')
+check(!panel.includes('提交当前结构') && !panel.includes('重置本次尝试') && !panel.includes('mechanic-reset'), 'GAME-FEEL-MECHANIC-006', 'generic form submit/reset controls remain in mainline gameplay')
+check(!gameView.includes('<header class="topbar">'), 'GAME-FEEL-HUD-003', 'full-width webpage topbar remains in mainline gameplay')
+check(styles.includes(".game-stage-focus[data-focus-kind='mechanic']") && styles.includes('.in-world-mechanic > .device-control-deck'), 'GAME-FEEL-MECHANIC-007', 'mechanic controls are not anchored to the scene coordinate layer')
+check(panel.includes('circuit-breaker') && panel.includes('star-workspace') && panel.includes('crane-board'), 'GAME-FEEL-MECHANIC-008', 'circuit, star map and crane lack distinct world controls')
 
 check(interaction.includes("success ? 'snap' : 'bounce'"), 'GAME-FEEL-DRAG-001', 'drag result must distinguish snap and bounce')
 check(drag.includes('inventory-drag-ghost') && drag.includes('pointermove') && drag.includes('clientX') && drag.includes('clientY'), 'GAME-FEEL-DRAG-002', 'pointer-following touch drag is missing')
@@ -105,6 +113,15 @@ check(
     e2e.includes('data-world-visual-state'),
   'GAME-FEEL-E2E-002',
   'real scene/drag/world-change behavior is not covered',
+)
+check(
+  e2e.includes('circuit-distribution-box') &&
+    e2e.includes('star-map-table') &&
+    e2e.includes('crane-rescue') &&
+    e2e.includes('interaction-in-world') &&
+    e2e.includes('data-in-world-mechanic'),
+  'GAME-FEEL-E2E-003',
+  'circuit, star map and crane in-world video evidence is incomplete',
 )
 check(!presentations.includes('SCN-G02-03') && !gameView.includes('SCN-G02-03'), 'GAME-FEEL-SCOPE-001', 'SCN-G02-03+ gameplay is out of scope')
 check(!app.includes('starwreck:trial:v3:'), 'GAME-FEEL-SAVE-001', 'legacy schema v2 compatibility must not be replaced')

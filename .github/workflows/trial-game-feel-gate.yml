@@ -50,6 +50,14 @@ jobs:
         run: npm run test:e2e
       - run: npm run test:pwa
       - run: npm run package:trial-experience
+      - name: Verify deterministic production ZIP and checksum
+        shell: bash
+        run: |
+          first_sha="$(sha256sum release/starwreck-trial-0.4.0.zip | cut -d ' ' -f 1)"
+          npm run package:trial-experience
+          second_sha="$(sha256sum release/starwreck-trial-0.4.0.zip | cut -d ' ' -f 1)"
+          test "$first_sha" = "$second_sha"
+          grep -Fq "$second_sha  starwreck-trial-0.4.0.zip" release/starwreck-trial-0.4.0.sha256
       - name: Upload Game Feel visual acceptance, video and trace
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,6 +65,7 @@ jobs:
           name: trial-game-feel-visual-acceptance-${{ github.run_number }}
           path: |
             test-results/trial-game-feel/**
+            test-results/trial-game-feel-recorded/**
             test-results/**/*.webm
             test-results/**/*.zip
             playwright-report/**

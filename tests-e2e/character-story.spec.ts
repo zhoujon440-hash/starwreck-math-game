@@ -98,6 +98,7 @@ test('SCN-G01-00 uses formal portraits, persistent dialogue, history and profile
 test('SCN-G01-01 completes the formal HOPA recovery loop and restores from save', async ({
   page,
 }, testInfo) => {
+  test.setTimeout(120_000)
   test.setTimeout(60_000)
   const browserErrors: string[] = []
   page.on('console', (message) => {

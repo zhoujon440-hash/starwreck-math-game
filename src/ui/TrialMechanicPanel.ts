@@ -42,12 +42,7 @@ export class TrialMechanicPanel {
       instruction: definition.instruction,
       interaction: this.#interaction(experience.mechanicType, progress),
       statusMarkup: `<div class="mechanic-status is-${progress.status}" role="status"><i aria-hidden="true"></i><span>${statusCopy[progress.status]}</span><small>错误 ${progress.mistakes} 次</small></div>`,
-      footer: `<button class="secondary-action" data-action="mechanic-reset">重置本次尝试</button>${this.#needsSubmit(experience.mechanicType) ? '<button class="primary-action" data-action="mechanic-submit">提交当前结构</button>' : ''}`,
     })
-  }
-
-  #needsSubmit(type: string): boolean {
-    return !['signal-memory', 'airflow-maze', 'garbage-route'].includes(type)
   }
 
   #interaction(type: string, progress: TrialMechanicProgress): string {
@@ -68,7 +63,7 @@ export class TrialMechanicPanel {
     return `<div class="mechanic-visual circuit-board" data-connectivity="independent-ports"><span class="circuit-flow"></span>${tokens.map((token) => {
       const rotation = Number(progress.values[token] ?? 0) % 4
       return `<button class="circuit-junction rotation-${rotation}" data-action="mechanic-rotate" data-mechanic-target="${token}" data-mechanic-value="${rotation}" aria-label="旋转${labels[token]}"><i aria-hidden="true"></i><small>${labels[token]}</small></button>`
-    }).join('')}</div>`
+    }).join('')}<button class="circuit-breaker" data-action="mechanic-submit" aria-label="下压配电箱保护开关"><i aria-hidden="true"></i><span>保护开关</span></button></div>`
   }
 
   #memory(progress: TrialMechanicProgress): string {
@@ -100,17 +95,20 @@ export class TrialMechanicPanel {
     const visual = type === 'waveform-tuning'
       ? `<div class="mechanic-visual waveform-board">${definition.tokens.map((token) => `<i style="--wave-offset:${Number(progress.values[token] ?? defaults[token])}%"></i>`).join('')}</div>`
       : `<div class="mechanic-visual attitude-board"><span class="horizon" style="--pitch:${Number(progress.values.pitch ?? 22)};--roll:${Number(progress.values.roll ?? 78)}"></span><i class="safe-band"></i></div>`
+    const physicalLock = type === 'waveform-tuning'
+      ? '<button class="signal-lock-lever" data-action="mechanic-submit" aria-label="下压通讯台波形锁定拨杆"><i aria-hidden="true"></i><span>锁定波形</span></button>'
+      : '<button class="attitude-lock-yoke" data-action="mechanic-submit" aria-label="按下姿态台着陆锁定键"><i aria-hidden="true"></i><span>锁定姿态</span></button>'
     return `${visual}<div class="mechanic-controls">${definition.tokens.map((token) => {
       const value = Number(progress.values[token] ?? defaults[token])
       return `<label class="mechanic-slider"><span>${labels[token] ?? token}</span><input type="range" min="0" max="100" value="${value}" data-mechanic-range="${token}" aria-label="调整${labels[token] ?? token}"><output>${value}</output></label>`
-    }).join('')}</div>`
+    }).join('')}${physicalLock}</div>`
   }
 
   #pulse(progress: TrialMechanicProgress): string {
     return `<div class="mechanic-visual pulse-wave-board" aria-label="三格脉冲波形调节">${TRIAL_MECHANICS['pattern-decode'].tokens.map((token) => {
       const value = Number(progress.values[token] ?? 1)
       return `<label class="pulse-cell"><span>${labels[token]}</span><i style="--pulse-height:${value}" aria-hidden="true"></i><input type="range" min="1" max="4" step="1" value="${value}" data-mechanic-range="${token}" aria-label="调整${labels[token]}回波层数"><output>${value}</output></label>`
-    }).join('')}</div>`
+    }).join('')}<button class="pulse-sample-lever" data-action="mechanic-submit" aria-label="拉下废弃屏幕取样拨杆"><i aria-hidden="true"></i><span>封存取样</span></button></div>`
   }
 
   #crane(progress: TrialMechanicProgress): string {

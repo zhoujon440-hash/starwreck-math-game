@@ -32,7 +32,7 @@ export const TRIAL_MECHANICS: Readonly<Record<TrialMechanicType, TrialMechanicDe
   },
   'task-order': {
     type: 'task-order', title: '任务依赖排序',
-    instruction: '把三张任务卡拖到时间线槽位，调整完成后统一提交依赖顺序。',
+    instruction: '把三张实体任务卡直接拖到中控桌的时间线槽位；正确顺序形成后设备会立即归档。',
     tokens: ['repress', 'pressure', 'patch'],
     targetPlacements: { pressure: 'timeline-1', patch: 'timeline-2', repress: 'timeline-3' },
   },
@@ -67,7 +67,7 @@ export const TRIAL_MECHANICS: Readonly<Record<TrialMechanicType, TrialMechanicDe
   },
   'pattern-decode': {
     type: 'pattern-decode', title: '脉冲规律解码',
-    instruction: '调节三格脉冲的回波层数，让波峰与背景节拍吻合后提交取样。',
+    instruction: '调节废弃屏幕上的三格回波层数；波峰全部吻合时取样器会自动封存。',
     tokens: ['pulse-1', 'pulse-2', 'pulse-3'], targetValues: { 'pulse-1': 3, 'pulse-2': 2, 'pulse-3': 3 },
   },
   'crane-counterweight': {
@@ -78,7 +78,7 @@ export const TRIAL_MECHANICS: Readonly<Record<TrialMechanicType, TrialMechanicDe
   },
   'borrow-use-return': {
     type: 'borrow-use-return', title: '借用档案逻辑配对',
-    instruction: '把六张实体记录卡拖到对应物件的借出、用途与归还位置，再核对闭环。',
+    instruction: '把六张实体记录卡拖到旧屏幕墙对应的借出、用途与归还卡槽；闭环形成后自动恢复档案。',
     tokens: ['borrow-heater', 'use-heater', 'return-heater', 'borrow-screen', 'use-screen', 'return-screen'],
     targetPlacements: {
       'borrow-heater': 'heater-borrow', 'use-heater': 'heater-use', 'return-heater': 'heater-return',
@@ -149,24 +149,30 @@ export const applyTrialMechanicAction = (
       ? 3
       : definition.type === 'pattern-decode' ? 4 : 100
     next.values[action.target] = Math.max(0, Math.min(maximum, Math.round(action.value)))
-    next.status = 'partial'
+    next.status = valuesComplete(definition, next) && placementsComplete(definition, next)
+      ? 'complete'
+      : 'partial'
     return next
   }
 
   if (action.kind === 'rotate' && action.target && definition.targetValues?.[action.target] !== undefined) {
     next.values[action.target] = (Number(next.values[action.target] ?? 0) + 1) % 4
-    next.status = 'partial'
+    next.status = valuesComplete(definition, next) && placementsComplete(definition, next)
+      ? 'complete'
+      : 'partial'
     return next
   }
 
   if (action.kind === 'place' && action.target && action.slot && definition.targetPlacements?.[action.target]) {
-    if (!Object.values(definition.targetPlacements).includes(action.slot)) return markError(next)
+    if (definition.targetPlacements[action.target] !== action.slot) return markError(next)
     for (const token of definition.tokens) {
       if (token !== action.target && next.values[`place:${token}`] === action.slot) delete next.values[`place:${token}`]
     }
     next.values[`place:${action.target}`] = action.slot
     next.confirmedSteps = definition.tokens.filter((token) => Boolean(next.values[`place:${token}`]))
-    next.status = 'partial'
+    next.status = valuesComplete(definition, next) && placementsComplete(definition, next)
+      ? 'complete'
+      : 'partial'
     return next
   }
 

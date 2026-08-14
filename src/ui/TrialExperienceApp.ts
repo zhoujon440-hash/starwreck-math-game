@@ -323,7 +323,7 @@ export class TrialExperienceApp {
     this.#unlockToastTimer = window.setTimeout(() => {
       this.#unlockToastTimer = undefined
       if (!this.#libraryOverlay && !this.#activeCard) host.innerHTML = ''
-    }, 2_600)
+    }, 10_000)
   }
 
   #showItemCard(itemId: string, firstPickup: boolean): void {

@@ -18,7 +18,7 @@ const presentation = (
 export const SCENE_PRESENTATIONS: readonly ScenePresentation[] = [
   presentation(
     'SCN-G01-00',
-    { id: 'distribution-box', label: '配电箱', area: { x: 64, y: 30, width: 20, height: 37 }, focus: { x: 70, y: 45, scale: 1.85 }, interaction: 'mechanic' },
+    { id: 'distribution-box', label: '配电箱', area: { x: 50, y: 31, width: 20, height: 31 }, focus: { x: 59, y: 46, scale: 1.9 }, interaction: 'mechanic' },
     { initial: '应急电路熄灭', partial: '保险丝与接点正在恢复', complete: '电路接通，舱灯恢复', effect: 'power' },
   ),
   presentation(
