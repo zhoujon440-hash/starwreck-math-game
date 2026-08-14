@@ -389,7 +389,7 @@ describe('G02 vertical slice runtime', () => {
     },
   )
 
-  it('makes the SCN00 level-three hint calibrate one control without completing the scan', () => {
+  it('makes the SCN00 level-three hint decode one pattern step without completing the scan', () => {
     const engine = enterScn00()
     expect(engine.inspect('HS-G02-0001').ok).toBe(true)
     expect(engine.inspect('HS-G02-0002').ok).toBe(true)
@@ -401,9 +401,11 @@ describe('G02 vertical slice runtime', () => {
       'RUNTIME-HINT-G02-00-3',
     ])
     expect(engine.completeHintStep(hints[2]!).ok).toBe(true)
-    expect(engine.snapshot.puzzleProgress.g02_pulse_interval).toBe(3)
-    expect(engine.snapshot.puzzleProgress.g02_pulse_gain).toBeUndefined()
-    expect(engine.snapshot.puzzleProgress.g02_pulse_window).toBeUndefined()
+    expect(engine.snapshot.mechanicProgress['RUNTIME-PUZ-G02-PULSE-SCAN']).toMatchObject({
+      status: 'partial',
+      confirmedSteps: [],
+      values: { 'pulse-1': 3 },
+    })
     expect(engine.snapshot.completedPuzzleIds).not.toContain('RUNTIME-PUZ-G02-PULSE-SCAN')
     expect(engine.snapshot.transitionLog.length).toBe(before)
     expect(engine.snapshot.sceneState).toBe('S2')

@@ -1,6 +1,9 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { expect, type Page, test, type TestInfo } from '@playwright/test'
+import { dragInventoryItem, dragWithMouse } from './helpers/reliable-drag'
+import { enterTrialRuntime } from './helpers/trial-entry'
+import { solveTrialMechanic } from './helpers/trial-mechanics'
 
 const cabinetItemHotspots = [
   ['ITM-G01-002', 'HOS-G01-001-01'],
@@ -51,6 +54,7 @@ const resetAndStart = async (page: Page): Promise<void> => {
   await page.goto('/')
   await page.evaluate(() => window.localStorage.clear())
   await page.reload()
+  await enterTrialRuntime(page)
   await page.getByRole('button', { name: '开始搜寻' }).click()
 }
 
@@ -355,6 +359,7 @@ test('visual acceptance covers calibrated layers, disappearance and browser relo
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
   await expectHudDoesNotCover(page, 'HS-G01-0005')
   await clickHotspotCenter(page, 'HS-G01-0005')
+  await solveTrialMechanic(page, 'rotating-circuit')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S5/)
 
   await page.reload()
@@ -369,7 +374,7 @@ test('visual acceptance covers calibrated layers, disappearance and browser relo
 
   await clickHotspotCenter(page, 'HS-G01-0006')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S6/)
-  await expect(page.getByRole('heading', { name: '继续寻找七码' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '继续寻找受损导航设备' })).toBeVisible()
   await expectProductionUi(page)
   await expectWorldStarCoreCountZero(page)
   await captureAcceptance(page, testInfo, '07-production-ui-no-dev-copy.png')
@@ -384,11 +389,11 @@ test('desktop drag keeps a wrongly dropped fuse and advances on the correct targ
   await reachS3(page)
 
   const fuse = page.locator('[data-inventory-item="ITM-G01-002"]')
-  await fuse.dragTo(page.locator('[data-drop-target="HS-G01-0002"]'))
+  await dragWithMouse(page, fuse, page.locator('[data-drop-target="HS-G01-0002"]'))
   await expect(page.locator('.game-shell')).toHaveClass(/state-S3/)
   await expect(fuse).toBeVisible()
 
-  await fuse.dragTo(page.locator('[data-drop-target="HS-G01-0004"]'))
+  await dragInventoryItem(page, 'ITM-G01-002', 'HS-G01-0004')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S4/)
   await expect(page.locator('[data-inventory-item="ITM-G01-002"]')).toHaveCount(0)
   expect(browserErrors).toEqual([])

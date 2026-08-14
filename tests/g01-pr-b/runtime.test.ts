@@ -231,8 +231,9 @@ describe('G01 PR-B runtime', () => {
     const s3 = new GameEngine(G01, new MemorySaveRepository())
     advanceScn04(s3, 'S3')
     expect(s3.completeHintStep(levelThreeHint(s3)).ok).toBe(true)
-    expect(s3.snapshot.sceneState).toBe('S4')
-    expect(s3.snapshot.completedPuzzleIds).toContain('TUT-MECH-002')
+    expect(s3.snapshot.sceneState).toBe('S3')
+    expect(s3.snapshot.mechanicProgress['TUT-MECH-002'].status).toBe('partial')
+    expect(s3.snapshot.mechanicProgress['TUT-MECH-002'].confirmedSteps).toHaveLength(1)
   })
 
   it.each(['S0', 'S1', 'S2', 'S3', 'S4', 'S5'] as const)(
@@ -250,7 +251,12 @@ describe('G01 PR-B runtime', () => {
       const before = engine.snapshot.sceneState
       expect(before).toBe(stage)
       expect(engine.completeHintStep(levelThreeHint(engine)).ok).toBe(true)
-      expect(engine.snapshot.sceneState).toBe(`S${Number(stage.slice(1)) + 1}`)
+      if (stage === 'S4') {
+        expect(engine.snapshot.sceneState).toBe('S4')
+        expect(engine.snapshot.mechanicProgress['RUNTIME-PUZ-G01-GARBAGE-ROUTE'].confirmedSteps).toHaveLength(1)
+      } else {
+        expect(engine.snapshot.sceneState).toBe(`S${Number(stage.slice(1)) + 1}`)
+      }
     },
   )
 

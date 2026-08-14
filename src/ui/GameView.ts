@@ -1,6 +1,5 @@
 import { InventoryDragCoordinator } from '../game/drag'
 import type { GameEngine } from '../game/engine'
-import { sceneStateOrder } from '../game/engine'
 import hosManifest from '../../data/source/g01/scn-g01-01/hos_manifest.json'
 import scn02Art from '../../data/source/g01/pr-a/scn-g01-02-art-manifest.json'
 import scn03Art from '../../data/source/g01/pr-a/scn-g01-03-art-manifest.json'
@@ -11,7 +10,11 @@ import { CharacterPortrait } from '../components/characters/CharacterPortrait'
 import { characterData } from '../data/characters'
 import { G01_DIALOGUE } from '../data/dialogue/g01'
 import { G02_DIALOGUE } from '../data/dialogue/g02'
+import { presentIdentityMarkup } from '../data/dialogue/presentation'
 import { g02HintById } from '../data/hints/g02'
+import { PLAYER_SCENE_IDS, SCENE_EXPERIENCES, sceneExperience } from '../data/trial/sceneExperiences'
+import { scenePresentation, sceneWorldVisualState } from '../data/trial/scenePresentation'
+import { characterNarrativelyRevealed } from '../data/trial/characterReveal'
 import { DialogueDataLoader } from '../services/DialogueDataLoader'
 import { DialogueRunner } from '../services/DialogueRunner'
 import type {
@@ -21,6 +24,11 @@ import type {
   HotspotDefinition,
   ItemDefinition,
 } from '../game/types'
+import { TrialMechanicPanel } from './TrialMechanicPanel'
+import type { TrialMechanicAction } from '../game/minigames/trialMechanics'
+import { GameStage } from '../game-scene/GameStage'
+import { SceneCamera } from '../game-scene/SceneCamera'
+import { SceneHud } from '../game-scene/SceneHud'
 
 const escapeHtml = (value: string): string =>
   value.replace(
@@ -50,10 +58,22 @@ const itemById = (items: ItemDefinition[], itemId: string): ItemDefinition | und
 const PLAYER_SCENE_TITLE = '拾光号熄灯'
 const HINT_COOLDOWN_MS = 1_500
 
+export type GameViewOptions = {
+  onReturnToTitle?: () => void
+  onOpenArchive?: () => void
+  onOpenSettings?: () => void
+  onViewItem?: (itemId: string) => void
+  onRequestG02Recap?: () => boolean
+}
+
 export class GameView {
   readonly #drag: InventoryDragCoordinator
   readonly #dialogueRunner: DialogueRunner
   readonly #portrait = new CharacterPortrait()
+  readonly #trialMechanic = new TrialMechanicPanel()
+  readonly #gameStage = new GameStage()
+  readonly #sceneCamera = new SceneCamera()
+  readonly #sceneHud = new SceneHud()
   #session: GameSession
   #selectedItemId: string | null = null
   #cabinetOpen = false
@@ -65,21 +85,23 @@ export class GameView {
   #profileOpen = false
   #journalOpen = false
   #menuOpen = false
+  #mapOpen = false
   #puzzleOpen = false
   #activeZoomId: string | null = null
   #pendingZoomId: string | null = null
   #toast = ''
   #toastTimer: number | undefined
   #hintTimer: number | undefined
-  #bootTimer: number | undefined
   #recoveryDialogueTimer: number | undefined
   #cargoDangerTimer: number | undefined
   #routeWindowTimer: number | undefined
+  #cameraReturnTimer: number | undefined
   #unsubscribe: (() => void) | undefined
 
   constructor(
     private readonly root: HTMLElement,
     private readonly engine: GameEngine,
+    private readonly options: GameViewOptions = {},
   ) {
     this.#session = engine.snapshot
     this.#dialogueRunner = new DialogueRunner(
@@ -93,16 +115,31 @@ export class GameView {
       ) {
         const result = this.engine.assignG02ResourceLabel(itemId, targetId)
         this.#handleResult(result)
-        return
+        return result.ok
       }
-      this.#useItem(itemId, targetId)
+      return this.#useItem(itemId, targetId)
     })
     root.addEventListener('click', this.#handleClick)
+    root.addEventListener('change', this.#handleMechanicChange)
+    root.addEventListener('dragstart', this.#handleMechanicDragStart)
+    root.addEventListener('dragover', this.#handleMechanicDragOver)
+    root.addEventListener('drop', this.#handleMechanicDrop)
   }
 
   mount(): void {
     this.#unsubscribe = this.engine.subscribe((session) => {
+      const previousSceneId = this.#session.currentSceneId
       this.#session = session
+      if (previousSceneId !== session.currentSceneId) {
+        if (this.#cameraReturnTimer) {
+          window.clearTimeout(this.#cameraReturnTimer)
+          this.#cameraReturnTimer = undefined
+        }
+        this.#sceneCamera.returnToScene()
+        this.#activeZoomId = null
+        this.#cabinetOpen = false
+        this.#puzzleOpen = false
+      }
       if (
         session.currentSceneId === 'SCN-G01-00' &&
         session.sceneState !== 'S2'
@@ -117,7 +154,8 @@ export class GameView {
       }
       if (
         session.currentSceneId === 'SCN-G01-01' &&
-        session.sceneState !== 'S3'
+        !['S3', 'S5'].includes(session.sceneState) &&
+        this.#activeZoomId !== 'PUZ-G01-QIMA-BOOT'
       ) {
         this.#puzzleOpen = false
       }
@@ -139,16 +177,34 @@ export class GameView {
     this.#unsubscribe?.()
     this.#drag.destroy()
     this.root.removeEventListener('click', this.#handleClick)
+    this.root.removeEventListener('change', this.#handleMechanicChange)
+    this.root.removeEventListener('dragstart', this.#handleMechanicDragStart)
+    this.root.removeEventListener('dragover', this.#handleMechanicDragOver)
+    this.root.removeEventListener('drop', this.#handleMechanicDrop)
     if (this.#toastTimer) window.clearTimeout(this.#toastTimer)
     if (this.#hintTimer) window.clearTimeout(this.#hintTimer)
-    if (this.#bootTimer) window.clearTimeout(this.#bootTimer)
     if (this.#recoveryDialogueTimer) window.clearTimeout(this.#recoveryDialogueTimer)
     if (this.#cargoDangerTimer) window.clearTimeout(this.#cargoDangerTimer)
     if (this.#routeWindowTimer) window.clearTimeout(this.#routeWindowTimer)
+    if (this.#cameraReturnTimer) window.clearTimeout(this.#cameraReturnTimer)
+  }
+
+  enterG02Slice(): void {
+    const result = this.engine.enterScene('SCN-G02-00')
+    this.#handleResult(result)
+    if (result.ok) this.#dialogueRunner.startTrigger('SCN-G02-00', '无')
   }
 
   #render(): void {
     const scene = this.engine.currentSceneDefinition
+    const experience = sceneExperience(scene.id)
+    const mainlineExperience = sceneExperience(this.#session.mainlineSceneId)
+    const revisiting = Boolean(experience && scene.id !== this.#session.mainlineSceneId)
+    const revealedMissionGoal =
+      scene.id === 'SCN-G01-01' &&
+      this.#session.flags.qima_current_mission_issued === true
+        ? '前往中控台，找回船上第一张维修任务单。'
+        : null
     const isScn00 = scene.id === 'SCN-G01-00'
     const isScn01 = scene.id === 'SCN-G01-01'
     const isScn02 = scene.id === 'SCN-G01-02'
@@ -189,7 +245,12 @@ export class GameView {
         }
       : scene.states[this.#session.sceneState]
     const activeHotspots = this.engine.activeHotspots()
-    const sceneHotspots = activeHotspots.filter((hotspot) => hotspot.scope !== 'zoom')
+    const mechanicHotspot = experience
+      ? activeHotspots.find((hotspot) => hotspot.scope !== 'zoom' && hotspot.zoomId === experience.mechanicId)
+      : undefined
+    const sceneHotspots = activeHotspots.filter(
+      (hotspot) => hotspot.scope !== 'zoom' && hotspot.id !== mechanicHotspot?.id,
+    )
     const inventoryItems = this.#session.inventoryItemIds
       .map((itemId) => itemById(this.engine.allItems, itemId))
       .filter((item): item is ItemDefinition => Boolean(item))
@@ -207,57 +268,32 @@ export class GameView {
       isScn00 && ['S0', 'S1'].includes(this.#session.sceneState)
         ? '/assets/g01-cockpit-cabinet-closed-v2.png'
         : scene.art
+    const presentation = scenePresentation(scene.id)
+    const worldVisualState = presentation
+      ? sceneWorldVisualState(this.#session, presentation)
+      : 'initial'
+    const mechanicAvailable = Boolean(
+      experience &&
+      (this.#activeZoomId === experience.mechanicId ||
+        activeHotspots.some((hotspot) => hotspot.zoomId === experience.mechanicId)),
+    )
+    const stageObjective = revisiting
+      ? (mainlineExperience?.stepByState[this.#session.sceneState] ?? mainlineExperience?.mainGoal ?? state.objective)
+      : (revealedMissionGoal ?? experience?.stepByState[this.#session.sceneState] ?? state.objective)
 
-    this.root.innerHTML = this.#withBaseAssets(`
+    this.root.innerHTML = presentIdentityMarkup(this.#session, this.#withBaseAssets(`
       <main
-        class="game-shell state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery || isPrCRecovery || isG02Recovery ? 'is-cargo-safe-recovery' : ''}"
+        class="game-shell has-game-stage state-${this.#session.sceneState} scene-${scene.id.toLowerCase()} ${isCargoRecovery || isPrBRecovery || isPrCRecovery || isG02Recovery ? 'is-cargo-safe-recovery' : ''}"
         data-debug-ui="${DEBUG_UI}"
         data-scene-id="${scene.id}"
         data-runtime-node-id="${escapeHtml(this.#session.activeRuntimeNodeId ?? 'scene-active')}"
         data-cabinet-visual-state="${cabinetVisualState}"
+        data-camera-mode="${this.#sceneCamera.mode}"
+        data-world-visual-state="${worldVisualState}"
       >
-        <header class="topbar">
-          <div class="brand-lockup">
-            <span class="brand-mark" aria-hidden="true">✦</span>
-            <div>
-              <p>星骸拾荒者：十二星门</p>
-              <span>${
-                isG02Scene || isG02ReadOnly || isG02Boundary
-                  ? '第二章 · 锈环星旧屏幕谷'
-                  : `序章 · ${escapeHtml(this.engine.chapter.title)}`
-              }</span>
-            </div>
-          </div>
-
-          <div class="state-readout" aria-label="场景进度">
-            ${DEBUG_UI ? `<span class="state-code">${this.#session.sceneState}</span>` : ''}
-            <div>
-              <strong>${escapeHtml(state.title)}</strong>
-              <div class="state-track" aria-hidden="true">
-                ${sceneStateOrder
-                  .map(
-                    (stateId) =>
-                      `<i class="${sceneStateOrder.indexOf(stateId) <= sceneStateOrder.indexOf(this.#session.sceneState) ? 'is-complete' : ''}"></i>`,
-                  )
-                  .join('')}
-              </div>
-            </div>
-          </div>
-
-          <div class="save-status" title="进度会自动保存在此设备">
-            <i aria-hidden="true"></i>
-            <span>${DEBUG_UI ? `已自动保存 · schema v${this.#session.schemaVersion}` : '已自动保存'}</span>
-          </div>
-          <nav class="story-tools" aria-label="剧情工具">
-            <button data-action="open-menu">主菜单</button>
-            <button data-action="open-journal">任务与证据</button>
-            <button data-action="open-history">对话历史</button>
-            <button data-action="open-profile">角色档案</button>
-          </nav>
-        </header>
-
-        <section class="scene-frame" aria-label="${escapeHtml(scene.title)}">
-          <div class="scene-canvas" data-scene-canvas>
+        <section class="scene-frame game-stage camera-${this.#sceneCamera.mode}" aria-label="${escapeHtml(scene.title)}" data-game-stage="${escapeHtml(scene.id)}" data-camera-mode="${this.#sceneCamera.mode}" data-camera-target="${escapeHtml(this.#sceneCamera.targetId ?? 'scene')}" data-world-visual-state="${worldVisualState}" style="${this.#sceneCamera.style()}">
+          <div class="scene-canvas game-stage-viewport" data-scene-canvas data-stage-layer="background">
+            <div class="game-stage-world-plane" data-stage-layer="world">
             <div
               class="scene-art"
               style="background-image:url('${sceneArt}')"
@@ -287,6 +323,7 @@ export class GameView {
             ${isScn04 || isScn05 ? this.#prBSceneLayersTemplate() : ''}
             ${isScn06 || isScn07 || isG02Boundary ? this.#prCSceneLayersTemplate() : ''}
             ${isG02Scene || isG02ReadOnly ? this.#g02SceneLayersTemplate() : ''}
+            ${this.#gameStage.runtimeLayer(this.#session, presentation, worldVisualState, this.#sceneCamera, mechanicAvailable, experience?.mechanicId, mechanicHotspot?.id, mechanicHotspot?.ariaLabel)}
             <div class="scene-treatment" aria-hidden="true"></div>
             <div class="foreground-layer" aria-hidden="true"></div>
             ${this.#collectibleLayersTemplate('scene')}
@@ -295,12 +332,29 @@ export class GameView {
               ${sceneHotspots.map((hotspot) => this.#hotspotTemplate(hotspot)).join('')}
               ${this.#sceneUtilityTargetsTemplate()}
             </div>
+            </div>
+            ${this.#cabinetOpen || this.#puzzleOpen
+              ? `<div class="game-stage-focus" data-stage-layer="mechanic" data-focus-kind="${this.#puzzleOpen ? 'mechanic' : 'focus'}">${this.#cabinetOpen ? this.#activeZoomTemplate() : ''}${this.#puzzleOpen ? this.#activePuzzleTemplate() : ''}</div>`
+              : ''}
           </div>
 
-          <aside class="objective-card">
-            <span>当前目标 · ${DEBUG_UI ? escapeHtml(scene.id) : escapeHtml(isScn00 ? PLAYER_SCENE_TITLE : scene.playerTitle)}</span>
-            <strong>${escapeHtml(state.objective)}</strong>
-            <p>${escapeHtml(state.narrative)}</p>
+          ${this.#sceneHud.render({
+            chapterLabel: isG02Scene || isG02ReadOnly || isG02Boundary
+              ? '第二章 · 锈环星旧屏幕谷'
+              : `序章 · ${this.engine.chapter.title}`,
+            sceneTitle: experience?.title ?? scene.playerTitle,
+            objective: stageObjective,
+            revisiting,
+            mainlineTitle: mainlineExperience?.title,
+            showReturnToTask: revisiting,
+            previousAvailable: PLAYER_SCENE_IDS.indexOf(scene.id) > 0,
+          })}
+
+          <aside class="objective-card task-strip legacy-objective-card" aria-hidden="true" data-task-scene="${escapeHtml(this.#session.mainlineSceneId)}" data-viewed-scene="${escapeHtml(scene.id)}">
+            <span>${revisiting ? '回访场景' : '当前任务'} · ${escapeHtml(experience?.title ?? (isScn00 ? PLAYER_SCENE_TITLE : scene.playerTitle))}</span>
+            <strong>${escapeHtml(revisiting ? (mainlineExperience?.mainGoal ?? state.objective) : (revealedMissionGoal ?? experience?.mainGoal ?? state.objective))}</strong>
+            <p><b>当前步骤：</b>${escapeHtml(experience?.stepByState[this.#session.sceneState] ?? state.objective)}</p>
+            <small>${revisiting ? `主线仍在“${escapeHtml(mainlineExperience?.title ?? this.#session.mainlineSceneId)}”，回访不会改变进度。` : `${escapeHtml(state.narrative)} · 本关机关：${escapeHtml(experience?.mechanicName ?? '场景互动')}`}</small>
           </aside>
 
           ${
@@ -641,12 +695,11 @@ export class GameView {
           </footer>
         </section>
 
-        ${this.#cabinetOpen ? this.#activeZoomTemplate() : ''}
-        ${this.#puzzleOpen ? this.#activePuzzleTemplate() : ''}
         ${this.#historyOpen ? this.#historyTemplate() : ''}
         ${this.#profileOpen ? this.#profileTemplate() : ''}
         ${this.#journalOpen ? this.#journalTemplate() : ''}
         ${this.#menuOpen ? this.#menuTemplate() : ''}
+        ${this.#mapOpen ? this.#sceneMapTemplate() : ''}
 
         <div class="toast ${this.#toast ? 'is-visible' : ''}" role="status" aria-live="polite">
           ${escapeHtml(this.#toast)}
@@ -658,13 +711,7 @@ export class GameView {
           <p>横屏能保留完整的场景细节与背包操作区。</p>
         </div>
       </main>
-    `)
-    if (isScn01 && this.#session.sceneState === 'S5') {
-      this.#scheduleBootSequence()
-    } else if (this.#bootTimer) {
-      window.clearTimeout(this.#bootTimer)
-      this.#bootTimer = undefined
-    }
+    `))
     if (
       isScn01 &&
       this.#session.sceneState === 'S6' &&
@@ -779,7 +826,7 @@ export class GameView {
       return `
         <button
           class="scene-hotspot danger-soft-fail-hotspot"
-          style="left:73%;top:5%;width:10%;height:15%"
+          style="left:73%;top:12%;width:10%;height:13%"
           data-action="trigger-cargo-soft-fail"
           aria-label="在氧压临界时继续检查裂口"
         ><span class="sr-only">触发氧压临界安全回退</span></button>
@@ -848,20 +895,23 @@ export class GameView {
       ? `<img class="inventory-art" src="${item.inventoryIcon}" alt="">`
       : '<i class="inventory-art" aria-hidden="true"></i>'
     return `
-      <button
-        class="inventory-item ${this.#selectedItemId === item.id ? 'is-selected' : ''}"
-        draggable="true"
-        data-action="select-item"
-        data-inventory-item="${item.id}"
-        style="${cropStyle}"
-        aria-pressed="${this.#selectedItemId === item.id}"
-      >
-        ${artwork}
-        <span>
-          <strong>${escapeHtml(item.name)}</strong>
-          <small>${escapeHtml(item.description)}</small>
-        </span>
-      </button>
+      <div class="inventory-entry">
+        <button
+          class="inventory-item ${this.#selectedItemId === item.id ? 'is-selected' : ''}"
+          draggable="true"
+          data-action="select-item"
+          data-inventory-item="${item.id}"
+          style="${cropStyle}"
+          aria-pressed="${this.#selectedItemId === item.id}"
+        >
+          ${artwork}
+          <span>
+            <strong>${escapeHtml(item.name)}</strong>
+            <small>${escapeHtml(item.description)}</small>
+          </span>
+        </button>
+        <button class="inventory-detail-button" data-action="item-details" data-item-id="${item.id}" aria-label="查看${escapeHtml(item.name)}详情">详情</button>
+      </div>
     `
   }
 
@@ -952,6 +1002,10 @@ export class GameView {
   }
 
   #activePuzzleTemplate(): string {
+    const experience = sceneExperience(this.#session.currentSceneId)
+    if (experience && this.#activeZoomId === experience.mechanicId) {
+      return this.#trialMechanic.render(this.#session)
+    }
     if (this.#activeZoomId === 'RUNTIME-PUZ-G02-PULSE-SCAN') {
       return this.#g02PulsePuzzleTemplate()
     }
@@ -1998,34 +2052,6 @@ export class GameView {
     }, 250)
   }
 
-  #scheduleBootSequence(): void {
-    if (this.#bootTimer) return
-    this.#bootTimer = window.setTimeout(() => {
-      this.#bootTimer = undefined
-      if (
-        this.#session.currentSceneId !== 'SCN-G01-01' ||
-        this.#session.sceneState !== 'S5'
-      ) {
-        return
-      }
-      const result = this.engine.completePuzzle('PUZ-G01-QIMA-BOOT')
-      if (!result.ok) {
-        this.#handleResult(result)
-        return
-      }
-      this.engine.updateStory((draft) => {
-        draft.characterStates['CHAR-QIMA'] = 'normal'
-        draft.flags.g01_scn01_complete = true
-        draft.flags.g01_qima_online = true
-        draft.flags.world_star_core_count = 0
-        draft.characterDiscoveries['CHAR-QIMA'] = [
-          '在导航核心舱完成离线、受损、启动中到正常的恢复',
-          '启动记录显示离线四分十二秒',
-        ]
-      })
-    }, 3_200)
-  }
-
   #scheduleRecoveryDialogue(): void {
     if (this.#recoveryDialogueTimer) return
     this.#recoveryDialogueTimer = window.setTimeout(() => {
@@ -2038,6 +2064,89 @@ export class GameView {
         this.#dialogueRunner.start('DLG-G01-0004')
       }
     }, 700)
+  }
+
+  #focusStage(targetId: string | null, mechanic: boolean): void {
+    const entry = scenePresentation(this.#session.currentSceneId)
+    if (!entry || !targetId) return
+    if (this.#cameraReturnTimer) {
+      window.clearTimeout(this.#cameraReturnTimer)
+      this.#cameraReturnTimer = undefined
+    }
+    this.#sceneCamera.focusOn(targetId, entry.device.focus, mechanic)
+  }
+
+  #showWorldSuccess(closeFocus: boolean): void {
+    const completedTargetId = this.#activeZoomId
+    this.#sceneCamera.showSuccess()
+    if (this.#cameraReturnTimer) window.clearTimeout(this.#cameraReturnTimer)
+    this.#cameraReturnTimer = window.setTimeout(() => {
+      this.#cameraReturnTimer = undefined
+      if (closeFocus && this.#activeZoomId !== completedTargetId) return
+      if (closeFocus) {
+        this.#puzzleOpen = false
+        this.#cabinetOpen = false
+        this.#activeZoomId = null
+      }
+      this.#sceneCamera.returnToScene()
+      this.#render()
+    }, 3_500)
+  }
+
+  #performMechanic(action: TrialMechanicAction): ActionResult {
+    const sceneId = this.#session.currentSceneId
+    const experience = sceneExperience(sceneId)
+    this.#sceneCamera.showMechanic()
+    const result = this.engine.performTrialMechanic(action)
+    const completed = Boolean(
+      experience && this.engine.snapshot.completedPuzzleIds.includes(experience.mechanicId),
+    )
+    if (completed) {
+      this.#showWorldSuccess(true)
+      if (sceneId === 'SCN-G02-01') {
+        this.#dialogueRunner.startTrigger('SCN-G02-01', '救援完成')
+      } else if (sceneId === 'SCN-G02-02') {
+        this.#dialogueRunner.startTrigger('SCN-G02-02', '档案播放完成')
+      } else if (sceneId === 'SCN-G01-06') {
+        this.#dialogueRunner.startTrigger('SCN-G01-06', '波形解析')
+      }
+    }
+    this.#handleResult(result)
+    if (action.kind === 'place') {
+      const shell = this.root.querySelector<HTMLElement>('.game-shell')
+      if (shell) shell.dataset.dropFeedback = result.ok ? 'snap' : 'bounce'
+    }
+    return result
+  }
+
+  #handleMechanicChange = (event: Event): void => {
+    const input = (event.target as HTMLElement).closest<HTMLInputElement>('[data-mechanic-range]')
+    if (!input) return
+    const target = input.dataset.mechanicRange
+    if (!target) return
+    this.#performMechanic({ kind: 'set', target, value: Number(input.value) })
+  }
+
+  #handleMechanicDragStart = (event: DragEvent): void => {
+    const token = (event.target as HTMLElement).closest<HTMLElement>('[data-mechanic-draggable]')
+    const target = token?.dataset.mechanicTarget
+    if (!target || !event.dataTransfer) return
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('application/x-starwreck-mechanic', target)
+  }
+
+  #handleMechanicDragOver = (event: DragEvent): void => {
+    if ((event.target as HTMLElement).closest('[data-mechanic-dropzone]')) event.preventDefault()
+  }
+
+  #handleMechanicDrop = (event: DragEvent): void => {
+    const dropzone = (event.target as HTMLElement).closest<HTMLElement>('[data-mechanic-dropzone]')
+    if (!dropzone) return
+    const target = event.dataTransfer?.getData('application/x-starwreck-mechanic')
+    const slot = dropzone.dataset.mechanicDropzone
+    if (!target || !slot) return
+    event.preventDefault()
+    this.#performMechanic({ kind: 'place', target, slot })
   }
 
   #handleClick = (event: MouseEvent): void => {
@@ -2084,6 +2193,7 @@ export class GameView {
             this.#activeZoomId = this.#pendingZoomId
             this.#pendingZoomId = null
             this.#cabinetOpen = true
+            this.#focusStage(this.#activeZoomId, false)
             this.#render()
           }
           if (
@@ -2153,9 +2263,8 @@ export class GameView {
         this.#handleResult(this.engine.completeG01Handoff())
         break
       case 'enter-g02-slice': {
-        const result = this.engine.enterScene('SCN-G02-00')
-        this.#handleResult(result)
-        if (result.ok) this.#dialogueRunner.startTrigger('SCN-G02-00', '无')
+        if (this.options.onRequestG02Recap?.() === true) break
+        this.enterG02Slice()
         break
       }
       case 'open-menu':
@@ -2167,6 +2276,23 @@ export class GameView {
         this.#menuOpen = false
         this.#render()
         break
+      case 'return-title':
+        this.#menuOpen = false
+        this.options.onReturnToTitle?.()
+        break
+      case 'open-trial-archive':
+        this.#menuOpen = false
+        this.options.onOpenArchive?.()
+        break
+      case 'open-trial-settings':
+        this.#menuOpen = false
+        this.options.onOpenSettings?.()
+        break
+      case 'item-details': {
+        const itemId = actionElement.dataset.itemId
+        if (itemId) this.options.onViewItem?.(itemId)
+        break
+      }
       case 'open-journal':
         this.#journalOpen = true
         this.#render()
@@ -2204,6 +2330,7 @@ export class GameView {
         else this.#showToast('先从背包选择道具，或直接把道具拖到这里。')
         break
       }
+      case 'open-stage-mechanic':
       case 'open-cabinet':
         this.#activeZoomId = actionElement.dataset.zoomId ?? null
         if (
@@ -2217,22 +2344,73 @@ export class GameView {
             'RUNTIME-PUZ-G01-IMPACT-DAMPING',
             'RUNTIME-PUZ-G02-PULSE-SCAN',
             'RUNTIME-PUZ-G02-RESOURCE-CLASSIFICATION',
+            'RUNTIME-PUZ-G01-ROTATING-CIRCUIT',
+            'PUZ-G01-QIMA-BOOT',
+            'RUNTIME-PUZ-G01-GARBAGE-ROUTE',
+            'RUNTIME-PUZ-G02-CRANE-COUNTERWEIGHT',
+            'RUNTIME-PUZ-G02-BORROW-RETURN',
           ].includes(this.#activeZoomId ?? '')
         ) {
           this.#puzzleOpen = true
+          this.#focusStage(this.#activeZoomId, true)
         } else {
           this.#cabinetOpen = true
+          this.#focusStage(this.#activeZoomId, false)
         }
         this.#render()
         break
       case 'close-cabinet':
         this.#cabinetOpen = false
         this.#activeZoomId = null
+        this.#sceneCamera.returnToScene()
         this.#render()
         break
       case 'close-puzzle':
         this.#puzzleOpen = false
+        this.#activeZoomId = null
+        this.#sceneCamera.returnToScene()
         this.#render()
+        break
+      case 'mechanic-choose': {
+        const target = actionElement.dataset.mechanicTarget
+        if (target) this.#performMechanic({ kind: 'choose', target })
+        break
+      }
+      case 'mechanic-rotate': {
+        const target = actionElement.dataset.mechanicTarget
+        if (target) this.#performMechanic({ kind: 'rotate', target })
+        break
+      }
+      case 'mechanic-play':
+        this.#performMechanic({ kind: 'play' })
+        break
+      case 'mechanic-submit':
+        this.#performMechanic({ kind: 'submit' })
+        break
+      case 'open-map':
+        this.#mapOpen = true
+        this.#render()
+        break
+      case 'close-map':
+        this.#mapOpen = false
+        this.#render()
+        break
+      case 'visit-scene': {
+        const sceneId = actionElement.dataset.sceneId
+        if (sceneId) {
+          this.#mapOpen = false
+          this.#selectedItemId = null
+          this.#handleResult(this.engine.visitScene(sceneId))
+        }
+        break
+      }
+      case 'visit-previous':
+        this.#selectedItemId = null
+        this.#handleResult(this.engine.visitPreviousScene())
+        break
+      case 'return-current-task':
+        this.#selectedItemId = null
+        this.#handleResult(this.engine.returnToMainline())
         break
       case 'rotate-chip': {
         const rotation = (Number(this.#session.puzzleProgress.chip_rotation ?? 90) + 90) % 360
@@ -2584,7 +2762,7 @@ export class GameView {
     }
   }
 
-  #useItem(itemId: string, targetId: string): void {
+  #useItem(itemId: string, targetId: string): boolean {
     const result = this.engine.useItem(itemId, targetId)
     if (result.ok) {
       this.#selectedItemId = null
@@ -2650,6 +2828,7 @@ export class GameView {
       }
     }
     this.#handleResult(result)
+    return result.ok
   }
 
   #handleG02InspectDialogue(hotspotId: string): void {
@@ -2671,7 +2850,11 @@ export class GameView {
       return
     }
 
-    if (result.hotspot.scope === 'zoom') this.#cabinetOpen = true
+    if (result.hotspot.scope === 'zoom') {
+      this.#cabinetOpen = true
+      this.#activeZoomId = result.hotspot.zoomId ?? this.#activeZoomId
+      this.#focusStage(this.#activeZoomId, false)
+    }
     this.#hintAvailableAt = Date.now() + HINT_COOLDOWN_MS
     if (result.level >= 2) this.#hintedHotspotId = result.hotspot.id
     this.#render()
@@ -2735,6 +2918,8 @@ export class GameView {
         )
       } else if (result.hotspot.zoomId === 'PUZ-G01-CHIP-ORIENTATION') {
         this.#puzzleOpen = true
+        this.#activeZoomId = result.hotspot.zoomId
+        this.#focusStage(this.#activeZoomId, true)
         this.engine.updateStory((draft) => {
           draft.puzzleProgress.chip_rotation = 180
         })
@@ -2742,6 +2927,8 @@ export class GameView {
         result.hotspot.zoomId === 'RUNTIME-PUZ-G01-TASK-DEPENDENCY'
       ) {
         this.#puzzleOpen = true
+        this.#activeZoomId = result.hotspot.zoomId
+        this.#focusStage(this.#activeZoomId, true)
         this.engine.updateStory((draft) => {
           draft.puzzleProgress.task_dependency_step = Math.max(
             1,
@@ -2752,6 +2939,8 @@ export class GameView {
         result.hotspot.zoomId === 'RUNTIME-PUZ-G01-PRESSURE-CALIBRATION'
       ) {
         this.#puzzleOpen = true
+        this.#activeZoomId = result.hotspot.zoomId
+        this.#focusStage(this.#activeZoomId, true)
         this.engine.updateStory((draft) => {
           draft.puzzleProgress.pressure_calibration_step = Math.max(
             1,
@@ -2884,7 +3073,9 @@ export class GameView {
   }
 
   #profileTemplate(): string {
-    const unlocked = this.#session.unlockedCharacterIds
+    const unlocked = this.#session.unlockedCharacterIds.filter((characterId) =>
+      characterNarrativelyRevealed(characterId, this.#session),
+    )
       .map((characterId) => characterData.get(characterId))
     return `
       <div class="modal-backdrop" data-action="close-profile"></div>
@@ -2940,19 +3131,13 @@ export class GameView {
       this.#session.currentSceneId === 'G02-BOUNDARY' ||
       this.#session.currentSceneId.startsWith('SCN-G02-') ||
       this.#session.currentSceneId === 'RUNTIME-G02-ENERGY-SEARCH-BOUNDARY'
-    const tasks = [
-      ['恢复拾光号应急照明', this.#session.sceneStates['SCN-G01-00'] === 'S6'],
-      ['修复七码导航核心', this.#session.sceneStates['SCN-G01-01'] === 'S6'],
-      ['建立船上第一张任务单', this.#session.sceneStates['SCN-G01-02'] === 'S6'],
-      ['封堵漏气货舱', this.#session.sceneStates['SCN-G01-03'] === 'S6'],
-      ['补全星图缺口', this.#session.sceneStates['SCN-G01-04'] === 'S6'],
-      ['穿过垃圾雨航线', this.#session.sceneStates['SCN-G01-05'] === 'S6'],
-      ['锁定锈环星求救源', this.#session.sceneStates['SCN-G01-06'] === 'S6'],
-      ['抵达旧屏幕谷外缘', this.#session.flags.g01_scn07_complete === true],
-      ['扫描蓝色封存脉冲', this.#session.flags.g02_intro_scan_done === true],
-      ['救下阿铆并识别三类资源', this.#session.flags.g02_almao_rescued === true && Number(this.#session.flags.g02_resource_labels ?? 0) === 3],
-      ['恢复旧电视墙借用档案', this.#session.flags.g02_archive_restored === true],
-    ] as const
+    const mainlineOrder = Math.max(0, PLAYER_SCENE_IDS.indexOf(this.#session.mainlineSceneId))
+    const tasks = SCENE_EXPERIENCES.filter((entry) => entry.order <= mainlineOrder).map((entry) => ({
+      ...entry,
+      done: this.#session.completedSceneIds.includes(entry.sceneId) || this.#session.sceneStates[entry.sceneId] === 'S6',
+      active: entry.sceneId === this.#session.mainlineSceneId,
+      state: this.#session.sceneStates[entry.sceneId] ?? 'S0',
+    }))
     const evidence = [
       ['货舱漏气记录', this.#session.flags.g01_scn03_evidence_leak_confirmed === true],
       ['货舱测压读数', this.#session.flags.g01_scn03_evidence_pressure_reading === true],
@@ -2973,7 +3158,7 @@ export class GameView {
         </header>
         <div class="journal-grid">
           <article><h3>任务进度</h3><ol>${tasks
-            .map(([label, done]) => `<li class="${done ? 'is-complete' : ''}"><i></i>${escapeHtml(label)}<small>${done ? '完成' : '进行中'}</small></li>`)
+            .map((task) => `<li class="${task.done ? 'is-complete' : ''} ${task.active ? 'is-current' : ''}"><i></i><div><strong>${escapeHtml(task.title)}</strong><span>${escapeHtml(task.done ? task.completionResult : task.stepByState[task.state])}</span></div><small>${task.done ? '完成' : task.active ? '当前任务' : '可回访'}</small></li>`)
             .join('')}</ol></article>
           <article><h3>已取得证据</h3><ul>${evidence
             .filter(([, found]) => found)
@@ -2992,6 +3177,29 @@ export class GameView {
     `
   }
 
+  #sceneMapTemplate(): string {
+    const mainlineOrder = Math.max(0, PLAYER_SCENE_IDS.indexOf(this.#session.mainlineSceneId))
+    return `
+      <div class="modal-backdrop" data-action="close-map"></div>
+      <section class="story-modal scene-map-modal" role="dialog" aria-modal="true" aria-labelledby="scene-map-title">
+        <header><div><span>已解锁旅程</span><h2 id="scene-map-title">场景地图</h2></div><button class="icon-button" data-action="close-map" aria-label="关闭场景地图">×</button></header>
+        <p>可以回访已解锁场景；一次性物品、证据、对白和人物卡不会重复生成。</p>
+        <ol class="scene-map-route">
+          ${SCENE_EXPERIENCES.map((entry) => {
+            const unlocked = this.#session.unlockedSceneIds.includes(entry.sceneId)
+            const completed = this.#session.completedSceneIds.includes(entry.sceneId)
+            const currentTask = entry.sceneId === this.#session.mainlineSceneId
+            const viewing = entry.sceneId === this.#session.currentSceneId
+            return `<li class="${unlocked ? 'is-unlocked' : 'is-locked'} ${completed ? 'is-complete' : ''} ${currentTask ? 'is-current-task' : ''} ${viewing ? 'is-viewing' : ''}">
+              <span>${entry.order + 1}</span><div><strong>${escapeHtml(entry.title)}</strong><small>${currentTask ? '当前任务' : completed ? '已完成，可回访' : unlocked ? '已解锁' : entry.order > mainlineOrder ? '随剧情解锁' : '尚未开放'}</small></div>
+              <button data-action="visit-scene" data-scene-id="${entry.sceneId}" ${unlocked ? '' : 'disabled'}>${viewing ? '正在查看' : unlocked ? '前往' : '锁定'}</button>
+            </li>`
+          }).join('')}
+        </ol>
+        ${this.#session.currentSceneId !== this.#session.mainlineSceneId ? '<button class="primary-action" data-action="return-current-task">返回当前任务</button>' : ''}
+      </section>`
+  }
+
   #menuTemplate(): string {
     const isG02Context =
       this.#session.currentSceneId === 'G02-BOUNDARY' ||
@@ -3000,7 +3208,7 @@ export class GameView {
     return `
       <div class="modal-backdrop" data-action="close-menu"></div>
       <section class="story-modal demo-menu-modal" role="dialog" aria-modal="true" aria-labelledby="demo-menu-title">
-        <header><div><span class="eyebrow">${isG02Context ? 'G02 Slice · 0.1.0' : 'G01 Demo · 0.1.0'}</span><h2 id="demo-menu-title">${isG02Context ? '锈环星：旧屏幕谷' : '拾光号：坠落之前'}</h2></div>
+        <header><div><span class="eyebrow">本机旅程 · 0.2.0</span><h2 id="demo-menu-title">${isG02Context ? '锈环星：旧屏幕谷' : '拾光号：坠落之前'}</h2></div>
           <button class="icon-button" data-action="close-menu" aria-label="关闭主菜单">×</button>
         </header>
         <div class="demo-menu-copy">
@@ -3010,7 +3218,9 @@ export class GameView {
           <ul><li>进度会自动保存在本设备。</li><li>三级提示会完成当前合法步骤。</li><li>安装PWA后，首次完整加载完成即可离线继续。</li></ul>
           <div class="demo-menu-actions">
             <button class="primary-action" data-action="continue-game">继续游戏</button>
-            <button class="secondary-action" data-action="restart">开始新游戏并清除存档</button>
+            <button class="secondary-action" data-action="open-trial-archive">故事档案</button>
+            <button class="secondary-action" data-action="open-trial-settings">设置</button>
+            <button class="secondary-action" data-action="return-title">返回标题页</button>
           </div>
         </div>
       </section>

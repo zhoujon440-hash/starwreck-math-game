@@ -1,6 +1,9 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { dragInventoryItem, dragWithMouse } from './helpers/reliable-drag'
+import { enterTrialRuntime } from './helpers/trial-entry'
+import { solveTrialMechanic } from './helpers/trial-mechanics'
 
-test.use({ trace: 'on', video: 'on' })
+test.use({ trace: 'retain-on-failure', video: 'off' })
 
 const saveKey = 'starwreck:save:G01:v1'
 
@@ -104,9 +107,20 @@ const drag = async (
   itemId: string,
   targetId: string,
 ): Promise<void> => {
-  await page
-    .locator(`[data-inventory-item="${itemId}"]`)
-    .dragTo(page.locator(`[data-drop-target="${targetId}"]`))
+  await dragInventoryItem(page, itemId, targetId)
+}
+
+const assignResourceLabel = async (
+  page: Page,
+  labelId: string,
+  slotId: string,
+): Promise<void> => {
+  const label = page.locator(`[data-mechanism-item="${labelId}"]`)
+  const slot = page.locator(`[data-resource-slot="${slotId}"]`)
+  await dragWithMouse(page, label, slot, {
+    isComplete: async () => await slot.locator(`[data-mechanism-item="${labelId}"]`).count() > 0,
+  })
+  await expect(slot.locator(`[data-mechanism-item="${labelId}"]`)).toBeVisible()
 }
 
 const advanceDialogue = async (page: Page, count: number): Promise<void> => {
@@ -128,7 +142,7 @@ const waitForHintCooldown = async (page: Page): Promise<void> => {
 test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice', async ({
   page,
 }, info) => {
-  test.setTimeout(360_000)
+test.setTimeout(240_000)
   const consoleErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
@@ -137,6 +151,7 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
 
   await seedG01Handoff(page)
   await page.goto('/')
+  await enterTrialRuntime(page)
   await expect(page.locator('[data-scene-id="G02-BOUNDARY"]')).toBeVisible()
   await expect(page.getByRole('heading', { name: '旧屏幕谷外缘' })).toBeVisible()
   await capture(page, info, '00-g01-to-g02-handoff.png')
@@ -184,13 +199,13 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
     .getByRole('button', { name: '打开七码封存脉冲扫描近景' })
     .click()
   await expect(
-    page.getByRole('heading', { name: '封存脉冲取样窗' }),
+    page.getByRole('heading', { name: '脉冲规律解码' }),
   ).toBeVisible()
   await capture(page, info, '05a-scn00-pulse-initial.png')
-  await page.getByRole('button', { name: '封存当前取样' }).click()
-  await expect(page.locator('.toast')).toContainText('没有同步')
+  await page.locator('[data-action="mechanic-submit"]').click()
+  await expect(page.locator('[data-trial-mechanic="pattern-decode"]')).toHaveAttribute('data-mechanic-status', 'error')
   await capture(page, info, '05b-scn00-pulse-wrong-retained.png')
-  await page.getByRole('button', { name: '关闭封存脉冲取样' }).click()
+  await page.getByRole('button', { name: '关闭脉冲规律解码' }).click()
 
   await requestHint(page, '先在断卫星轴背风侧观察蓝色脉冲')
   await capture(page, info, '05c-scn00-hint-direction.png')
@@ -201,16 +216,13 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   await requestHint(page, '七码会把一个尚未校准的取样控制量调整到合法位置')
   await page.waitForTimeout(550)
   await page.getByRole('button', { name: '打开七码封存脉冲扫描近景' }).click()
-  await expect(page.locator('[data-pulse-control="interval"]')).toHaveAttribute('data-control-value', '3')
-  await expect(page.locator('[data-pulse-control="gain"]')).toHaveAttribute('data-control-value', '1')
-  await expect(page.locator('[data-pulse-control="window"]')).toHaveAttribute('data-control-value', '1')
+  await expect(page.locator('[data-trial-mechanic="pattern-decode"]')).toHaveAttribute('data-mechanic-status', 'partial')
+  await expect(page.locator('[data-mechanic-range="pulse-1"]')).toHaveValue('3')
   await capture(page, info, '05e-scn00-hint-one-control-only.png')
 
-  await page.getByRole('button', { name: '提高扫描增益' }).click()
-  await page.getByRole('button', { name: '延长取样窗口' }).click()
-  await page.getByRole('button', { name: '延长取样窗口' }).click()
+  await page.locator('[data-mechanic-range="pulse-2"]').fill('2')
   await capture(page, info, '05f-scn00-pulse-partial-calibration.png')
-  await page.getByRole('button', { name: '封存当前取样' }).click()
+  await solveTrialMechanic(page, 'pattern-decode')
   await expect(page.locator('.game-shell')).toHaveClass(/state-S3/)
   await capture(page, info, '05g-scn00-pulse-completed.png')
   await clickHotspot(page, 'RUNTIME-HS-G02-00-SAMPLE')
@@ -266,6 +278,7 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   ).toHaveLength(0)
 
   await clickHotspot(page, 'RUNTIME-HS-G02-01-RESCUE-CONFIRM')
+  await solveTrialMechanic(page, 'crane-counterweight')
   await expect(page.locator('[data-dialogue-id="DLG-G02-0005"]')).toBeVisible()
   await capture(page, info, '10-scn01-almao-rescued.png')
   await advanceDialogue(page, 2)
@@ -277,9 +290,7 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
     .getByRole('button', { name: '打开资源归属证据近景并完成分类' })
     .click()
   await capture(page, info, '11a-scn01-resource-slots-initial.png')
-  await page
-    .locator('[data-mechanism-item="RUNTIME-G02-LABEL-DOUBLE-RING"]')
-    .dragTo(page.locator('[data-resource-slot="RUNTIME-G02-SLOT-DISCARDED"]'))
+  await dragWithMouse(page, page.locator('[data-mechanism-item="RUNTIME-G02-LABEL-DOUBLE-RING"]'), page.locator('[data-resource-slot="RUNTIME-G02-SLOT-DISCARDED"]'))
   await expect(page.locator('.toast')).toContainText('不吻合')
   await capture(page, info, '11b-scn01-resource-wrong-retained.png')
   await page.getByRole('button', { name: '关闭资源归属分析' }).click()
@@ -300,13 +311,17 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   ).toBeVisible()
   await expect(page.locator('[data-mechanism-item]')).toHaveCount(3)
   await capture(page, info, '11e-scn01-hint-one-label-only.png')
-  await page
-    .locator('[data-mechanism-item="RUNTIME-G02-LABEL-THREE-LINK"]')
-    .dragTo(page.locator('[data-resource-slot="RUNTIME-G02-SLOT-PUBLIC-HEAT"]'))
+  await assignResourceLabel(
+    page,
+    'RUNTIME-G02-LABEL-THREE-LINK',
+    'RUNTIME-G02-SLOT-PUBLIC-HEAT',
+  )
   await capture(page, info, '11f-scn01-resource-partial.png')
-  await page
-    .locator('[data-mechanism-item="RUNTIME-G02-LABEL-BROKEN-EDGE"]')
-    .dragTo(page.locator('[data-resource-slot="RUNTIME-G02-SLOT-DISCARDED"]'))
+  await assignResourceLabel(
+    page,
+    'RUNTIME-G02-LABEL-BROKEN-EDGE',
+    'RUNTIME-G02-SLOT-DISCARDED',
+  )
   await page.getByRole('button', { name: '确认资源归属' }).click()
   await expect(page.getByRole('heading', { name: '五尾清算完成' })).toBeVisible()
   await capture(page, info, '12-scn01-complete.png')
@@ -362,7 +377,8 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   await expect(page.locator('.game-shell')).toHaveClass(/state-S2/)
   await capture(page, info, '17a-scn02-formal-hint-one-key-only.png')
 
-  await drag(page, 'ITM-G02-006', 'HS-G02-0008')
+  await page.locator('[data-inventory-item="ITM-G02-006"]').click()
+  await page.locator('[data-hotspot-id="HS-G02-0008"]').click()
   await expect(page.getByRole('status')).toContainText('接口不匹配')
   await expect(page.locator('[data-inventory-item="ITM-G02-006"]')).toBeVisible()
   await capture(page, info, '18-scn02-wrong-use-not-consumed.png')
@@ -398,6 +414,7 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
 
   await drag(page, 'ITM-G02-004', 'HS-G02-0010')
   await clickHotspot(page, 'RUNTIME-HS-G02-02-ARCHIVE')
+  await solveTrialMechanic(page, 'borrow-use-return')
   await expect(page.locator('[data-dialogue-id="DLG-G02-0008"]')).toBeVisible()
   await capture(page, info, '22-scn02-archive-dialogue.png')
   await advanceDialogue(page, 2)
@@ -406,7 +423,7 @@ test('G01 handoff through SCN-G02-00—02 forms a persistent HOPA vertical slice
   ).toBeVisible()
   await capture(page, info, '23-scn02-complete.png')
 
-  await page.getByRole('button', { name: '任务与证据' }).click()
+  await page.getByRole('button', { name: '任务记录' }).click()
   await expect(page.getByRole('heading', { name: '任务与证据' })).toBeVisible()
   await capture(page, info, '24-journal.png')
   await page.getByRole('button', { name: '关闭任务与证据' }).click()

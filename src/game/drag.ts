@@ -1,4 +1,6 @@
-type UseHandler = (itemId: string, targetId: string) => void
+import { InteractionController } from '../game-scene/InteractionController'
+
+type UseHandler = (itemId: string, targetId: string) => boolean
 
 type PointerDrag = {
   itemId: string
@@ -6,20 +8,26 @@ type PointerDrag = {
   startX: number
   startY: number
   active: boolean
+  source: HTMLElement
 }
 
 export class InventoryDragCoordinator {
   #pointerDrag: PointerDrag | null = null
   #onUse: UseHandler
+  readonly #interaction: InteractionController
+  #dragGhost: HTMLElement | null = null
+  #nativeDropped = false
 
   constructor(
     private readonly root: HTMLElement,
     onUse: UseHandler,
   ) {
     this.#onUse = onUse
+    this.#interaction = new InteractionController(root)
     root.addEventListener('dragstart', this.#handleDragStart)
     root.addEventListener('dragover', this.#handleDragOver)
     root.addEventListener('drop', this.#handleDrop)
+    root.addEventListener('dragend', this.#handleDragEnd)
     root.addEventListener('pointerdown', this.#handlePointerDown)
     root.addEventListener('pointermove', this.#handlePointerMove)
     root.addEventListener('pointerup', this.#handlePointerUp)
@@ -34,13 +42,20 @@ export class InventoryDragCoordinator {
     this.root.removeEventListener('dragstart', this.#handleDragStart)
     this.root.removeEventListener('dragover', this.#handleDragOver)
     this.root.removeEventListener('drop', this.#handleDrop)
+    this.root.removeEventListener('dragend', this.#handleDragEnd)
     this.root.removeEventListener('pointerdown', this.#handlePointerDown)
     this.root.removeEventListener('pointermove', this.#handlePointerMove)
     this.root.removeEventListener('pointerup', this.#handlePointerUp)
     this.root.removeEventListener('pointercancel', this.#cancelPointer)
+    this.#removeGhost()
+    this.#interaction.destroy()
   }
 
   #handleDragStart = (event: DragEvent): void => {
+    if (this.#pointerDrag) {
+      event.preventDefault()
+      return
+    }
     const element = (event.target as HTMLElement).closest<HTMLElement>(
       '[data-inventory-item], [data-mechanism-item]',
     )
@@ -49,10 +64,14 @@ export class InventoryDragCoordinator {
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.setData('application/x-starwreck-item', itemId)
     element.dataset.dragging = 'true'
+    this.#nativeDropped = false
+    this.#interaction.begin(itemId)
   }
 
   #handleDragOver = (event: DragEvent): void => {
-    if ((event.target as HTMLElement).closest('[data-drop-target]')) {
+    const target = (event.target as HTMLElement).closest<HTMLElement>('[data-drop-target]')
+    this.#interaction.hoverTarget(target?.dataset.dropTarget ?? null)
+    if (target) {
       event.preventDefault()
       if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
     }
@@ -67,11 +86,20 @@ export class InventoryDragCoordinator {
     this.root
       .querySelectorAll<HTMLElement>('[data-dragging]')
       .forEach((element) => delete element.dataset.dragging)
-    this.#onUse(itemId, targetId)
+    this.#nativeDropped = true
+    this.#interaction.finish(this.#onUse(itemId, targetId))
+  }
+
+  #handleDragEnd = (): void => {
+    this.root
+      .querySelectorAll<HTMLElement>('[data-dragging]')
+      .forEach((element) => delete element.dataset.dragging)
+    if (!this.#nativeDropped) this.#interaction.finish(false)
+    this.#nativeDropped = false
   }
 
   #handlePointerDown = (event: PointerEvent): void => {
-    if (event.pointerType === 'mouse') return
+    if (event.pointerType === 'mouse' && event.button !== 0) return
     const element = (event.target as HTMLElement).closest<HTMLElement>(
       '[data-inventory-item], [data-mechanism-item]',
     )
@@ -83,6 +111,7 @@ export class InventoryDragCoordinator {
       startX: event.clientX,
       startY: event.clientY,
       active: false,
+      source: element,
     }
     element.setPointerCapture(event.pointerId)
   }
@@ -92,8 +121,16 @@ export class InventoryDragCoordinator {
     if (!drag || drag.pointerId !== event.pointerId) return
     const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY)
     if (distance < 8 && !drag.active) return
-    drag.active = true
-    this.root.dataset.dragActive = drag.itemId
+    if (!drag.active) {
+      drag.active = true
+      this.#interaction.begin(drag.itemId)
+      this.#showGhost(drag.source, drag.itemId)
+    }
+    this.#moveGhost(event.clientX, event.clientY)
+    const target = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest<HTMLElement>('[data-drop-target]')
+    this.#interaction.hoverTarget(target?.dataset.dropTarget ?? null)
     event.preventDefault()
   }
 
@@ -106,15 +143,46 @@ export class InventoryDragCoordinator {
         .elementFromPoint(event.clientX, event.clientY)
         ?.closest<HTMLElement>('[data-drop-target]')
       const targetId = target?.dataset.dropTarget
-      if (targetId) this.#onUse(drag.itemId, targetId)
+      const success = targetId ? this.#onUse(drag.itemId, targetId) : false
+      this.#interaction.finish(success)
+    } else {
+      this.#interaction.cancel()
     }
 
-    delete this.root.dataset.dragActive
+    this.#removeGhost()
     this.#pointerDrag = null
   }
 
   #cancelPointer = (): void => {
-    delete this.root.dataset.dragActive
+    this.#interaction.cancel()
+    this.#removeGhost()
     this.#pointerDrag = null
+  }
+
+  #showGhost(source: HTMLElement, itemId: string): void {
+    this.#removeGhost()
+    const ghost = document.createElement('div')
+    ghost.className = 'inventory-drag-ghost'
+    ghost.dataset.dragGhost = itemId
+    const art = source.querySelector<HTMLElement>('.inventory-art')
+    if (art) ghost.append(art.cloneNode(true))
+    const label = source.querySelector<HTMLElement>('strong')?.textContent
+    if (label) {
+      const span = document.createElement('span')
+      span.textContent = label
+      ghost.append(span)
+    }
+    document.body.append(ghost)
+    this.#dragGhost = ghost
+  }
+
+  #moveGhost(x: number, y: number): void {
+    if (!this.#dragGhost) return
+    this.#dragGhost.style.transform = `translate3d(${x + 14}px, ${y + 14}px, 0)`
+  }
+
+  #removeGhost(): void {
+    this.#dragGhost?.remove()
+    this.#dragGhost = null
   }
 }

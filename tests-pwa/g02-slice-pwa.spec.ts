@@ -62,6 +62,7 @@ test('G02 runtime art is precached and its saved scene survives offline refresh'
   )
 
   await page.goto(APP_URL, { waitUntil: 'networkidle' })
+  await page.locator('[data-trial-action="continue"]').click()
   await expect(page.locator('[data-scene-id="SCN-G02-00"]')).toBeVisible()
   await page.evaluate(async () => navigator.serviceWorker.ready)
   await page.reload({ waitUntil: 'networkidle' })

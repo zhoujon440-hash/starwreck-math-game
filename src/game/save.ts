@@ -1,4 +1,5 @@
 import type { GameSession } from './types'
+import { PLAYER_SCENE_IDS } from '../data/trial/sceneExperiences'
 
 export interface StorageLike {
   getItem(key: string): string | null
@@ -41,6 +42,18 @@ const parseSession = (value: string | null): GameSession | null => {
       restoredFlags.g01_scn06_pathfinding_authorized === true &&
       restoredFlags.ability_pathfinding === true
     const restoredSceneId = parsed.currentSceneId ?? 'SCN-G01-00'
+    const restoredMainlineSceneId =
+      typeof parsed.mainlineSceneId === 'string' ? parsed.mainlineSceneId : restoredSceneId
+    const reachedSceneIndex = Math.max(
+      0,
+      PLAYER_SCENE_IDS.indexOf(
+        PLAYER_SCENE_IDS.includes(restoredMainlineSceneId) ? restoredMainlineSceneId : 'SCN-G01-00',
+      ),
+    )
+    const inferredUnlocked = PLAYER_SCENE_IDS.slice(0, reachedSceneIndex + 1)
+    const inferredCompleted = PLAYER_SCENE_IDS.filter(
+      (sceneId) => parsed.sceneStates?.[sceneId] === 'S6',
+    )
     const reachedG02Boundary =
       (restoredSceneId === 'G02-BOUNDARY' ||
         restoredSceneId.startsWith('SCN-G02-') ||
@@ -53,6 +66,9 @@ const parseSession = (value: string | null): GameSession | null => {
       schemaVersion: SAVE_SCHEMA_VERSION,
       chapterId: parsed.chapterId,
       currentSceneId: parsed.currentSceneId ?? 'SCN-G01-00',
+      mainlineSceneId: restoredMainlineSceneId,
+      unlockedSceneIds: [...new Set(parsed.unlockedSceneIds ?? inferredUnlocked)],
+      completedSceneIds: [...new Set(parsed.completedSceneIds ?? inferredCompleted)],
       sceneState: parsed.sceneState,
       sceneStates: parsed.sceneStates ?? {
         [parsed.currentSceneId ?? 'SCN-G01-00']: parsed.sceneState,
@@ -66,6 +82,7 @@ const parseSession = (value: string | null): GameSession | null => {
       completedPuzzleIds: parsed.completedPuzzleIds ?? [],
       hosProgress: parsed.hosProgress ?? {},
       puzzleProgress: parsed.puzzleProgress ?? {},
+      mechanicProgress: parsed.mechanicProgress ?? {},
       hintCount: parsed.hintCount ?? 0,
       hintLevels: parsed.hintLevels ?? {},
       flags: {
@@ -119,6 +136,14 @@ export class LocalSaveRepository implements SaveRepository {
   ) {
     this.#saveKey = `starwreck:save:${chapterId}:v1`
     this.#checkpointKey = `starwreck:checkpoint:${chapterId}:v1`
+  }
+
+  get hasStoredSave(): boolean {
+    return this.storage.getItem(this.#saveKey) !== null
+  }
+
+  get recoveredFromCorruption(): boolean {
+    return this.hasStoredSave && parseSession(this.storage.getItem(this.#saveKey)) === null
   }
 
   load(): GameSession | null {
