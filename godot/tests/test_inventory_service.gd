@@ -10,4 +10,6 @@ func run(t) -> void:
 	t.truthy(inventory.try_install("ITM-G01-002", "standby-fuse-slot", "ITM-G01-002"))
 	t.truthy(not ("ITM-G01-002" in state.inventory_item_ids))
 	t.truthy("ITM-G01-002" in state.installed_item_ids)
+	t.truthy(not inventory.acquire_environment_only("RUNTIME-ITM-G01-SCN00-LABEL"))
+	t.truthy(not ("RUNTIME-ITM-G01-SCN00-LABEL" in state.inventory_item_ids))
 
