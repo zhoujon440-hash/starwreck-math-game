@@ -15,4 +15,13 @@ func run(t) -> void:
 		t.equal(data.get("deductions", []).size(), 4)
 		t.equal(data.get("items", [])[0].get("id"), "ITM-G01-001")
 		t.equal(data.get("items", [])[1].get("id"), "ITM-G01-002")
+	var cockpit_packed = load("res://scenes/g01/SCN_G01_00.tscn")
+	t.truthy(cockpit_packed != null, "cockpit scene must load")
+	if cockpit_packed != null:
+		var cockpit = cockpit_packed.instantiate()
+		t.truthy(cockpit.has_node("World/Background"))
+		t.truthy(cockpit.has_node("World/Flashlight"))
+		t.truthy(cockpit.has_node("World/PowerPanelHotspot"))
+		t.truthy(cockpit.has_node("UI/InventoryHud"))
+		cockpit.free()
 

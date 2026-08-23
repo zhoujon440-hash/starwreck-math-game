@@ -1,0 +1,124 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/scenes/SCN_G01_00.gd" id="1_scene"]
+[ext_resource type="Texture2D" path="res://assets/inherited/g01-cockpit-cabinet-closed-v2.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/inherited/ITM-G01-001-layer-v2.png" id="3_lamp"]
+[ext_resource type="Script" path="res://scripts/interaction/FlashlightController.gd" id="4_flash"]
+[ext_resource type="Script" path="res://scripts/interaction/Inspectable.gd" id="5_inspect"]
+
+[sub_resource type="Gradient" id="Gradient_flash"]
+offsets = PackedFloat32Array(0, 0.58, 1)
+colors = PackedColorArray(1, 0.96, 0.78, 0.92, 0.72, 0.82, 1, 0.38, 0.2, 0.4, 0.7, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_flash"]
+gradient = SubResource("Gradient_flash")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="RectangleShape2D" id="Shape_pickup"]
+size = Vector2(180, 130)
+[sub_resource type="RectangleShape2D" id="Shape_panel"]
+size = Vector2(320, 420)
+[sub_resource type="RectangleShape2D" id="Shape_strip"]
+size = Vector2(360, 100)
+[sub_resource type="RectangleShape2D" id="Shape_record"]
+size = Vector2(180, 190)
+[sub_resource type="RectangleShape2D" id="Shape_plate"]
+size = Vector2(220, 100)
+
+[node name="SCN_G01_00" type="Node2D"]
+script = ExtResource("1_scene")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Background" type="TextureRect" parent="World"]
+offset_right = 1920.0
+offset_bottom = 1080.0
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+mouse_filter = 2
+
+[node name="Blackout" type="ColorRect" parent="World"]
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0.005, 0.008, 0.02, 0.76)
+mouse_filter = 2
+
+[node name="EmergencyGlow" type="Polygon2D" parent="World"]
+polygon = PackedVector2Array(0, 0, 1920, 0, 1920, 105, 0, 105)
+color = Color(0.5, 0.015, 0.02, 0.24)
+
+[node name="FlashlightPickup" type="Area2D" parent="World"]
+position = Vector2(820, 835)
+input_pickable = true
+[node name="Sprite" type="Sprite2D" parent="World/FlashlightPickup"]
+texture = ExtResource("3_lamp")
+scale = Vector2(0.12, 0.12)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/FlashlightPickup"]
+shape = SubResource("Shape_pickup")
+
+[node name="Flashlight" type="PointLight2D" parent="World"]
+position = Vector2(960, 540)
+texture = SubResource("GradientTexture_flash")
+energy = 1.35
+texture_scale = 1.2
+script = ExtResource("4_flash")
+
+[node name="PowerPanelHotspot" type="Area2D" parent="World" groups=["inspectables"]]
+position = Vector2(1480, 555)
+input_pickable = true
+script = ExtResource("5_inspect")
+clue_id = "CLUE-002"
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/PowerPanelHotspot"]
+shape = SubResource("Shape_panel")
+
+[node name="EmergencyStripHotspot" type="Area2D" parent="World" groups=["inspectables"]]
+position = Vector2(550, 150)
+input_pickable = true
+script = ExtResource("5_inspect")
+clue_id = "CLUE-001"
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/EmergencyStripHotspot"]
+shape = SubResource("Shape_strip")
+
+[node name="FaultRecordHotspot" type="Area2D" parent="World" groups=["inspectables"]]
+position = Vector2(1320, 515)
+input_pickable = true
+script = ExtResource("5_inspect")
+clue_id = "CLUE-003"
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/FaultRecordHotspot"]
+shape = SubResource("Shape_record")
+
+[node name="CouplerPlateHotspot" type="Area2D" parent="World" groups=["inspectables"]]
+position = Vector2(1550, 360)
+input_pickable = true
+script = ExtResource("5_inspect")
+clue_id = "CLUE-004"
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/CouplerPlateHotspot"]
+shape = SubResource("Shape_plate")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="InventoryHud" type="PanelContainer" parent="UI"]
+offset_left = 48.0
+offset_top = 930.0
+offset_right = 620.0
+offset_bottom = 1035.0
+[node name="Label" type="Label" parent="UI/InventoryHud"]
+text = "设备袋 · 拾取手灯后开始调查"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StatusStrip" type="PanelContainer" parent="UI"]
+offset_left = 540.0
+offset_top = 42.0
+offset_right = 1380.0
+offset_bottom = 112.0
+[node name="Status" type="Label" parent="UI/StatusStrip"]
+text = "拾光号失去主电。先在断电领航舱中找到应急照明。"
+horizontal_alignment = 1
+vertical_alignment = 1
+
