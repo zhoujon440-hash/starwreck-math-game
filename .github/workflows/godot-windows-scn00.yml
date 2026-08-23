@@ -2,6 +2,13 @@ name: Godot Windows SCN00 Gate
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - codex/godot-scn-g01-00-v1
+    paths:
+      - "godot/**"
+      - "scripts/verify_godot_asset_provenance.mjs"
+      - ".github/workflows/godot-windows-scn00.yml"
   push:
     branches:
       - codex/godot-scn-g01-00-impl-v1
