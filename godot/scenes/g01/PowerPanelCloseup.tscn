@@ -1,0 +1,88 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/puzzle/PowerPanelPuzzle.gd" id="1_puzzle"]
+[ext_resource type="Texture2D" path="res://assets/inherited/ITM-G01-002-layer.png" id="2_fuse"]
+
+[sub_resource type="RectangleShape2D" id="Shape_lever"]
+size = Vector2(130, 180)
+[sub_resource type="RectangleShape2D" id="Shape_slot"]
+size = Vector2(190, 250)
+[sub_resource type="CircleShape2D" id="Shape_knob"]
+radius = 125.0
+[sub_resource type="RectangleShape2D" id="Shape_protector"]
+size = Vector2(180, 280)
+
+[node name="PowerPanelCloseup" type="Node2D"]
+script = ExtResource("1_puzzle")
+
+[node name="PanelBody" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(170, 80, 1750, 80, 1750, 1000, 170, 1000)
+color = Color(0.055, 0.075, 0.09, 1)
+
+[node name="PanelInset" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(230, 145, 1690, 145, 1690, 925, 230, 925)
+color = Color(0.018, 0.028, 0.038, 1)
+
+[node name="Title" type="Label" parent="."]
+offset_left = 260.0
+offset_top = 165.0
+offset_right = 1510.0
+offset_bottom = 225.0
+theme_override_colors/font_color = Color(0.55, 0.8, 0.86, 1)
+theme_override_font_sizes/font_size = 30
+text = "拾光号 · 领航舱配电总成"
+horizontal_alignment = 1
+
+[node name="BIsolationLever" type="Area2D" parent="."]
+position = Vector2(500, 300)
+input_pickable = true
+[node name="Track" type="Polygon2D" parent="BIsolationLever"]
+polygon = PackedVector2Array(-30, -120, 30, -120, 30, 120, -30, 120)
+color = Color(0.12, 0.14, 0.15, 1)
+[node name="Handle" type="Polygon2D" parent="BIsolationLever"]
+polygon = PackedVector2Array(-70, -38, 70, -38, 70, 38, -70, 38)
+color = Color(0.82, 0.48, 0.14, 1)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BIsolationLever"]
+shape = SubResource("Shape_lever")
+
+[node name="StandbyFuseSlot" type="Area2D" parent="."]
+position = Vector2(850, 520)
+input_pickable = true
+[node name="Slot" type="Polygon2D" parent="StandbyFuseSlot"]
+polygon = PackedVector2Array(-95, -140, 95, -140, 95, 140, -95, 140)
+color = Color(0.08, 0.16, 0.19, 1)
+[node name="FuseInserted" type="Sprite2D" parent="StandbyFuseSlot"]
+visible = false
+texture = ExtResource("2_fuse")
+scale = Vector2(0.7, 0.7)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StandbyFuseSlot"]
+shape = SubResource("Shape_slot")
+
+[node name="CouplerKnob" type="Area2D" parent="."]
+position = Vector2(1220, 520)
+input_pickable = true
+[node name="Dial" type="Polygon2D" parent="CouplerKnob"]
+polygon = PackedVector2Array(-95, -95, 95, -95, 95, 95, -95, 95)
+color = Color(0.18, 0.26, 0.29, 1)
+[node name="Needle" type="Polygon2D" parent="CouplerKnob"]
+polygon = PackedVector2Array(-12, -100, 12, -100, 12, 15, -12, 15)
+color = Color(0.2, 0.8, 0.9, 1)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CouplerKnob"]
+shape = SubResource("Shape_knob")
+
+[node name="ProtectorLever" type="Area2D" parent="."]
+position = Vector2(1510, 520)
+input_pickable = true
+[node name="Base" type="Polygon2D" parent="ProtectorLever"]
+polygon = PackedVector2Array(-70, -150, 70, -150, 70, 150, -70, 150)
+color = Color(0.12, 0.15, 0.17, 1)
+[node name="Handle" type="Polygon2D" parent="ProtectorLever"]
+polygon = PackedVector2Array(-45, -125, 45, -125, 45, 75, -45, 75)
+color = Color(0.62, 0.68, 0.7, 1)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ProtectorLever"]
+shape = SubResource("Shape_protector")
+
+[node name="StatusLamp" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(900, 820, 1020, 820, 1020, 860, 900, 860)
+color = Color(0.25, 0.02, 0.02, 1)
+
