@@ -1,0 +1,34 @@
+{
+  "scene_id": "SCN-G01-00",
+  "title": "拾光号熄灯",
+  "protagonist": "星宇",
+  "clues": [
+    {"id":"CLUE-001","title":"应急灯仍周期闪烁","text":"储能并未完全失效，仍存在可用应急电源。","source":"emergency-strip"},
+    {"id":"CLUE-002","title":"B支路的新鲜烧蚀","text":"熔断口的烧蚀痕迹仍新，B支路近期发生异常过流。","source":"power-panel-b"},
+    {"id":"CLUE-003","title":"最后一次浪涌记录","text":"机械记录窗显示事故前最后一次浪涌来自B支路。","source":"fault-tape"},
+    {"id":"CLUE-004","title":"备用耦合铭牌","text":"A↔C仅在B隔离时允许闭合。","source":"coupler-plate"},
+    {"id":"CLUE-005","title":"临时保险丝规格","text":"临时保险丝匹配备用耦合槽，不匹配B支路熔断口。","source":"maintenance-fuse"},
+    {"id":"CLUE-006","title":"旧手写线号标签","text":"B→C可临时带灯。","source":"old-label"},
+    {"id":"CLUE-007","title":"Rev.3改装标记","text":"Rev.3改装已经取消B→C旁路。","source":"revision-mark"}
+  ],
+  "deductions": [
+    {"id":"DED-001","text":"储能系统仍有可用电源。","requires_clues":["CLUE-001"],"requires_edges":[]},
+    {"id":"DED-002","text":"B支路是故障支路，应保持隔离。","requires_clues":[],"requires_edges":[{"from":"CLUE-002","to":"CLUE-003","relation":"supports"}]},
+    {"id":"DED-003","text":"旧B→C维修建议已失效。","requires_clues":[],"requires_edges":[{"from":"CLUE-007","to":"CLUE-006","relation":"supersedes"}]},
+    {"id":"DED-004","text":"应隔离B支路，并通过备用A↔C耦合恢复照明。","requires_deductions":["DED-001","DED-002","DED-003"],"requires_clues":["CLUE-004","CLUE-005"],"requires_edges":[]}
+  ],
+  "valid_relations": [
+    {"from":"CLUE-002","to":"CLUE-003","relation":"supports"},
+    {"from":"CLUE-007","to":"CLUE-006","relation":"supersedes"}
+  ],
+  "items": [
+    {"id":"ITM-G01-001","name":"应急手灯","critical":true,"asset":"res://assets/inherited/ITM-G01-001-layer-v2.png"},
+    {"id":"ITM-G01-002","name":"临时保险丝","critical":true,"asset":"res://assets/inherited/ITM-G01-002-layer.png"},
+    {"id":"ITM-G01-003","name":"旧扳手","critical":false,"asset":"res://assets/inherited/ITM-G01-003-layer.png"},
+    {"id":"ITM-G01-004","name":"绝缘手套","critical":false,"asset":"res://assets/inherited/ITM-G01-004-layer.png"},
+    {"id":"ITM-G01-005","name":"线号标签","critical":false,"asset":"res://assets/inherited/ITM-G01-005-layer.png"}
+  ],
+  "world_states": ["BLACKOUT","EMERGENCY_LIT","POWER_RESTORED"],
+  "power_panel": {"deduction_gate":"DED-004","fuse_item":"ITM-G01-002","coupler_target_degrees":90.0,"coupler_tolerance":8.0,"sequence":["isolate_b","install_fuse","align_coupler","latch_protector"]}
+}
+
