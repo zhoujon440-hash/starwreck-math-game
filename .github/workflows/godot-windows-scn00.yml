@@ -1,0 +1,97 @@
+name: Godot Windows SCN00 Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/godot-scn-g01-00-impl-v1
+    paths:
+      - "godot/**"
+      - "scripts/verify_godot_asset_provenance.mjs"
+      - ".github/workflows/godot-windows-scn00.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  windows-native-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GODOT_VERSION: 4.7.2
+      GODOT_STATUS: stable
+      GODOT_BIN: ${{ github.workspace }}/.godot-bin/godot
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify inherited asset provenance
+        run: node scripts/verify_godot_asset_provenance.mjs
+
+      - name: Install pinned Godot and export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .godot-bin .templates-tmp "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}"
+          curl --fail --location --retry 4 --output .godot-bin/godot.zip \
+            "https://godot-releases.nbg1.your-objectstorage.com/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.x86_64.zip"
+          curl --fail --location --retry 4 --output .godot-bin/templates.tpz \
+            "https://godot-releases.nbg1.your-objectstorage.com/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_export_templates.tpz"
+          unzip -q .godot-bin/godot.zip -d .godot-bin
+          mv ".godot-bin/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.x86_64" "$GODOT_BIN"
+          chmod +x "$GODOT_BIN"
+          unzip -q .godot-bin/templates.tpz -d .templates-tmp
+          cp -a .templates-tmp/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}/"
+          "$GODOT_BIN" --version | tee godot-version.txt
+          grep -F "${GODOT_VERSION}.${GODOT_STATUS}.official" godot-version.txt
+
+      - name: Reject Web runtime in Godot subtree
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -RInE --include='*.gd' --include='*.tscn' --include='export_presets.cfg' 'platform="Web"|WebView|res://[^" ]+\.(html|ts)"' godot
+          test "$(grep -c '^\[preset\.' godot/export_presets.cfg)" -eq 1
+          grep -F 'platform="Windows Desktop"' godot/export_presets.cfg
+
+      - name: Headless import and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path godot --import
+          "$GODOT_BIN" --headless --path godot --script res://tests/run_tests.gd
+
+      - name: Export Windows x86_64 release
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release/windows
+          "$GODOT_BIN" --headless --path godot --export-release "Windows Desktop" ../release/windows/starwreck-godot-scn-g01-00.exe
+          test -s release/windows/starwreck-godot-scn-g01-00.exe
+          test -s release/windows/starwreck-godot-scn-g01-00.pck
+          cp godot/README.md release/windows/README.txt
+
+      - name: Package ZIP and SHA-256
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          short_sha="${GITHUB_SHA::8}"
+          artifact="starwreck-godot-scn-g01-00-windows-${short_sha}.zip"
+          (cd release/windows && find . -type f -printf '%P\n' | LC_ALL=C sort | zip -X -q "../${artifact}" -@)
+          (cd release && sha256sum "${artifact}" > "${artifact}.sha256")
+          echo "artifact=${artifact}" >> "$GITHUB_OUTPUT"
+          cat "release/${artifact}.sha256"
+
+      - name: Upload Windows review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.artifact }}
+          path: |
+            release/${{ steps.package.outputs.artifact }}
+            release/${{ steps.package.outputs.artifact }}.sha256
+          if-no-files-found: error
+          retention-days: 30
+
