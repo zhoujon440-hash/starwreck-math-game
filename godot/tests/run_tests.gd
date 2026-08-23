@@ -2,7 +2,12 @@ extends SceneTree
 
 func _init() -> void:
 	var t = preload("res://tests/TestAssert.gd").new()
-	var suites = [preload("res://tests/test_scene_contract.gd").new()]
+	var suites = [
+		preload("res://tests/test_scene_contract.gd").new(),
+		preload("res://tests/test_game_state.gd").new(),
+		preload("res://tests/test_inventory_service.gd").new(),
+		preload("res://tests/test_save_service.gd").new(),
+	]
 	for suite in suites:
 		suite.run(t)
 	for failure in t.failures:
