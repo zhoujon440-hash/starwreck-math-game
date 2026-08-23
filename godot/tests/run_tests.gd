@@ -7,6 +7,7 @@ func _init() -> void:
 		preload("res://tests/test_game_state.gd").new(),
 		preload("res://tests/test_inventory_service.gd").new(),
 		preload("res://tests/test_save_service.gd").new(),
+		preload("res://tests/test_deduction_graph.gd").new(),
 	]
 	for suite in suites:
 		suite.run(t)
