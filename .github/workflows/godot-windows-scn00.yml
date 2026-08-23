@@ -70,7 +70,7 @@ jobs:
         run: |
           set -euo pipefail
           ! grep -RInE --include='*.gd' --include='*.tscn' --include='export_presets.cfg' 'platform="Web"|WebView|res://[^" ]+\.(html|ts)"' godot
-          test "$(grep -c '^\[preset\.' godot/export_presets.cfg)" -eq 1
+          test "$(grep -Ec '^\[preset\.[0-9]+\]$' godot/export_presets.cfg)" -eq 1
           grep -F 'platform="Windows Desktop"' godot/export_presets.cfg
 
       - name: Headless import and tests
