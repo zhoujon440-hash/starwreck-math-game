@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/clue/DeductionBoard.gd" id="1_board"]
+
+[node name="DeductionBoard" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_board")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.008, 0.015, 0.035, 0.96)
+mouse_filter = 2
+
+[node name="Header" type="Label" parent="."]
+offset_left = 54.0
+offset_top = 30.0
+offset_right = 850.0
+offset_bottom = 86.0
+theme_override_colors/font_color = Color(0.4, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 32
+text = "维修推理工作台 · 右键两张卡建立关系"
+
+[node name="ObservedClues" type="VBoxContainer" parent="."]
+offset_left = 54.0
+offset_top = 120.0
+offset_right = 230.0
+offset_bottom = 940.0
+theme_override_constants/separation = 16
+
+[node name="BoardCanvas" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 210.0
+offset_top = 90.0
+offset_right = -40.0
+offset_bottom = -55.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="RelationSelector" type="HBoxContainer" parent="."]
+visible = false
+offset_left = 720.0
+offset_top = 520.0
+offset_right = 1210.0
+offset_bottom = 580.0
+theme_override_constants/separation = 8
+[node name="Supports" type="Button" parent="RelationSelector"]
+layout_mode = 2
+text = "supports"
+[node name="Contradicts" type="Button" parent="RelationSelector"]
+layout_mode = 2
+text = "contradicts"
+[node name="Supersedes" type="Button" parent="RelationSelector"]
+layout_mode = 2
+text = "supersedes"
+
+[node name="Close" type="Button" parent="."]
+offset_left = 1650.0
+offset_top = 28.0
+offset_right = 1860.0
+offset_bottom = 86.0
+text = "返回现场"
+

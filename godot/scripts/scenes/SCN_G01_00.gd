@@ -8,10 +8,12 @@ var inventory_service
 @onready var flashlight = $World/Flashlight
 @onready var flashlight_pickup = $World/FlashlightPickup
 @onready var status_label = $UI/StatusStrip/Status
+@onready var deduction_board = $UI/DeductionBoard
 
 func _ready() -> void:
 	clue_service = preload("res://scripts/clue/ClueService.gd").new(state)
 	inventory_service = preload("res://scripts/inventory/InventoryService.gd").new(state)
+	deduction_board.setup(state, preload("res://scripts/clue/DeductionGraph.gd").new(state))
 	flashlight_pickup.input_event.connect(_on_flashlight_pickup_input)
 	for node in get_tree().get_nodes_in_group("inspectables"):
 		node.bind_flashlight(flashlight)
@@ -19,6 +21,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	state.elapsed_seconds += delta
+	if Input.is_action_just_pressed("toggle_deduction_board") and not get_tree().paused:
+		deduction_board.open_board()
 
 func _on_flashlight_pickup_input(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:

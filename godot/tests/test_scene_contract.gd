@@ -23,5 +23,7 @@ func run(t) -> void:
 		t.truthy(cockpit.has_node("World/Flashlight"))
 		t.truthy(cockpit.has_node("World/PowerPanelHotspot"))
 		t.truthy(cockpit.has_node("UI/InventoryHud"))
+		t.truthy(cockpit.has_node("UI/DeductionBoard/BoardCanvas"))
+		t.truthy(cockpit.has_node("UI/DeductionBoard/ObservedClues"))
 		cockpit.free()
 
