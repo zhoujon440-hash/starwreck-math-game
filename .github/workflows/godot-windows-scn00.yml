@@ -43,10 +43,20 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .godot-bin .templates-tmp "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}"
-          curl --fail --location --retry 4 --output .godot-bin/godot.zip \
-            "https://godot-releases.nbg1.your-objectstorage.com/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.x86_64.zip"
-          curl --fail --location --retry 4 --output .godot-bin/templates.tpz \
-            "https://godot-releases.nbg1.your-objectstorage.com/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_export_templates.tpz"
+          download_release() {
+            local url="$1"
+            local output="$2"
+            curl --http1.1 --fail --location --continue-at - \
+              --retry 12 --retry-all-errors --retry-delay 2 \
+              --connect-timeout 30 --speed-limit 1024 --speed-time 90 \
+              --output "$output" "$url"
+          }
+          download_release \
+            "https://godot-releases.nbg1.your-objectstorage.com/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.x86_64.zip" \
+            .godot-bin/godot.zip
+          download_release \
+            "https://godot-releases.nbg1.your-objectstorage.com/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_export_templates.tpz" \
+            .godot-bin/templates.tpz
           unzip -q .godot-bin/godot.zip -d .godot-bin
           mv ".godot-bin/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.x86_64" "$GODOT_BIN"
           chmod +x "$GODOT_BIN"
