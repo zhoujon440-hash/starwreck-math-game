@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/TitleScreen.gd" id="1_title"]
+[ext_resource type="Script" path="res://scripts/core/SceneDirector.gd" id="2_director"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -83,6 +84,18 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "继续"
 
+[node name="OverwriteConfirm" type="ConfirmationDialog" parent="."]
+title = "覆盖现有调查记录？"
+dialog_text = "开始新游戏会覆盖当前 SCN-G01-00 存档。"
+ok_button_text = "确认开始"
+cancel_button_text = "保留存档"
+
+[node name="SceneDirector" type="Node" parent="."]
+script = ExtResource("2_director")
+
 [connection signal="pressed" from="TitleLayout/NewGame" to="." method="_on_new_game_pressed"]
 [connection signal="pressed" from="TitleLayout/Continue" to="." method="_on_continue_pressed"]
+[connection signal="confirmed" from="OverwriteConfirm" to="." method="_on_overwrite_confirmed"]
+[connection signal="new_game_requested" from="." to="SceneDirector" method="start_new_game"]
+[connection signal="continue_requested" from="." to="SceneDirector" method="resume_game"]
 
