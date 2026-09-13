@@ -6,6 +6,8 @@
 
 Only SCN-G01-00 is in scope. PR #23 remains Draft and unmerged; Issue #22 stays open; PR #21 and subsequent-scene gameplay are not changed. No READY signal is issued for this candidate.
 
+Remote synchronization reached `7fded8f5c007fac55940991ed2a508ca7dd6f77e`, with the exact locally verified Godot subtree `f7a47a96bb754dacc49d675aa84484ae8dc77592`. Its Windows Actions gate then failed 24 assertions because the test suite depended on a local-only `.superpowers` preflight script and a local ignore rule. This is a fresh-checkout delivery defect, not a passing cloud build. Remediation moves preflight to the tracked `scripts/godot-review-preflight.ps1`, tests real process outputs/errors/save non-mutation, and removes GDScript checks against local operator prose. The replacement is read-only and has no launch, save deletion or timing policy. Game behavior tests and runtime smoke remain required. See `docs/superpowers/plans/2026-09-14-scn00-review-evidence-runbook.md`; a new successful CI run is still required.
+
 ## Findings and remediation
 
 The following fixes belong to `f451d1b`. Tests reproduced the defects before their fixes. A separate reviewer checked the substantive forensic/configuration, receiver and restored-save patches and found no new blocking issue. The main agent additionally inspected native-rendered fixtures and corrected datum-label overlap and an unplaced plate probe.

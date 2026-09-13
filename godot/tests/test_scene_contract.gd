@@ -1,33 +1,8 @@
 extends RefCounted
 
 func run(t) -> void:
-	var gitignore := FileAccess.get_file_as_string("res://../.gitignore")
-	t.truthy(gitignore.split("\n").has("/release/windows/"), "local Windows export directory must be ignored exactly")
-	var actual_smoke_path := "res://../.superpowers/sdd/2026-08-22-godot-windows-scn-g01-00-implementation/tools/actual-binary-smoke.ps1"
-	t.truthy(FileAccess.file_exists(actual_smoke_path), "Task 6 visible-input smoke route must exist at the tracked worktree path")
-	var actual_smoke := FileAccess.get_file_as_string(actual_smoke_path)
-	t.truthy(actual_smoke.strip_edges().length() > 0, "Task 6 visible-input smoke route must not be empty")
-	t.truthy(actual_smoke.begins_with("param("), "visible-input smoke route must declare its PowerShell param block first for -File execution")
-	var strict_mode_index := actual_smoke.find("Set-StrictMode -Version Latest")
-	var param_index := actual_smoke.find("param(")
-	t.truthy(strict_mode_index > param_index and param_index == 0, "visible-input smoke route must enter strict mode only after the top-level param block")
-	t.truthy(not actual_smoke.contains("ActionPauseMs") and not actual_smoke.contains("Wait-ActionPace"), "actual-player automation must not support artificial action padding")
-	t.truthy(not actual_smoke.contains("PostMessage"), "actual-player automation must not fall back to hidden PostMessage clicks")
-	t.truthy(not actual_smoke.contains("actual-binary-smoke-runner.mjs"), "visible-input smoke route must not depend on a missing helper runner")
-	t.truthy(not actual_smoke.contains("& node "), "visible-input smoke route must not shell through an invisible node route runner")
-	t.truthy(actual_smoke.contains("..\\..\\..\\..\\release\\starwreck-godot-scn-g01-00.exe"), "visible-input smoke route must default to the reviewed release EXE path")
-	t.truthy(actual_smoke.contains("..\\..\\..\\..\\release\\starwreck-godot-scn-g01-00.pck"), "visible-input smoke route must default to the reviewed release PCK path")
-	t.truthy(actual_smoke.contains("Test-Path -LiteralPath $ExePath -PathType Leaf"), "visible-input smoke route must hard-fail when the reviewed EXE is absent")
-	t.truthy(actual_smoke.contains("Test-Path -LiteralPath $PckPath -PathType Leaf"), "visible-input smoke route must hard-fail when the reviewed PCK is absent")
-	t.truthy(not actual_smoke.contains("Get-FileHash"), "visible-input smoke route must not depend on Get-FileHash for Windows PowerShell preflight compatibility")
-	t.truthy(actual_smoke.contains("[System.Security.Cryptography.SHA256]::Create()"), "visible-input smoke route must compute reviewed hashes through .NET SHA256")
-	t.truthy(actual_smoke.contains("-LaunchBinary"), "visible-input smoke route must separate preflight from optional visible binary launch")
-	t.truthy(not actual_smoke.contains("Godot\\app_userdata\\星骸拾荒者：十二星门"), "visible-input smoke route must not depend on a literal CJK userdata path in source")
-	t.truthy(actual_smoke.contains("[string]$SaveRoot = ''"), "visible-input smoke route must accept an omitted SaveRoot so Windows PowerShell 5.1 can resolve it after parsing")
-	t.truthy(actual_smoke.contains("[string]::Concat(") and actual_smoke.contains("[char]0x661F") and actual_smoke.contains("[char]0x95E8"), "visible-input smoke route must rebuild the default userdata directory from ASCII-safe Unicode code points")
-	t.truthy(actual_smoke.contains("save_root = $ResolvedSaveRoot"), "visible-input smoke route must report the resolved save root in preflight output")
-	for required_route_marker in ["@oai/sky", "New Game", "burn", "SwapLeft", "CompressionHandle", "MeasureLever", "MaintenanceGate", "WeakGate", "SealLever", "task-6-duration-report.md"]:
-		t.truthy(actual_smoke.contains(required_route_marker), "Task 6 visible-input route must cover %s" % required_route_marker)
+	# Artifact preflight is exercised as a real PowerShell process by
+	# scripts/tests/godot-review-preflight.test.mjs, not by matching local tooling prose.
 	t.equal(ProjectSettings.get_setting("application/config/name"), "星骸拾荒者：十二星门")
 	t.equal(ProjectSettings.get_setting("display/window/size/viewport_width"), 1920)
 	t.equal(ProjectSettings.get_setting("display/window/size/viewport_height"), 1080)

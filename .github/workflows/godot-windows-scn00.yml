@@ -8,6 +8,8 @@ on:
     paths:
       - "godot/**"
       - "scripts/verify_godot_asset_provenance.mjs"
+      - "scripts/godot-review-preflight.ps1"
+      - "scripts/tests/godot-review-preflight.test.mjs"
       - ".github/workflows/godot-windows-scn00.yml"
   push:
     branches:
@@ -15,6 +17,8 @@ on:
     paths:
       - "godot/**"
       - "scripts/verify_godot_asset_provenance.mjs"
+      - "scripts/godot-review-preflight.ps1"
+      - "scripts/tests/godot-review-preflight.test.mjs"
       - ".github/workflows/godot-windows-scn00.yml"
 
 permissions:
@@ -37,6 +41,9 @@ jobs:
 
       - name: Verify inherited asset provenance
         run: node scripts/verify_godot_asset_provenance.mjs
+
+      - name: Test read-only review preflight
+        run: node --test scripts/tests/godot-review-preflight.test.mjs
 
       - name: Install pinned Godot and export templates
         shell: bash
@@ -112,4 +119,3 @@ jobs:
             release/${{ steps.package.outputs.artifact }}.sha256
           if-no-files-found: error
           retention-days: 30
-
