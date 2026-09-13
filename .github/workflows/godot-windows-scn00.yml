@@ -79,6 +79,7 @@ jobs:
           set -euo pipefail
           "$GODOT_BIN" --headless --path godot --import
           "$GODOT_BIN" --headless --path godot --script res://tests/run_tests.gd
+          "$GODOT_BIN" --headless --path godot --script res://tests/runtime_smoke.gd
 
       - name: Export Windows x86_64 release
         shell: bash

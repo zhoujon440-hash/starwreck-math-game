@@ -1,22 +1,100 @@
-[gd_scene format=3]
+[gd_scene load_steps=3 format=3]
 
-[node name="InventoryHud" type="PanelContainer"]
-offset_left = 48.0
-offset_top = 930.0
-offset_right = 700.0
-offset_bottom = 1035.0
+[ext_resource type="Script" path="res://scripts/inventory/InventoryHud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="Style_hud"]
+bg_color = Color(0.018, 0.035, 0.052, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.19, 0.53, 0.62, 0.78)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 10
+
+[node name="InventoryHud" type="Control"]
+layout_mode = 3
+anchors_preset = 12
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -142.0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("1_hud")
+
+[node name="Backplate" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -390.0
+offset_top = -118.0
+offset_right = 390.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("Style_hud")
+mouse_filter = 2
+
+[node name="RailTitle" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -365.0
+offset_top = -108.0
+offset_right = -178.0
+offset_bottom = -78.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.45, 0.82, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "设备袋 / TOOL RAIL"
 
 [node name="Margin" type="MarginContainer" parent="."]
-layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 14
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -110.0
+offset_right = 355.0
+offset_bottom = -25.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
 
-[node name="Items" type="Label" parent="Margin"]
+[node name="ItemSlots" type="HBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.9, 0.95, 1)
-theme_override_font_sizes/font_size = 22
-text = "设备袋 · 空"
+theme_override_constants/separation = 12
+
+[node name="Empty" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -135.0
+offset_top = -86.0
+offset_right = 330.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.4, 0.52, 0.58, 1)
+theme_override_font_sizes/font_size = 18
+text = "空 · 现场取得的关键工具会固定在这里"
 vertical_alignment = 1
-

@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://scripts/scenes/SCN_G01_00.gd" id="1_scene"]
 [ext_resource type="Texture2D" path="res://assets/inherited/g01-cockpit-cabinet-closed-v2.png" id="2_bg"]
@@ -14,6 +14,8 @@
 [ext_resource type="Texture2D" path="res://assets/inherited/ITM-G01-005-layer.png" id="12_label"]
 [ext_resource type="PackedScene" path="res://scenes/g01/PowerPanelCloseup.tscn" id="13_panel"]
 [ext_resource type="Texture2D" path="res://assets/inherited/g01-cockpit.png" id="14_restored"]
+[ext_resource type="PackedScene" path="res://scenes/ui/EvidenceInspection.tscn" id="15_inspection"]
+[ext_resource type="PackedScene" path="res://scenes/g01/DualSignalVerification.tscn" id="16_signal_verify"]
 
 [sub_resource type="Gradient" id="Gradient_flash"]
 offsets = PackedFloat32Array(0, 0.58, 1)
@@ -31,17 +33,60 @@ fill_to = Vector2(1, 0.5)
 size = Vector2(180, 130)
 [sub_resource type="RectangleShape2D" id="Shape_panel"]
 size = Vector2(320, 420)
+[sub_resource type="RectangleShape2D" id="Shape_panel_entry"]
+size = Vector2(160, 170)
+[sub_resource type="RectangleShape2D" id="Shape_burn"]
+size = Vector2(160, 180)
 [sub_resource type="RectangleShape2D" id="Shape_strip"]
 size = Vector2(360, 100)
 [sub_resource type="RectangleShape2D" id="Shape_record"]
 size = Vector2(180, 190)
 [sub_resource type="RectangleShape2D" id="Shape_plate"]
 size = Vector2(220, 100)
+[sub_resource type="RectangleShape2D" id="Shape_latch"]
+size = Vector2(54, 96)
+
+[sub_resource type="StyleBoxFlat" id="Style_hud"]
+bg_color = Color(0.012, 0.029, 0.045, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18, 0.5, 0.58, 0.72)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="Style_hint"]
+bg_color = Color(0.12, 0.075, 0.035, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.66, 0.46, 0.2, 0.72)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="AudioStreamGenerator" id="Audio_generator"]
+mix_rate = 22050.0
+buffer_length = 0.5
 
 [node name="SCN_G01_00" type="Node2D"]
+process_mode = 3
 script = ExtResource("1_scene")
 
 [node name="World" type="Node2D" parent="."]
+
+[node name="WorldCamera" type="Camera2D" parent="World"]
+position = Vector2(960, 540)
+position_smoothing_enabled = true
+position_smoothing_speed = 5.0
+enabled = true
 
 [node name="Background" type="TextureRect" parent="World"]
 offset_right = 1920.0
@@ -52,12 +97,14 @@ stretch_mode = 6
 mouse_filter = 2
 
 [node name="Blackout" type="ColorRect" parent="World"]
+z_index = 2
 offset_right = 1920.0
 offset_bottom = 1080.0
 color = Color(0.005, 0.008, 0.02, 0.76)
 mouse_filter = 2
 
 [node name="EmergencyGlow" type="Polygon2D" parent="World"]
+z_index = 3
 polygon = PackedVector2Array(0, 0, 1920, 0, 1920, 105, 0, 105)
 color = Color(0.5, 0.015, 0.02, 0.24)
 
@@ -71,19 +118,30 @@ scale = Vector2(0.12, 0.12)
 shape = SubResource("Shape_pickup")
 
 [node name="Flashlight" type="PointLight2D" parent="World"]
+z_index = 4
 position = Vector2(960, 540)
 texture = SubResource("GradientTexture_flash")
 energy = 1.35
 texture_scale = 1.2
 script = ExtResource("4_flash")
 
-[node name="PowerPanelHotspot" type="Area2D" parent="World" groups=["inspectables"]]
-position = Vector2(1480, 555)
+[node name="PowerPanelHotspot" type="Area2D" parent="World"]
+position = Vector2(1770, 785)
 input_pickable = true
-script = ExtResource("5_inspect")
-clue_id = "CLUE-002"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/PowerPanelHotspot"]
-shape = SubResource("Shape_panel")
+shape = SubResource("Shape_panel_entry")
+[node name="Glow" type="Polygon2D" parent="World/PowerPanelHotspot"]
+polygon = PackedVector2Array(-86, -91, 86, -91, 86, 91, -86, 91)
+color = Color(0.24, 0.78, 0.88, 0)
+
+[node name="BurnMarkHotspot" type="Area2D" parent="World"]
+position = Vector2(1760, 530)
+input_pickable = true
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/BurnMarkHotspot"]
+shape = SubResource("Shape_burn")
+[node name="Glow" type="Polygon2D" parent="World/BurnMarkHotspot"]
+polygon = PackedVector2Array(-86, -96, 86, -96, 86, 96, -86, 96)
+color = Color(0.78, 0.32, 0.18, 0)
 
 [node name="EmergencyStripHotspot" type="Area2D" parent="World" groups=["inspectables"]]
 position = Vector2(550, 150)
@@ -92,22 +150,27 @@ script = ExtResource("5_inspect")
 clue_id = "CLUE-001"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/EmergencyStripHotspot"]
 shape = SubResource("Shape_strip")
+[node name="Glow" type="Polygon2D" parent="World/EmergencyStripHotspot"]
+polygon = PackedVector2Array(-184, -54, 184, -54, 184, 54, -184, 54)
+color = Color(0.95, 0.28, 0.18, 0)
 
-[node name="FaultRecordHotspot" type="Area2D" parent="World" groups=["inspectables"]]
+[node name="FaultRecordHotspot" type="Area2D" parent="World"]
 position = Vector2(1320, 515)
 input_pickable = true
-script = ExtResource("5_inspect")
-clue_id = "CLUE-003"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/FaultRecordHotspot"]
 shape = SubResource("Shape_record")
+[node name="Glow" type="Polygon2D" parent="World/FaultRecordHotspot"]
+polygon = PackedVector2Array(-94, -99, 94, -99, 94, 99, -94, 99)
+color = Color(0.25, 0.84, 0.88, 0)
 
-[node name="CouplerPlateHotspot" type="Area2D" parent="World" groups=["inspectables"]]
+[node name="CouplerPlateHotspot" type="Area2D" parent="World"]
 position = Vector2(1550, 360)
 input_pickable = true
-script = ExtResource("5_inspect")
-clue_id = "CLUE-004"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/CouplerPlateHotspot"]
 shape = SubResource("Shape_plate")
+[node name="Glow" type="Polygon2D" parent="World/CouplerPlateHotspot"]
+polygon = PackedVector2Array(-116, -55, 116, -55, 116, 55, -116, 55)
+color = Color(0.82, 0.65, 0.24, 0)
 
 [node name="MaintenanceCabinetHotspot" type="Area2D" parent="World"]
 position = Vector2(390, 555)
@@ -131,46 +194,74 @@ offset_bottom = 1080.0
 color = Color(0.01, 0.02, 0.04, 0.38)
 mouse_filter = 2
 [node name="FusePickup" type="Area2D" parent="World/MaintenanceCabinetWorld"]
-position = Vector2(930, 570)
-input_pickable = true
+position = Vector2(1090, 650)
+input_pickable = false
+[node name="CastShadow" type="Polygon2D" parent="World/MaintenanceCabinetWorld/FusePickup"]
+position = Vector2(10, 15)
+polygon = PackedVector2Array(-72, -14, -50, -25, 50, -25, 74, -12, 64, 12, -58, 14)
+color = Color(0, 0.006, 0.008, 0.5)
 [node name="Sprite" type="Sprite2D" parent="World/MaintenanceCabinetWorld/FusePickup"]
 texture = ExtResource("9_fuse")
-scale = Vector2(0.55, 0.55)
+rotation = 0.08
+scale = Vector2(0.34, 0.34)
+modulate = Color(0.72, 0.76, 0.74, 0.92)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/MaintenanceCabinetWorld/FusePickup"]
 shape = SubResource("Shape_pickup")
+[node name="WrenchShadow" type="Polygon2D" parent="World/MaintenanceCabinetWorld"]
+z_index = 3
+polygon = PackedVector2Array(503, 369, 641, 353, 663, 371, 529, 395)
+color = Color(0, 0.006, 0.008, 0.46)
 [node name="Wrench" type="Sprite2D" parent="World/MaintenanceCabinetWorld"]
-position = Vector2(550, 690)
+z_index = 4
+position = Vector2(575, 365)
 texture = ExtResource("10_wrench")
-scale = Vector2(0.34, 0.34)
+rotation = -0.12
+scale = Vector2(0.22, 0.22)
+modulate = Color(0.62, 0.65, 0.66, 0.86)
+[node name="GloveShadow" type="Polygon2D" parent="World/MaintenanceCabinetWorld"]
+z_index = 3
+polygon = PackedVector2Array(1248, 324, 1344, 306, 1386, 338, 1284, 368)
+color = Color(0, 0.006, 0.008, 0.48)
 [node name="Glove" type="Sprite2D" parent="World/MaintenanceCabinetWorld"]
-position = Vector2(1210, 730)
+z_index = 4
+position = Vector2(1320, 330)
 texture = ExtResource("11_glove")
-scale = Vector2(0.32, 0.32)
+rotation = 0.09
+scale = Vector2(0.22, 0.22)
+modulate = Color(0.56, 0.59, 0.6, 0.82)
 [node name="OldLabelHotspot" type="Area2D" parent="World/MaintenanceCabinetWorld" groups=["inspectables"]]
-position = Vector2(650, 380)
-input_pickable = true
+position = Vector2(575, 365)
+input_pickable = false
 script = ExtResource("5_inspect")
 clue_id = "CLUE-006"
 [node name="Sprite" type="Sprite2D" parent="World/MaintenanceCabinetWorld/OldLabelHotspot"]
 texture = ExtResource("12_label")
-scale = Vector2(0.28, 0.28)
+rotation = -0.1
+scale = Vector2(0.18, 0.18)
+modulate = Color(0.62, 0.59, 0.52, 0.8)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/MaintenanceCabinetWorld/OldLabelHotspot"]
 shape = SubResource("Shape_plate")
+[node name="Glow" type="Polygon2D" parent="World/MaintenanceCabinetWorld/OldLabelHotspot"]
+polygon = PackedVector2Array(-116, -56, 116, -56, 116, 56, -116, 56)
+color = Color(0.84, 0.62, 0.27, 0)
 [node name="RevisionMarkHotspot" type="Area2D" parent="World/MaintenanceCabinetWorld" groups=["inspectables"]]
-position = Vector2(1420, 420)
-input_pickable = true
+position = Vector2(1320, 330)
+input_pickable = false
 script = ExtResource("5_inspect")
 clue_id = "CLUE-007"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/MaintenanceCabinetWorld/RevisionMarkHotspot"]
 shape = SubResource("Shape_plate")
+[node name="Glow" type="Polygon2D" parent="World/MaintenanceCabinetWorld/RevisionMarkHotspot"]
+polygon = PackedVector2Array(-116, -56, 116, -56, 116, 56, -116, 56)
+color = Color(0.3, 0.88, 0.86, 0)
 [node name="RevisionText" type="Label" parent="World/MaintenanceCabinetWorld/RevisionMarkHotspot"]
 offset_left = -130.0
 offset_top = -55.0
 offset_right = 130.0
 offset_bottom = 55.0
 rotation = -0.08
-theme_override_colors/font_color = Color(0.9, 0.78, 0.42, 0.78)
-theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.75, 0.65, 0.38, 0.58)
+theme_override_font_sizes/font_size = 18
 text = "REV.3\nB→C BYPASS REMOVED"
 horizontal_alignment = 1
 [node name="CabinetHint" type="Label" parent="World/MaintenanceCabinetWorld"]
@@ -183,13 +274,63 @@ theme_override_font_sizes/font_size = 22
 text = "维修柜近景 · 移动手灯逐项检查 · Esc返回领航舱"
 horizontal_alignment = 1
 
+[node name="WrenchDistractor" type="Area2D" parent="World/MaintenanceCabinetWorld"]
+z_index = 5
+position = Vector2(575, 365)
+input_pickable = true
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/MaintenanceCabinetWorld/WrenchDistractor"]
+shape = SubResource("Shape_plate")
+
+[node name="GloveDistractor" type="Area2D" parent="World/MaintenanceCabinetWorld"]
+z_index = 5
+position = Vector2(1320, 330)
+input_pickable = true
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/MaintenanceCabinetWorld/GloveDistractor"]
+shape = SubResource("Shape_plate")
+
+[node name="FuseLatchLeft" type="Area2D" parent="World/MaintenanceCabinetWorld"]
+z_index = 6
+position = Vector2(1010, 650)
+input_pickable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/MaintenanceCabinetWorld/FuseLatchLeft"]
+shape = SubResource("Shape_latch")
+[node name="Clip" type="Polygon2D" parent="World/MaintenanceCabinetWorld/FuseLatchLeft"]
+polygon = PackedVector2Array(-10, -34, 10, -34, 10, 28, 4, 36, -10, 24)
+color = Color(0.12, 0.15, 0.15, 0.94)
+[node name="Edge" type="Line2D" parent="World/MaintenanceCabinetWorld/FuseLatchLeft/Clip"]
+points = PackedVector2Array(-6, 28, -6, -29, 6, -29)
+width = 2.0
+default_color = Color(0.5, 0.52, 0.48, 0.55)
+[node name="Pin" type="Polygon2D" parent="World/MaintenanceCabinetWorld/FuseLatchLeft"]
+position = Vector2(0, -25)
+polygon = PackedVector2Array(-8, -5, 0, -10, 8, -5, 8, 5, 0, 10, -8, 5)
+color = Color(0.56, 0.59, 0.56, 0.9)
+
+[node name="FuseLatchRight" type="Area2D" parent="World/MaintenanceCabinetWorld"]
+z_index = 6
+position = Vector2(1170, 650)
+input_pickable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/MaintenanceCabinetWorld/FuseLatchRight"]
+shape = SubResource("Shape_latch")
+[node name="Clip" type="Polygon2D" parent="World/MaintenanceCabinetWorld/FuseLatchRight"]
+polygon = PackedVector2Array(-10, -34, 10, -34, 10, 24, -4, 36, -10, 28)
+color = Color(0.12, 0.15, 0.15, 0.94)
+[node name="Edge" type="Line2D" parent="World/MaintenanceCabinetWorld/FuseLatchRight/Clip"]
+points = PackedVector2Array(6, 28, 6, -29, -6, -29)
+width = 2.0
+default_color = Color(0.5, 0.52, 0.48, 0.55)
+[node name="Pin" type="Polygon2D" parent="World/MaintenanceCabinetWorld/FuseLatchRight"]
+position = Vector2(0, -25)
+polygon = PackedVector2Array(-8, -5, 0, -10, 8, -5, 8, 5, 0, 10, -8, 5)
+color = Color(0.56, 0.59, 0.56, 0.9)
+
 [node name="PowerPanelWorld" parent="World" instance=ExtResource("13_panel")]
 visible = false
 z_index = 30
 
 [node name="RestoredBackground" type="TextureRect" parent="World"]
 visible = false
-z_index = 40
+z_index = 1
 offset_right = 1920.0
 offset_bottom = 1080.0
 texture = ExtResource("14_restored")
@@ -199,29 +340,192 @@ mouse_filter = 2
 
 [node name="EchoIndicator" type="Label" parent="World"]
 visible = false
-z_index = 41
-offset_left = 1260.0
-offset_top = 160.0
+z_index = 8
+offset_left = 1210.0
+offset_top = 78.0
 offset_right = 1830.0
-offset_bottom = 280.0
-theme_override_colors/font_color = Color(0.25, 0.95, 0.9, 1)
-theme_override_font_sizes/font_size = 26
-text = "船尾回波 · 信号继续深入舰体"
+offset_bottom = 120.0
+theme_override_colors/font_color = Color(0.36, 0.82, 0.8, 0.72)
+theme_override_font_sizes/font_size = 20
+text = "船尾天线 · 同向双信号正在分离"
 horizontal_alignment = 1
+
+[node name="PowerRestoreSequence" type="Node2D" parent="World"]
+z_index = 7
+
+[node name="LightBandLeft" type="Polygon2D" parent="World/PowerRestoreSequence"]
+visible = false
+polygon = PackedVector2Array(86, 24, 578, 24, 560, 32, 98, 32)
+color = Color(0.48, 0.9, 0.92, 0.28)
+
+[node name="LightBandRight" type="Polygon2D" parent="World/PowerRestoreSequence"]
+visible = false
+polygon = PackedVector2Array(1370, 24, 1834, 24, 1822, 32, 1388, 32)
+color = Color(0.48, 0.9, 0.92, 0.28)
+
+[node name="NavigationDoorGlow" type="Line2D" parent="World/PowerRestoreSequence"]
+visible = false
+points = PackedVector2Array(1512, 174, 1696, 174, 1696, 742, 1512, 742, 1512, 174)
+width = 5.0
+default_color = Color(0.26, 0.88, 0.82, 0.34)
+joint_mode = 2
+
+[node name="ConsoleWake" type="Line2D" parent="World/PowerRestoreSequence"]
+visible = false
+points = PackedVector2Array(356, 520, 688, 448, 1010, 462, 1328, 476, 1560, 526)
+width = 3.0
+default_color = Color(0.22, 0.82, 0.9, 0.28)
+
+[node name="AmbientDust" type="CPUParticles2D" parent="World"]
+z_index = 5
+position = Vector2(960, 540)
+amount = 28
+lifetime = 8.0
+preprocess = 8.0
+emission_shape = 3
+emission_rect_extents = Vector2(930, 500)
+direction = Vector2(0.25, -1)
+spread = 22.0
+gravity = Vector2(0, -1.5)
+initial_velocity_min = 3.0
+initial_velocity_max = 9.0
+scale_amount_min = 0.7
+scale_amount_max = 1.8
+color = Color(0.52, 0.72, 0.78, 0.22)
 
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="DeductionBoard" parent="UI" instance=ExtResource("6_board")]
 
+[node name="EvidenceInspection" parent="UI" instance=ExtResource("15_inspection")]
+
 [node name="InventoryHud" parent="UI" instance=ExtResource("7_inventory")]
 
+[node name="IncidentBrief" type="PanelContainer" parent="UI"]
+z_index = 40
+offset_left = 580.0
+offset_top = 126.0
+offset_right = 1480.0
+offset_bottom = 254.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_hud")
+
+[node name="Text" type="Label" parent="UI/IncidentBrief"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.9, 0.91, 1)
+theme_override_font_sizes/font_size = 20
+text = "应龙认证记录：不完美。可修正。准予远航。\n拾光号已离开百工星环，朝零号地球进近。\n七码 · 船尾诊断：封锁光网外部冲击，领航舱断电。"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="DualSignalVerification" parent="UI" instance=ExtResource("16_signal_verify")]
+visible = false
+z_index = 45
+
+[node name="ObjectivePanel" type="PanelContainer" parent="UI"]
+offset_left = 34.0
+offset_top = 30.0
+offset_right = 548.0
+offset_bottom = 152.0
+theme_override_styles/panel = SubResource("Style_hud")
+
+[node name="Margin" type="MarginContainer" parent="UI/ObjectivePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 12
+
+[node name="Stack" type="VBoxContainer" parent="UI/ObjectivePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Phase" type="Label" parent="UI/ObjectivePanel/Margin/Stack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.8, 0.88, 1)
+theme_override_font_sizes/font_size = 16
+text = "SCN-G01-00 · BLACKOUT"
+
+[node name="Objective" type="Label" parent="UI/ObjectivePanel/Margin/Stack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.9, 0.91, 1)
+theme_override_font_sizes/font_size = 22
+text = "在断电领航舱中寻找应急照明"
+autowrap_mode = 2
+
+[node name="HintDock" type="Button" parent="UI"]
+offset_left = 1480.0
+offset_top = 34.0
+offset_right = 1878.0
+offset_bottom = 90.0
+theme_override_colors/font_color = Color(0.9, 0.72, 0.43, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("Style_hint")
+text = "请求现场提示  /  HINT"
+
+[node name="BoardButton" type="Button" parent="UI"]
+offset_left = 1610.0
+offset_top = 924.0
+offset_right = 1878.0
+offset_bottom = 1018.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_hud")
+text = "现场推理台\nB"
+
+[node name="DiscoveryToast" type="PanelContainer" parent="UI"]
+visible = false
+offset_left = 574.0
+offset_top = 744.0
+offset_right = 1346.0
+offset_bottom = 856.0
+theme_override_styles/panel = SubResource("Style_hud")
+
+[node name="Text" type="Label" parent="UI/DiscoveryToast"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.73, 0.91, 0.93, 1)
+theme_override_font_sizes/font_size = 21
+text = "证据已记录"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="CabinetReturn" type="Button" parent="UI"]
+visible = false
+offset_left = 1650.0
+offset_top = 116.0
+offset_right = 1868.0
+offset_bottom = 170.0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("Style_hud")
+text = "返回领航舱  ESC"
+
+[node name="CompletionCard" type="PanelContainer" parent="UI"]
+visible = false
+offset_left = 1080.0
+offset_top = 164.0
+offset_right = 1840.0
+offset_bottom = 342.0
+theme_override_styles/panel = SubResource("Style_hud")
+
+[node name="Text" type="Label" parent="UI/CompletionCard"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.95, 0.88, 1)
+theme_override_font_sizes/font_size = 23
+text = "领航舱恢复供电\n双重信号已原样保留\n\nSCN-G01-00 · 航向零号地球"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="StatusStrip" type="PanelContainer" parent="UI"]
-offset_left = 540.0
-offset_top = 42.0
-offset_right = 1380.0
-offset_bottom = 112.0
+offset_left = 586.0
+offset_top = 34.0
+offset_right = 1450.0
+offset_bottom = 98.0
+theme_override_styles/panel = SubResource("Style_hud")
 [node name="Status" type="Label" parent="UI/StatusStrip"]
 text = "拾光号失去主电。先在断电领航舱中找到应急照明。"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="UISynth" type="AudioStreamPlayer" parent="UI"]
+stream = SubResource("Audio_generator")

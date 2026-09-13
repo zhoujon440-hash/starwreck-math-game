@@ -23,12 +23,19 @@ func save_state(state: RefCounted) -> Error:
 	return DirAccess.rename_absolute(temp_absolute, target_absolute)
 
 func load_state() -> Dictionary:
+	var inspection = inspect_state()
+	return inspection.get("data", {}) if inspection.get("valid", false) else {}
+
+func inspect_state() -> Dictionary:
 	if not FileAccess.file_exists(save_path):
-		return {}
+		return {"exists": false, "valid": false, "data": {}, "reason": "missing"}
 	var parser = JSON.new()
-	if parser.parse(FileAccess.get_file_as_string(save_path)) != OK:
-		return {}
-	return parser.data if parser.data is Dictionary else {}
+	if parser.parse(FileAccess.get_file_as_string(save_path)) != OK or not parser.data is Dictionary:
+		return {"exists": true, "valid": false, "data": {}, "reason": "corrupt_json"}
+	var candidate = preload("res://scripts/core/GameState.gd").new()
+	if not candidate.restore(parser.data) or candidate.scene_id != "SCN-G01-00":
+		return {"exists": true, "valid": false, "data": {}, "reason": "unsupported_state"}
+	return {"exists": true, "valid": true, "data": candidate.snapshot(), "reason": ""}
 
 func delete_save() -> Error:
 	if not FileAccess.file_exists(save_path):

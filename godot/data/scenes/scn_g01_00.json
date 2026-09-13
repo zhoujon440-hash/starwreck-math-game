@@ -2,24 +2,43 @@
   "scene_id": "SCN-G01-00",
   "title": "拾光号熄灯",
   "protagonist": "星宇",
+  "continuity": {
+    "novel_version": "V3.1 管理员试炼重构版",
+    "departure": "百工星环",
+    "destination": "零号地球",
+    "certification": "不完美。可修正。准予远航。",
+    "incident": {
+      "cause": "封锁光网",
+      "damaged_branch": "B",
+      "impact": "进近零号地球时，白色封锁光网突然收紧；外部冲击沿B支路灌入并切断领航舱主电。"
+    },
+    "opening_beats": [
+      {"channel":"应龙认证记录","text":"不完美。可修正。准予远航。\n拾光号已离开百工星环，朝零号地球进近。"},
+      {"channel":"七码 · 船尾诊断","text":"封锁光网突然收紧——外部冲击由B支路灌入。领航舱断电。"}
+    ],
+    "completion_phase": "SLICE_COMPLETE",
+    "completion_scene": "SCN-G01-00"
+  },
   "clues": [
-    {"id":"CLUE-001","title":"应急灯仍周期闪烁","text":"储能并未完全失效，仍存在可用应急电源。","source":"emergency-strip"},
-    {"id":"CLUE-002","title":"B支路的新鲜烧蚀","text":"熔断口的烧蚀痕迹仍新，B支路近期发生异常过流。","source":"power-panel-b"},
-    {"id":"CLUE-003","title":"最后一次浪涌记录","text":"机械记录窗显示事故前最后一次浪涌来自B支路。","source":"fault-tape"},
-    {"id":"CLUE-004","title":"备用耦合铭牌","text":"A↔C仅在B隔离时允许闭合。","source":"coupler-plate"},
-    {"id":"CLUE-005","title":"临时保险丝规格","text":"临时保险丝匹配备用耦合槽，不匹配B支路熔断口。","source":"maintenance-fuse"},
-    {"id":"CLUE-006","title":"旧手写线号标签","text":"B→C可临时带灯。","source":"old-label"},
-    {"id":"CLUE-007","title":"Rev.3改装标记","text":"Rev.3改装已经取消B→C旁路。","source":"revision-mark"}
+    {"id":"CLUE-001","title":"最低生命线仍在闪烁","text":"百工星环试飞时单独保留的最低生命线未接主电；闪烁证明备用储能还活着。","source":"emergency-strip","provenance":"百工星环 · 六项试飞供能修正"},
+    {"id":"CLUE-002","title":"光网切入的B支路烧痕","text":"烧蚀由船壳向内收束，是零号地球封锁光网的定向外部击穿，不是旧损。","source":"power-panel-b","provenance":"零号地球进近 · 外部冲击"},
+    {"id":"CLUE-003","title":"七码的倒置浪涌纸带","text":"机械备份记着：进近零号地球时，最后浪涌由B支路灌入；秒数旁留着七码的更正划痕。","source":"fault-tape","provenance":"七码 · 船尾诊断备份"},
+    {"id":"CLUE-004","title":"百工星环 Rev.3 耦合铭牌","text":"改装铭牌规定：保持B机械隔离后，只准由备用A↔C耦合恢复领航电。","source":"coupler-plate","provenance":"百工星环 · Rev.3公开改装"},
+    {"id":"CLUE-005","title":"焊花姐的公用维修保险丝","text":"焊花姐留下、由鲁班包包登记的公用保险丝，只匹配Rev.3备用耦合槽。","source":"maintenance-fuse","provenance":"焊花姐维修包 · 鲁班包包检修记录"},
+    {"id":"CLUE-006","title":"星宇旧写：B→C可临时带灯","text":"旧手写标签保留了星宇过去的快修习惯：直接借B向C带灯。它早于本轮改装。","source":"old-label","provenance":"旧配置 · 游戏原创维修记录"},
+    {"id":"CLUE-007","title":"鲁班包包 Rev.3 复检戳","text":"后压的Rev.3复检戳明确取消B→C旁路；改装与旧缺陷都被留在外壁，供后来维修者追溯。","source":"revision-mark","provenance":"百工星环 · 鲁班包包复检"}
   ],
   "deductions": [
-    {"id":"DED-001","text":"储能系统仍有可用电源。","requires_clues":["CLUE-001"],"requires_edges":[]},
-    {"id":"DED-002","text":"B支路是故障支路，应保持隔离。","requires_clues":[],"requires_edges":[{"from":"CLUE-002","to":"CLUE-003","relation":"supports"}]},
-    {"id":"DED-003","text":"旧B→C维修建议已失效。","requires_clues":[],"requires_edges":[{"from":"CLUE-007","to":"CLUE-006","relation":"supersedes"}]},
-    {"id":"DED-004","text":"应隔离B支路，并通过备用A↔C耦合恢复照明。","requires_deductions":["DED-001","DED-002","DED-003"],"requires_clues":["CLUE-004","CLUE-005"],"requires_edges":[]}
+    {"id":"DED-001","title":"备用储能幸存","text":"最低生命线与备用储能幸存。","requires_clues":["CLUE-001"],"requires_analysis":["CLUE-001"],"requires_edges":[]},
+    {"id":"DED-002","title":"光网损伤 · 隔离B","text":"封锁光网击伤B支路；B必须保持机械隔离。","requires_clues":[],"requires_edges":[{"from":"CLUE-002","to":"CLUE-003","relation":"supports"}]},
+    {"id":"DED-003","title":"Rev.3取代旧快修","text":"星宇旧有的B→C快修已被Rev.3复检记录取代。","requires_clues":[],"requires_edges":[{"from":"CLUE-007","to":"CLUE-006","relation":"supersedes"}]},
+    {"id":"DED-004","title":"分段恢复 · 备用A↔C","text":"保留B隔离；装入公用保险丝，耦合A↔C，再分段闭合总保护。","requires_deductions":["DED-001","DED-002","DED-003"],"requires_clues":["CLUE-004","CLUE-005"],"requires_edges":[{"from":"DED-002","to":"CLUE-004","relation":"supports"},{"from":"CLUE-004","to":"CLUE-005","relation":"supports"}],"requires_synthesis":true}
   ],
   "valid_relations": [
     {"from":"CLUE-002","to":"CLUE-003","relation":"supports"},
-    {"from":"CLUE-007","to":"CLUE-006","relation":"supersedes"}
+    {"from":"CLUE-007","to":"CLUE-006","relation":"supersedes"},
+    {"from":"DED-002","to":"CLUE-004","relation":"supports"},
+    {"from":"CLUE-004","to":"CLUE-005","relation":"supports"}
   ],
   "items": [
     {"id":"ITM-G01-001","name":"应急手灯","critical":true,"asset":"res://assets/inherited/ITM-G01-001-layer-v2.png"},
@@ -29,6 +48,121 @@
     {"id":"ITM-G01-005","name":"线号标签","critical":false,"asset":"res://assets/inherited/ITM-G01-005-layer.png"}
   ],
   "world_states": ["BLACKOUT","EMERGENCY_LIT","POWER_RESTORED"],
-  "power_panel": {"deduction_gate":"DED-004","fuse_item":"ITM-G01-002","coupler_target_degrees":90.0,"coupler_tolerance":8.0,"sequence":["isolate_b","install_fuse","align_coupler","latch_protector"]}
+  "ending_signals": [
+    {"channel":"AUTO-MAINT","timbre":"稳定窄带 · 自动维护广播","waveform":"▁▃▆▃▇▅▂▅▇▃","text":"如果还有生命听见……请重新启动十二星门……","sender":"ZERO-EARTH MAINTENANCE"},
+    {"channel":"WEAK-INTERVENTION","timbre":"衰减宽带 · 未知干预","waveform":"▂▅▁▆▂▃▇▁▃▂","text":"文明修复者，请不要来。","sender":"UNKNOWN"}
+  ],
+  "ending_exchange": [
+    "七码：同一方向，两套互相冲突的指令。两条记录都不足以删除。",
+    "星宇：都保留。先打开去领航核心的路，再判断。"
+  ],
+  "forensic_workbench": {
+    "burn_baseline_target": [1, 2, 2, 3],
+    "burn_hold_seconds": 0.65,
+    "tape_order_target": [1, 0, 2],
+    "tape_positions_target": [2, 1, 2],
+    "plate_trace_target": [0, 2, 3, 5]
+  },
+  "repair_synthesis_workbench": {
+    "slot_labels": ["年代", "批准路径", "备用槽"],
+    "plate_ids": ["REV3_STAMP", "AC_PATH", "FUSE_SPEC"],
+    "plate_labels": {
+      "REV3_STAMP": "Rev.3 复检戳",
+      "AC_PATH": "A↔C 连续路径",
+      "FUSE_SPEC": "公用保险丝规格"
+    }
+  },
+  "power_panel": {"deduction_gate":"DED-004","fuse_item":"ITM-G01-002","coupler_target_degrees":90.0,"coupler_tolerance":8.0,"sequence":["isolate_b","signal_window_diagnostic","install_fuse","align_coupler","latch_protector"]},
+  "hints": {
+    "EXPLORE": [
+      "应急红光每次扫过，左侧工作台都有一处金属反光。",
+      "先取得手灯，再用光束检查配电箱、记录窗与维修铭牌。",
+      "线索板需要三次主动判断：光网损伤来源、旧标签失效、备用槽规格。"
+    ],
+    "INVESTIGATE": [
+      "把光束停在有焦痕、刻字或纸带的位置，观察轮廓的呼吸光。",
+      "配电箱附近有三处证据，维修柜内还有规格与改装记录。",
+      "星宇的旧手写标签并不等于现行接线；寻找百工星环更晚的Rev.3复检戳。"
+    ],
+    "DEDUCTION": [
+      "先对仍在工作的应急灯作一次主动研判。",
+      "新鲜烧蚀与最后浪涌互相印证；Rev.3应与旧标签比较。",
+      "把已形成的故障结论带回耦合铭牌，再核对保险丝规格。"
+    ],
+    "DIAGNOSTIC": [
+      "重新观察纸带的循环节奏，以及扫光经过时哪些槽位已经被占用。",
+      "比较三枚采样窗之间的间隔：它们是否在十二停位环上保持等距？",
+      "微弱回波总在每次维护脉冲之前一格出现。按这个先后关系调整窗位。"
+    ],
+    "REPAIR": [
+      "配电机构会用机械回弹和红灯表示当前步骤不安全。",
+      "先让故障支路与回路分离，再处理备用槽和耦合机构。",
+      "正确的局部步骤会保持，不必因一次错误重新开始。"
+    ],
+    "BURN_BASELINE": [
+      "先看四段热层是否落在同一参考带；不稳时先别压基线锁。",
+      "把四段热层调到同一条参考带，再压下基线锁。",
+      "先把当前最偏的那一段调回参考带；只要基线稳定，后面的扫描点会逐段保留。"
+    ],
+    "BURN_SCAN": [
+      "烧蚀轨迹要沿切口由外向内逐段确认；先盯住下一段发亮的刻痕。",
+      "先让当前扫描头落在那一段，再在同一点确认稳定；前面确认过的方向不会丢。",
+      "继续按切口收束方向推进下一点；已锁住的段落会保持，不必回头长按重做。"
+    ],
+    "TAPE_ORDER": [
+      "先比较三卷纸带的时标先后，再看跨缝的压线和波峰。",
+      "左右顺序和卷面角度都要对上；只换位置还不够。",
+      "先让最明显断开的那道接缝连续起来；不必一次记住三卷全部朝向。"
+    ],
+    "PLATE_TRACE": [
+      "先释放仍在顶压的双锁，再看 Rev.3 刻槽从哪里开始连通。",
+      "旧 B→C 槽会中断回弹；批准路径只会沿连续刻槽前进。",
+      "从当前已确认的节点继续，避开会顶回探针的断槽；路径会逐段保留。"
+    ],
+    "SYNTHESIS": [
+      "维修记录台要把三种信息对回世界里的三种标签：年代、批准路径、备用槽。",
+      "先分清哪块铜片证明年代先后，哪块证明 A↔C 路径，哪块证明保险丝规格。",
+      "先处理最能证明“谁更新”的那块铜片；中间槽只接受批准路径，不会替你给出完整维修顺序。"
+    ],
+    "ORIGIN": [
+      "先把基准缺口和绝对零点对在一起，再考虑压锁销。",
+      "原点只认零位；锁销回弹时先回看基准轮刻度。",
+      "先把缺口带回零位再压锁销；这一步只记录基准，不会替你完成后面的测量。"
+    ],
+    "CALIPER": [
+      "卡尺要同时夹住维护脉冲和前导弱回波。",
+      "弱回波总在维护脉冲前一格；幅度和先后关系都要看。",
+      "先固定维护脉冲，再把弱回波夹到它前一格；已确认的原点不会被清掉。"
+    ],
+    "BLOCKADE": [
+      "把透明覆片上真正重复出现的红色占用槽标出来。",
+      "只有三轮都一致的占用槽才该留下；多标或漏标都会让夹具回弹。",
+      "先锁住你最确定的一处红槽，再继续补齐其余重复出现的位置；不用一次穷举整圈。"
+    ],
+    "WINDOWS": [
+      "三枚采样窗既要避开占用槽，也要在环上保持等距。",
+      "如果看见等距却锁不住，说明其中一扇窗还压在封锁占位上。",
+      "那组看似整齐的窗位若撞上封锁，就把每扇窗沿同一方向各挪一格，再试一次锁杆。"
+    ],
+    "MAINTENANCE": [
+      "先稳住自动维护窄带；它会先进入绿色参考框。",
+      "增益正确后再压锁桨，第一条记录才会显影。",
+      "只调维护路这一边，直到波峰稳稳落进绿框，再尝试锁定。"
+    ],
+    "WEAK": [
+      "保持维护窄带不动，再把弱回波调到它前一格的前缘。",
+      "弱路需要同时满足幅度和相位；先脱离底噪，再利用“提前一格”的关系锁定。",
+      "维护路已经锁住了；只补弱路那一边，别回头改动已确认的第一条记录。"
+    ],
+    "KEEP_GATES": [
+      "两路记录互相冲突，但现在都还不能删。",
+      "两枚保留闸彼此独立；封存杆不会替你补齐缺的一路。",
+      "先压下一枚保留闸，再观察封存杆为什么仍会拒绝；另一枚闸还需要你亲手保留。"
+    ],
+    "KEEP_FINAL": [
+      "还缺最后一路记录保留；已压下的那枚保留闸会继续保持。",
+      "只有两枚保留闸都压下，封存杆才会接受这份记录。",
+      "已保留的一路会保持不动；补上另一枚保留闸后，封存杆才会接受两条记录。"
+    ]
+  }
 }
-
