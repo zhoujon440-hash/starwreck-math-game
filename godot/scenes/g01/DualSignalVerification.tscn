@@ -1,0 +1,365 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/puzzle/DualSignalVerification.gd" id="1_receiver"]
+[ext_resource type="Script" path="res://scripts/puzzle/ReceiverScope.gd" id="2_scope"]
+
+[sub_resource type="StyleBoxFlat" id="Style_housing"]
+bg_color = Color(0.009, 0.024, 0.031, 0.985)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.12, 0.48, 0.49, 0.94)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0, 0, 0, 0.78)
+shadow_size = 22
+
+[sub_resource type="StyleBoxFlat" id="Style_carrier"]
+bg_color = Color(0.018, 0.06, 0.068, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22, 0.63, 0.62, 0.72)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="Style_control"]
+bg_color = Color(0.045, 0.12, 0.13, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.36, 0.74, 0.7, 0.86)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="AudioStreamGenerator" id="Audio_receiver"]
+mix_rate = 22050.0
+buffer_length = 0.35
+
+[node name="DualSignalVerification" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_receiver")
+
+[node name="Housing" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 110.0
+offset_top = 92.0
+offset_right = 1810.0
+offset_bottom = 1012.0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("Style_housing")
+
+[node name="SealBar" type="ColorRect" parent="Housing"]
+visible = false
+layout_mode = 0
+offset_left = 54.0
+offset_top = 22.0
+offset_right = 1646.0
+offset_bottom = 36.0
+mouse_filter = 2
+color = Color(0.16, 0.88, 0.72, 0.9)
+
+[node name="Header" type="Label" parent="."]
+offset_left = 170.0
+offset_top = 122.0
+offset_right = 1750.0
+offset_bottom = 170.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.93, 0.9, 1)
+theme_override_font_sizes/font_size = 26
+text = "船尾双路载波保全器 · TWO-CARRIER RECORD RECEIVER"
+horizontal_alignment = 1
+
+[node name="Instruction" type="Label" parent="."]
+offset_left = 220.0
+offset_top = 168.0
+offset_right = 1700.0
+offset_bottom = 214.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.58, 0.72, 0.73, 1)
+theme_override_font_sizes/font_size = 18
+text = "转动增益轮，让波峰落入绿色窄带；弱路相位标记对准测量留下的参考缺口。"
+horizontal_alignment = 1
+
+[node name="MaintenanceCarrier" type="Panel" parent="."]
+offset_left = 164.0
+offset_top = 228.0
+offset_right = 932.0
+offset_bottom = 730.0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("Style_carrier")
+
+[node name="Title" type="Label" parent="MaintenanceCarrier"]
+offset_left = 28.0
+offset_top = 22.0
+offset_right = 740.0
+offset_bottom = 58.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.45, 0.9, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+text = "自动维护载波 · 稳定窄带"
+
+[node name="Waveform" type="Control" parent="MaintenanceCarrier"]
+offset_left = 28.0
+offset_top = 68.0
+offset_right = 740.0
+offset_bottom = 148.0
+mouse_filter = 2
+script = ExtResource("2_scope")
+
+[node name="GainWheel" type="Control" parent="MaintenanceCarrier"]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 150.0
+offset_right = 322.0
+offset_bottom = 300.0
+mouse_filter = 2
+
+[node name="Decrease" type="Button" parent="MaintenanceCarrier/GainWheel"]
+offset_right = 86.0
+offset_bottom = 86.0
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("Style_control")
+text = "−"
+
+[node name="Increase" type="Button" parent="MaintenanceCarrier/GainWheel"]
+offset_left = 192.0
+offset_right = 278.0
+offset_bottom = 86.0
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("Style_control")
+text = "+"
+
+[node name="GainReadout" type="Label" parent="MaintenanceCarrier"]
+offset_left = 122.0
+offset_top = 248.0
+offset_right = 246.0
+offset_bottom = 290.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 21
+text = "增益 0"
+horizontal_alignment = 1
+
+[node name="LockPaddle" type="Button" parent="MaintenanceCarrier"]
+offset_left = 390.0
+offset_top = 160.0
+offset_right = 706.0
+offset_bottom = 254.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_control")
+text = "压下维护锁桨"
+
+[node name="LockLamp" type="ColorRect" parent="MaintenanceCarrier"]
+offset_left = 505.0
+offset_top = 274.0
+offset_right = 591.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.12, 0.2, 0.22, 1)
+
+[node name="Message" type="Label" parent="MaintenanceCarrier"]
+visible = false
+offset_left = 30.0
+offset_top = 326.0
+offset_right = 738.0
+offset_bottom = 470.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.72, 0.96, 0.9, 1)
+theme_override_font_sizes/font_size = 20
+text = "AUTO-MAINT · 稳定窄带\n如果还有生命听见……请重新启动十二星门……"
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="WeakCarrier" type="Panel" parent="."]
+offset_left = 988.0
+offset_top = 228.0
+offset_right = 1756.0
+offset_bottom = 730.0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("Style_carrier")
+
+[node name="Title" type="Label" parent="WeakCarrier"]
+offset_left = 28.0
+offset_top = 22.0
+offset_right = 740.0
+offset_bottom = 58.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94, 0.66, 0.38, 1)
+theme_override_font_sizes/font_size = 22
+text = "弱干预回波 · 衰减宽带"
+
+[node name="Waveform" type="Control" parent="WeakCarrier"]
+offset_left = 28.0
+offset_top = 68.0
+offset_right = 740.0
+offset_bottom = 148.0
+mouse_filter = 2
+script = ExtResource("2_scope")
+
+[node name="GainWheel" type="Control" parent="WeakCarrier"]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 150.0
+offset_right = 298.0
+offset_bottom = 294.0
+mouse_filter = 2
+
+[node name="Decrease" type="Button" parent="WeakCarrier/GainWheel"]
+offset_right = 76.0
+offset_bottom = 76.0
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("Style_control")
+text = "−"
+
+[node name="Increase" type="Button" parent="WeakCarrier/GainWheel"]
+offset_left = 188.0
+offset_right = 264.0
+offset_bottom = 76.0
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("Style_control")
+text = "+"
+
+[node name="GainReadout" type="Label" parent="WeakCarrier"]
+offset_left = 92.0
+offset_top = 236.0
+offset_right = 226.0
+offset_bottom = 278.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 21
+text = "增益 0"
+horizontal_alignment = 1
+
+[node name="PhaseWheel" type="Control" parent="WeakCarrier"]
+layout_mode = 0
+offset_left = 310.0
+offset_top = 150.0
+offset_right = 548.0
+offset_bottom = 294.0
+mouse_filter = 2
+
+[node name="Reverse" type="Button" parent="WeakCarrier/PhaseWheel"]
+offset_right = 70.0
+offset_bottom = 76.0
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("Style_control")
+text = "◀"
+
+[node name="Advance" type="Button" parent="WeakCarrier/PhaseWheel"]
+offset_left = 168.0
+offset_right = 238.0
+offset_bottom = 76.0
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("Style_control")
+text = "▶"
+
+[node name="PhaseReadout" type="Label" parent="WeakCarrier"]
+offset_left = 346.0
+offset_top = 236.0
+offset_right = 518.0
+offset_bottom = 278.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "相位 0 / 12"
+horizontal_alignment = 1
+
+[node name="LockPaddle" type="Button" parent="WeakCarrier"]
+offset_left = 564.0
+offset_top = 160.0
+offset_right = 730.0
+offset_bottom = 278.0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("Style_control")
+text = "弱路\n锁桨"
+
+[node name="LockLamp" type="ColorRect" parent="WeakCarrier"]
+offset_left = 604.0
+offset_top = 292.0
+offset_right = 690.0
+offset_bottom = 310.0
+mouse_filter = 2
+color = Color(0.2, 0.14, 0.1, 1)
+
+[node name="Message" type="Label" parent="WeakCarrier"]
+visible = false
+offset_left = 30.0
+offset_top = 326.0
+offset_right = 738.0
+offset_bottom = 470.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.96, 0.78, 0.58, 1)
+theme_override_font_sizes/font_size = 20
+text = "WEAK-INTERVENTION · 衰减宽带 · SENDER UNKNOWN\n文明修复者，请不要来。"
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="KeepGates" type="Control" parent="."]
+offset_left = 308.0
+offset_top = 758.0
+offset_right = 1328.0
+offset_bottom = 886.0
+mouse_filter = 2
+
+[node name="MaintenanceGate" type="Button" parent="KeepGates"]
+toggle_mode = true
+offset_right = 410.0
+offset_bottom = 112.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_control")
+text = "维护记录保留闸\nKEEP AUTO-MAINT"
+
+[node name="WeakGate" type="Button" parent="KeepGates"]
+toggle_mode = true
+offset_left = 610.0
+offset_right = 1020.0
+offset_bottom = 112.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_control")
+text = "弱路记录保留闸\nKEEP UNKNOWN"
+
+[node name="SealLever" type="Button" parent="."]
+offset_left = 1410.0
+offset_top = 774.0
+offset_right = 1708.0
+offset_bottom = 882.0
+theme_override_colors/font_color = Color(1, 0.78, 0.36, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("Style_control")
+text = "压下封存拉杆"
+
+[node name="SealLamp" type="ColorRect" parent="."]
+offset_left = 1510.0
+offset_top = 894.0
+offset_right = 1608.0
+offset_bottom = 914.0
+mouse_filter = 2
+color = Color(0.3, 0.2, 0.08, 1)
+
+[node name="FeedbackReadout" type="Label" parent="."]
+offset_left = 214.0
+offset_top = 914.0
+offset_right = 1420.0
+offset_bottom = 970.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.58, 0.96, 0.88, 1)
+theme_override_font_sizes/font_size = 19
+text = "接收器上电；先把自动维护窄带调入绿色参考框。"
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ReceiverAudio" type="AudioStreamPlayer" parent="."]
+stream = SubResource("Audio_receiver")

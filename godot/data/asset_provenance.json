@@ -1,0 +1,14 @@
+{
+  "baseline_commit": "561dfc8b380b70fddf25410b51fa053c6a70a867",
+  "assets": [
+    {"source":"public/assets/g01-cockpit-cabinet-closed-v2.png","target":"godot/assets/inherited/g01-cockpit-cabinet-closed-v2.png","sha256":"980e6488a060a0f05d24b65c881de7290597ff952d24975601e1b0d63f37080f"},
+    {"source":"public/assets/g01-cockpit.png","target":"godot/assets/inherited/g01-cockpit.png","sha256":"41ecc1dd838dbfa967971a852914e58a1fd129ea8058e6f19cc86aea9f804ca2"},
+    {"source":"public/assets/g01-maintenance-cabinet-v2.png","target":"godot/assets/inherited/g01-maintenance-cabinet-v2.png","sha256":"ccf8cdf0e5ad7b62d1827dde15248ec0553b3d9ee04d0a728e26400e4e3aa66c"},
+    {"source":"public/assets/items/ITM-G01-001-layer-v2.png","target":"godot/assets/inherited/ITM-G01-001-layer-v2.png","sha256":"4274cd610349afc50cd7194a2a25f75ba082d4a234fb5b2628edbb675e1be6cf"},
+    {"source":"public/assets/items/ITM-G01-002-layer.png","target":"godot/assets/inherited/ITM-G01-002-layer.png","sha256":"8b331985bded63b0f46ea8f9e77c956913502d007fa396d0453e1c2e8d761ce2"},
+    {"source":"public/assets/items/ITM-G01-003-layer.png","target":"godot/assets/inherited/ITM-G01-003-layer.png","sha256":"7d25750064f51e9813182d21ef400291e47de08d40c5793c45cd8a4e1c9aff91"},
+    {"source":"public/assets/items/ITM-G01-004-layer.png","target":"godot/assets/inherited/ITM-G01-004-layer.png","sha256":"f9a46baa230e0a7c8f2a045f65429c23793d2bad69fc351492d580997b20bd15"},
+    {"source":"public/assets/items/ITM-G01-005-layer.png","target":"godot/assets/inherited/ITM-G01-005-layer.png","sha256":"52c224f95fcd5a3fa54fbec190c742302c3ac39d41208ba7d2591edd5087c0a2"}
+  ]
+}
+

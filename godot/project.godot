@@ -1,0 +1,31 @@
+; Engine configuration file.
+; Godot 4.7.2-stable Windows native vertical slice.
+
+config_version=5
+
+[application]
+
+config/name="星骸拾荒者：十二星门"
+run/main_scene="res://scenes/main/Main.tscn"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1366
+window/size/window_height_override=768
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+
+[input]
+
+toggle_deduction_board={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":66,"unicode":98)]
+}
+

@@ -1,0 +1,229 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/clue/RepairSynthesisWorkbench.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="Style_frame"]
+bg_color = Color(0.035, 0.044, 0.043, 0.99)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.55, 0.41, 0.19, 0.96)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+shadow_color = Color(0, 0, 0, 0.72)
+shadow_size = 20
+
+[sub_resource type="StyleBoxFlat" id="Style_plate"]
+bg_color = Color(0.34, 0.235, 0.085, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.86, 0.66, 0.29, 0.92)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="Style_slot"]
+bg_color = Color(0.035, 0.075, 0.077, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.25, 0.55, 0.54, 0.86)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="Style_control"]
+bg_color = Color(0.12, 0.18, 0.17, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.68, 0.62, 0.84)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="RepairSynthesisWorkbench" type="Control"]
+visible = false
+process_mode = 3
+z_index = 220
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_script")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.002, 0.005, 0.006, 0.92)
+mouse_filter = 0
+
+[node name="Bench" type="Panel" parent="."]
+offset_left = 180.0
+offset_top = 84.0
+offset_right = 1740.0
+offset_bottom = 996.0
+theme_override_styles/panel = SubResource("Style_frame")
+
+[node name="Title" type="Label" parent="Bench"]
+offset_left = 52.0
+offset_top = 32.0
+offset_right = 1160.0
+offset_bottom = 76.0
+theme_override_colors/font_color = Color(0.91, 0.72, 0.34, 1)
+theme_override_font_sizes/font_size = 30
+text = "维修记录压合台  /  REPAIR RECORD PRESS"
+
+[node name="Instructions" type="Label" parent="Bench"]
+offset_left = 52.0
+offset_top = 88.0
+offset_right = 1498.0
+offset_bottom = 140.0
+theme_override_colors/font_color = Color(0.7, 0.8, 0.78, 1)
+theme_override_font_sizes/font_size = 19
+text = "比较旧标签、Rev.3 铭牌与保险丝记录。放错的铜片会留在槽中，可提起后重放；压合不会显示最终复电顺序。"
+autowrap_mode = 2
+
+[node name="PlateHeading" type="Label" parent="Bench"]
+offset_left = 54.0
+offset_top = 168.0
+offset_right = 660.0
+offset_bottom = 202.0
+theme_override_colors/font_color = Color(0.84, 0.64, 0.28, 1)
+theme_override_font_sizes/font_size = 20
+text = "三枚黄铜校验片 / EVIDENCE PLATES"
+
+[node name="PlateRack" type="HBoxContainer" parent="Bench"]
+offset_left = 52.0
+offset_top = 214.0
+offset_right = 1508.0
+offset_bottom = 314.0
+theme_override_constants/separation = 24
+
+[node name="REV3_STAMP" type="Button" parent="Bench/PlateRack"]
+custom_minimum_size = Vector2(468, 92)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.56, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("Style_plate")
+text = "Rev.3 复检戳"
+
+[node name="AC_PATH" type="Button" parent="Bench/PlateRack"]
+custom_minimum_size = Vector2(468, 92)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.56, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("Style_plate")
+text = "A↔C 连续路径"
+
+[node name="FUSE_SPEC" type="Button" parent="Bench/PlateRack"]
+custom_minimum_size = Vector2(468, 92)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.56, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("Style_plate")
+text = "公用保险丝规格"
+
+[node name="SlotHeading" type="Label" parent="Bench"]
+offset_left = 54.0
+offset_top = 350.0
+offset_right = 920.0
+offset_bottom = 386.0
+theme_override_colors/font_color = Color(0.42, 0.86, 0.82, 1)
+theme_override_font_sizes/font_size = 20
+text = "机械槽位 / CHRONOLOGY · APPROVED PATH · SPARE SLOT"
+
+[node name="SlotRack" type="HBoxContainer" parent="Bench"]
+offset_left = 52.0
+offset_top = 400.0
+offset_right = 1508.0
+offset_bottom = 572.0
+theme_override_constants/separation = 24
+
+[node name="Slot0" type="Button" parent="Bench/SlotRack"]
+custom_minimum_size = Vector2(468, 154)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.94, 0.88, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("Style_slot")
+text = "年代\n空槽 · 等待校验片"
+
+[node name="Slot1" type="Button" parent="Bench/SlotRack"]
+custom_minimum_size = Vector2(468, 154)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.94, 0.88, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("Style_slot")
+text = "批准路径\n空槽 · 等待校验片"
+
+[node name="Slot2" type="Button" parent="Bench/SlotRack"]
+custom_minimum_size = Vector2(468, 154)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.94, 0.88, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("Style_slot")
+text = "备用槽\n空槽 · 等待校验片"
+
+[node name="PressHousing" type="ColorRect" parent="Bench"]
+offset_left = 52.0
+offset_top = 608.0
+offset_right = 1508.0
+offset_bottom = 614.0
+color = Color(0.38, 0.29, 0.15, 0.8)
+mouse_filter = 2
+
+[node name="SealLamp" type="ColorRect" parent="Bench"]
+offset_left = 64.0
+offset_top = 646.0
+offset_right = 82.0
+offset_bottom = 716.0
+color = Color(0.9, 0.42, 0.18, 0.78)
+mouse_filter = 2
+
+[node name="Readout" type="Label" parent="Bench"]
+offset_left = 104.0
+offset_top = 634.0
+offset_right = 1498.0
+offset_bottom = 730.0
+theme_override_colors/font_color = Color(0.72, 0.88, 0.84, 1)
+theme_override_font_sizes/font_size = 20
+text = "维修记录台等待三项旧记录。"
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="CompressionHandle" type="Button" parent="Bench"]
+offset_left = 910.0
+offset_top = 770.0
+offset_right = 1508.0
+offset_bottom = 842.0
+theme_override_colors/font_color = Color(0.76, 0.96, 0.88, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("Style_control")
+text = "压下记录杆 / PRESS RECORD"
+
+[node name="Return" type="Button" parent="Bench"]
+offset_left = 52.0
+offset_top = 770.0
+offset_right = 350.0
+offset_bottom = 842.0
+theme_override_colors/font_color = Color(0.76, 0.9, 0.88, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_control")
+text = "返回推理台  B"
