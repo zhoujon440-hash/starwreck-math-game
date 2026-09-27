@@ -572,6 +572,11 @@ func _update_objective() -> void:
 func current_objective_text() -> String:
 	if not _has_flashlight_guidance():
 		return "在断电领航舱中寻找应急照明"
+	if state.current_view == "CABINET":
+		for clue_id in ["CLUE-005", "CLUE-006", "CLUE-007"]:
+			if clue_id not in state.observed_clue_ids:
+				return "检查维修柜里的遮挡、标记与保险丝夹座"
+		return "返回驾驶舱，继续整理现场证据"
 	match _guidance_objective_key():
 		"BURN_BASELINE":
 			return "调平四段热层基线，再锁住烧蚀扫描参考带"
@@ -721,7 +726,7 @@ func _set_exploration_hud_visible(value: bool) -> void:
 		discovery_toast.modulate.a = 0.0
 
 func _shows_modal_guidance() -> bool:
-	return state != null and state.scene_phase != "SLICE_COMPLETE" and state.current_view in ["EVIDENCE", "POWER_PANEL", "SIGNAL_VERIFY"]
+	return state != null and state.scene_phase != "SLICE_COMPLETE" and state.current_view in ["EVIDENCE", "CABINET", "POWER_PANEL", "SIGNAL_VERIFY"]
 
 func _set_cockpit_hotspots_pickable(value: bool) -> void:
 	for hotspot_path in COCKPIT_HOTSPOT_PATHS:

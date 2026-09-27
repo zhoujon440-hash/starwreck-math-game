@@ -70,10 +70,35 @@ func _hint_phase() -> String:
 			_:
 				return "REPAIR"
 	if state.observed_clue_ids.size() < 7:
-		return "INVESTIGATE"
+		return _exploration_hint_phase()
 	if "DED-004" not in state.unlocked_deduction_ids:
 		return "DEDUCTION"
 	return "REPAIR"
+
+func _exploration_hint_phase() -> String:
+	var cabinet_incomplete := false
+	for clue_id in ["CLUE-005", "CLUE-006", "CLUE-007"]:
+		if clue_id not in state.observed_clue_ids:
+			cabinet_incomplete = true
+	if str(state.current_view) == "CABINET":
+		return _cabinet_hint_phase() if cabinet_incomplete else "RETURN_COCKPIT"
+	for clue_id in ["CLUE-001", "CLUE-002", "CLUE-003", "CLUE-004"]:
+		if clue_id not in state.observed_clue_ids:
+			return "FIND_" + clue_id
+	return "FIND_CABINET"
+
+func _cabinet_hint_phase() -> String:
+	var obstructions: Dictionary = state.investigation_state.get("cabinet_obstructions", {})
+	if "CLUE-006" not in state.observed_clue_ids:
+		return "CABINET_LABEL" if bool(obstructions.get("wrench", false)) else "CABINET_WRENCH"
+	if "CLUE-007" not in state.observed_clue_ids:
+		return "CABINET_STAMP" if bool(obstructions.get("glove", false)) else "CABINET_GLOVE"
+	if not bool(obstructions.get("wrench", false)):
+		return "CABINET_WRENCH"
+	if not bool(obstructions.get("glove", false)):
+		return "CABINET_GLOVE"
+	var latches: Array = state.investigation_state.get("fuse_latches", [false, false])
+	return "CABINET_FUSE" if bool(latches[0]) and bool(latches[1]) else "CABINET_LATCHES"
 
 func _needs_synthesis() -> bool:
 	if bool(state.investigation_state.get("repair_synthesis_complete", false)) or "DED-004" in state.unlocked_deduction_ids:

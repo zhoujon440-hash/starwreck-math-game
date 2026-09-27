@@ -1,6 +1,18 @@
 # SCN-G01-00 HOPA Quality Self-Review
 
-## Current verdict — 2026-09-14
+## Current verdict — 2026-09-27
+
+**NOT READY / PMO NOT PASSED.** The current progress-aware hint patch fixes misleading exploration hints and inaccessible cabinet guidance. Missing cockpit clues now select their own observation hints; cabinet hints distinguish the wrench, exposed label, glove, exposed stamp, fuse clips and released fuse. Cabinet-local objectives change to returning to the cockpit once its three clues are recorded. Hints do not award evidence or reveal deduction relations/power-operation answers.
+
+Regression tests first reproduced the defects, then passed after correction. An independent read-only reviewer identified the hidden cabinet hint button, insufficient physical-state branching and incorrect completed-cabinet objective; all were corrected and the reviewer sent a code-level closeout. The reviewer subsequently hit an account usage limit; this is not an independent GUI or full-product acceptance. Fresh final-patch Godot 4.7.2 full tests and runtime smoke passed, along with provenance (8 assets), preflight process tests (6), Windows export and diff whitespace checks. The Windows-only export configuration and runtime source contain no Web runtime.
+
+Limited native Windows checks of `release/windows-progress-hints-20260927` used an isolated, normally acquired handlamp save (not a preseeded test snapshot). At both actual 1366×768 and 1920×1080 client sizes, cabinet objective, status, hint and return controls were visible without overlap; real hint-button clicks displayed the first wrench/paper-edge hint. Board and inventory remained hidden in the cabinet. Local diagnostic screenshots are `tmp/hint-review-20260927/locker-hint-1366.png` and `locker-hint-1920.png` under the task workspace. These are partial diagnostic observations, not a continuous clean-save route, published media artifacts or duration evidence. They used read-only PrintWindow capture because native capture reported `SetIsBorderRequired` / `0x80004002`; all input used the Computer Use API.
+
+This GUI check also found that reopening an investigation save briefly restores the generic opening status asking to find emergency lighting, despite already owning the lamp. That resume-status text remains an open follow-up, alongside the physical emergency-strip alignment and schematic close-up quality findings below. Current-candidate cloud CI, a complete ordinary-player 15–25 minute recording, three extracts, full key-screen coverage and an uploaded evidence manifest remain required. No READY signal is issued.
+
+The preceding hover fix is synchronized as `d06c13407ec1af69741fda1ca20abc50cc767787`; all five Actions runs succeeded (Godot `36290884334` / `36290885780`, CI `36290884346` / `36290885789`, baseline `36290885813`). Its Windows artifact is not evidence for this later hint patch.
+
+## Prior checkpoint — 2026-09-14
 
 **NOT READY / PMO NOT PASSED.** This is implementation self-review, not owner acceptance. The current patch fixes six evidence-hover targets on top of the `b59fffd` / remote `d0849431` CI remediation. Godot 4.7.2 import, headless tests, runtime smoke, provenance (8 assets), Windows export and an isolated exported-EXE launch passed locally. These gates do not prove ordinary-player quality or duration.
 

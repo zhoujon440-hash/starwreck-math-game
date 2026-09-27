@@ -15,20 +15,79 @@ func _set_all_deductions(state: RefCounted) -> void:
 		if deduction_id not in state.unlocked_deduction_ids:
 			state.unlocked_deduction_ids.append(deduction_id)
 
+func _test_missing_evidence_guidance(t, script) -> void:
+	# A restored partial collection must point to something still missing,
+	# not repeat the same late revision hint for every investigation state.
+	for sample in [
+		{"missing": "CLUE-001", "subject": "应急"},
+		{"missing": "CLUE-002", "subject": "烧痕"},
+		{"missing": "CLUE-003", "subject": "纸带"},
+		{"missing": "CLUE-004", "subject": "铭牌"},
+		{"missing": "CLUE-005", "subject": "维修柜"},
+		{"missing": "CLUE-006", "subject": "维修柜"},
+		{"missing": "CLUE-007", "subject": "维修柜"},
+	]:
+		var partial = _guidance_state()
+		_set_all_clues(partial)
+		partial.observed_clue_ids.erase(sample.missing)
+		var restored = preload("res://scripts/core/GameState.gd").new()
+		t.truthy(restored.restore(JSON.parse_string(JSON.stringify(partial.snapshot()))), "partial clue collection restores through real JSON")
+		var service = script.new(restored)
+		for seconds in [125.0, 305.0, 545.0]:
+			restored.elapsed_seconds = seconds
+			var text: String = service.current_hint()
+			t.truthy(sample.subject in text, "each hint tier must target missing evidence %s" % sample.missing)
+			t.truthy("B→C" not in text and "supersedes" not in text, "exploration guidance must not supply the deduction answer")
+		t.equal(restored.observed_clue_ids.size(), 6, "asking for hints never awards a missing clue")
+		service.mark_progress()
+		t.equal(service.current_hint(), "", "real progress resets the hint escalation")
+
+	var early = _guidance_state()
+	early.elapsed_seconds = 545.0
+	var early_hints = script.new(early)
+	t.truthy("应急" in early_hints.current_hint() and "Rev.3" not in early_hints.current_hint(), "zero-clue exploration must not jump to a later revision comparison")
+	early.current_view = "CABINET"
+	t.truthy("维修柜" in early_hints.current_hint(), "current cabinet work takes priority over missing cockpit evidence")
+	for clue_id in ["CLUE-005", "CLUE-006", "CLUE-007"]:
+		early.observed_clue_ids.append(clue_id)
+	t.truthy("驾驶舱" in early_hints.current_hint(), "finished cabinet points back to remaining cockpit work")
+	early.current_view = "COCKPIT"
+	t.truthy("应急" in early_hints.current_hint(), "leaving cabinet restores the missing cockpit target")
+
+	for sample in [
+		{"clue": "CLUE-006", "wrench": false, "glove": false, "latches": [false, false], "subject": "扳手"},
+		{"clue": "CLUE-006", "wrench": true, "glove": true, "latches": [true, true], "subject": "旧标签"},
+		{"clue": "CLUE-007", "wrench": true, "glove": false, "latches": [false, false], "subject": "手套"},
+		{"clue": "CLUE-007", "wrench": true, "glove": true, "latches": [true, true], "subject": "复检戳"},
+		{"clue": "CLUE-005", "wrench": true, "glove": true, "latches": [true, false], "subject": "卡扣"},
+		{"clue": "CLUE-005", "wrench": true, "glove": true, "latches": [true, true], "subject": "保险丝"},
+	]:
+		var cabinet = _guidance_state()
+		_set_all_clues(cabinet)
+		cabinet.observed_clue_ids.erase(sample.clue)
+		cabinet.current_view = "CABINET"
+		cabinet.investigation_state.cabinet_obstructions = {"wrench": sample.wrench, "glove": sample.glove}
+		cabinet.investigation_state.fuse_latches = sample.latches
+		var cabinet_hints = script.new(cabinet)
+		for seconds in [125.0, 305.0, 545.0]:
+			cabinet.elapsed_seconds = seconds
+			t.truthy(sample.subject in cabinet_hints.current_hint(), "cabinet hint must target the unfinished physical step: %s" % sample.subject)
+
 func run(t) -> void:
 	var script = load("res://scripts/core/HintService.gd")
 	t.truthy(script != null, "tiered anti-stuck hint service must exist")
 	if script == null:
 		return
+	_test_missing_evidence_guidance(t, script)
 	var state = preload("res://scripts/core/GameState.gd").new()
 	var hints = script.new(state)
 	t.equal(hints.current_hint(), "", "fresh play must preserve discovery")
 	state.elapsed_seconds = 125.0
-	t.equal(hints.current_hint(), "应急红光每次扫过，左侧工作台都有一处金属反光。")
+	t.truthy("地板" in hints.current_hint(), "lamp guidance targets its actual floor placement, not the workbench")
 	state.elapsed_seconds = 305.0
 	t.equal(hints.current_hint(), "先取得手灯，再用光束检查配电箱、记录窗与维修铭牌。")
 	state.elapsed_seconds = 545.0
-	t.equal(hints.current_hint(), "线索板需要三次主动判断：光网损伤来源、旧标签失效、备用槽规格。")
+	t.truthy("手灯" in hints.current_hint() and "旧标签失效" not in hints.current_hint(), "without a lamp even the strongest hint must address acquiring light, not later deductions")
 	t.truthy("90" not in hints.current_hint(), "hints must not reveal the coupler angle")
 	t.truthy("supports" not in hints.current_hint(), "hints must not reveal the exact relation choice")
 
@@ -144,6 +203,13 @@ func run(t) -> void:
 		var scene = scene_script.new()
 		var objective_state = _guidance_state()
 		scene.state = objective_state
+		objective_state.current_view = "CABINET"
+		t.equal(scene.current_objective_text(), "检查维修柜里的遮挡、标记与保险丝夹座", "unfinished cabinet objective stays local")
+		objective_state.observed_clue_ids.assign(["CLUE-005", "CLUE-006", "CLUE-007"])
+		t.truthy("返回驾驶舱" in scene.current_objective_text(), "finished cabinet objective agrees with return guidance")
+		_set_all_clues(objective_state)
+		t.truthy("返回驾驶舱" in scene.current_objective_text(), "all-clue cabinet objective does not demand repeat investigation")
+		objective_state.observed_clue_ids.clear()
 		objective_state.current_view = "EVIDENCE"
 		objective_state.investigation_state["active_inspection_clue"] = "CLUE-002"
 		objective_state.investigation_state["inspection_observations"]["CLUE-002"] = [0, 1, 2]

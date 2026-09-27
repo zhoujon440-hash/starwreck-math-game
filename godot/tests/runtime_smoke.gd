@@ -212,9 +212,7 @@ func _run() -> void:
 	scene._enter_cabinet()
 	await create_timer(0.45).timeout
 	_require(scene.cabinet_world.visible, "cabinet close-up opens for physical inspection")
-	_require(not scene.get_node("UI/ObjectivePanel").visible, "cabinet close-up hides the objective panel")
-	_require(not scene.get_node("UI/StatusStrip").visible, "cabinet close-up hides the status strip")
-	_require(not scene.get_node("UI/HintDock").visible, "cabinet close-up hides the hint action")
+	await _require_modal_guidance(scene, "检查维修柜里的遮挡、标记与保险丝夹座", "CABINET_WRENCH", "cabinet inspection")
 	_require(not scene.get_node("UI/BoardButton").visible, "cabinet close-up hides the deduction-board action")
 	_require(not scene.get_node("UI/InventoryHud").visible, "cabinet close-up hides the inventory HUD")
 	_require(not scene.discovery_toast.visible, "cabinet close-up clears stale toast feedback")
@@ -253,7 +251,7 @@ func _run() -> void:
 	_require("ITM-G01-003" in scene.state.inventory_item_ids and "ITM-G01-004" in scene.state.inventory_item_ids, "cabinet tools persist after the close-up closes")
 	scene._enter_cabinet()
 	await create_timer(0.45).timeout
-	_require(scene.cabinet_world.visible and not scene.get_node("UI/ObjectivePanel").visible and not scene.inventory_hud.visible, "reopened cabinet keeps every exploration HUD surface suppressed")
+	_require(scene.cabinet_world.visible and scene.get_node("UI/HintDock").visible and not scene.inventory_hud.visible, "reopened cabinet keeps guidance accessible without inventory overlay")
 	scene._toast("late toast after cabinet reopen")
 	_require(not scene.discovery_toast.visible, "reopened cabinet rejects late toast overlays")
 	_require(scene.cabinet_world.get_node("OldLabelHotspot").input_pickable and scene.cabinet_world.get_node("RevisionMarkHotspot").input_pickable, "reopened cabinet preserves both exposed clue hotspots")
@@ -266,8 +264,8 @@ func _run() -> void:
 	root.add_child(cabinet_resumed)
 	await process_frame
 	_require(cabinet_resumed.state.current_view == "CABINET" and cabinet_resumed.cabinet_world.visible, "disk resume restores the active cabinet close-up")
-	_require(not cabinet_resumed.get_node("UI/ObjectivePanel").visible and not cabinet_resumed.get_node("UI/StatusStrip").visible, "cabinet resume suppresses exploration readouts")
-	_require(not cabinet_resumed.get_node("UI/HintDock").visible and not cabinet_resumed.get_node("UI/BoardButton").visible and not cabinet_resumed.inventory_hud.visible, "cabinet resume suppresses hint, board, and inventory")
+	_require(cabinet_resumed.get_node("UI/ObjectivePanel").visible and cabinet_resumed.get_node("UI/StatusStrip").visible, "cabinet resume restores readable guidance")
+	_require(cabinet_resumed.get_node("UI/HintDock").visible and not cabinet_resumed.get_node("UI/BoardButton").visible and not cabinet_resumed.inventory_hud.visible, "cabinet resume exposes hints but suppresses board and inventory")
 	cabinet_resumed._toast("late toast after cabinet disk resume")
 	_require(not cabinet_resumed.discovery_toast.visible, "cabinet resume rejects late toast overlays")
 	cabinet_resumed._leave_cabinet()
