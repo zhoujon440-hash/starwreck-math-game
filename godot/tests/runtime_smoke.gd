@@ -93,6 +93,11 @@ func _run() -> void:
 		await _open_evidence(scene, "CLUE-002")
 		for detail in 3:
 			inspection._on_observation_detail(detail)
+		var last_surface_text: String = inspection.get_node("Workbench/Readout").text
+		var observations_before: Dictionary = scene.state.investigation_state["inspection_observations"].duplicate(true)
+		await _viewport_click(inspection.get_node("Workbench/ObservationRail/Detail0").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
+		_require(inspection.get_node("Workbench/Readout").text != last_surface_text, "physical click on an already-read detail restores its fact for comparison")
+		_require(scene.state.investigation_state["inspection_observations"] == observations_before, "physical reread cannot add duplicate observations")
 		inspection._on_hypothesis(1)
 		_require(scene.current_objective_text() == "调平四段热层基线，再锁住烧蚀扫描参考带", "burn close-up objective narrows to the baseline lock before scanning")
 		for segment in 4:
@@ -104,7 +109,8 @@ func _run() -> void:
 		var cockpit_fault_hotspot: Area2D = scene.get_node("World/FaultRecordHotspot")
 		_require(not cockpit_fault_hotspot.input_pickable, "burn close-up exclusively owns overlapping cockpit input")
 		var burn_before: int = scene.state.investigation_state["burn_scan_points"].size()
-		var scan0_center: Vector2 = inspection.get_node("Workbench/BurnPanel/Scan0").get_global_rect().get_center()
+		var burn_trace: Line2D = inspection.get_node("Workbench/BurnPanel/Trace")
+		var scan0_center: Vector2 = burn_trace.to_global(burn_trace.points[0])
 		await _viewport_click(scan0_center, MOUSE_BUTTON_LEFT)
 		_require(scene.state.investigation_state["burn_scan_points"].size() == burn_before, "one physical burn click only arms the next direction point")
 		_require(int(scene.state.investigation_state.get("burn_active_point", -1)) == 0, "the first physical burn click stores the armed scan head")

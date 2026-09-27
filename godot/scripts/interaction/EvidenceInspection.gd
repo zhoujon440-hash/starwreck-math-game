@@ -61,11 +61,6 @@ func open_inspection(clue_id: String) -> void:
 		"CLUE-003": "七码机械浪涌纸带 · 时标排序与跨缝复原",
 		"CLUE-004": "百工星环 Rev.3 铭牌 · 泄压后批准路径追踪",
 	}.get(clue_id, "现场证据检视")
-	$Workbench/Instructions.text = {
-		"CLUE-002": "先调平四段未受损金属基线并锁定，再沿外壳到 B 母线的箭头逐点点亮扫描头；再次确认同一点即可锁住该方向。",
-		"CLUE-003": "先交换相邻纸卷使机械时标连续，再逐卷转面；拉下走带杆复核两道接缝。",
-		"CLUE-004": "按左泄压锁、右锁、抬盖的顺序打开铭牌，再让机械触针沿连续批准槽前进。",
-	}.get(clue_id, "")
 	var labels: Array = {
 		"CLUE-002": ["外壳方向刻痕", "灼蚀色阶", "B 母线入口"],
 		"CLUE-003": ["进纸时标", "两道压线", "末卷浪涌峰"],
@@ -116,12 +111,12 @@ func _on_observation_detail(index: int) -> void:
 	if result.changed:
 		state_changed.emit()
 	var detail_texts: Dictionary = {
-		"CLUE-002": ["切口外缘先熔，箭头朝舱内收束：不是内部短路向外爆开。", "白化层覆在红黑焦痕上方，符合封锁光网的高能瞬时切入。", "轨迹终点压在 B 支路入舱端；下一步先建立未受损金属基线。"],
-		"CLUE-003": ["七码机械时标仍连续，纸带不是断电后被人拼接的。", "两道压线分别来自进近前后；波峰需要跨缝连续才能成立。", "末卷峰值在 B 支路报码之后出现，先排序三卷再校正转面。"],
-		"CLUE-004": ["底层蚀刻仍写 B→C 快修，这是星宇过去熟悉的旧做法。", "Rev.3 是百工星环改装后的后压复检戳，年代晚于旧蚀刻。", "批准箭头改为备用 A↔C；双锁泄压后还需沿批准槽追踪。"],
+		"CLUE-002": ["切口外缘先熔，箭头朝舱内收束：不是内部短路向外爆开。", "白化层覆在红黑焦痕上方，符合封锁光网的高能瞬时切入。", "轨迹终点压在 B 支路入舱端，周围未受损金属保留了可比较的热层基线。"],
+		"CLUE-003": ["七码机械时标仍连续，纸带不是断电后被人拼接的。", "两道压线分别来自进近前后；波峰需要跨缝连续才能成立。", "末卷峰值在 B 支路报码之后出现，三卷的时标与压线共同记录了先后顺序。"],
+		"CLUE-004": ["底层蚀刻仍写 B→C 快修，这是星宇过去熟悉的旧做法。", "Rev.3 是百工星环改装后的后压复检戳，年代晚于旧蚀刻。", "批准箭头改为备用 A↔C；带复检戳的批准槽与旧 B→C 蚀刻属于不同改装年代。"],
 	}
 	$Workbench/Readout.text = detail_texts[current_clue][index]
-	if result.completed:
+	if result.completed and not mechanics.evidence_hypothesis_confirmed(current_clue):
 		$Workbench/Readout.text += "\n三项表面信息已完成比较，可以选择解释。"
 	_refresh_controls()
 
@@ -280,10 +275,22 @@ func _refresh_controls() -> void:
 	var observed_details: Array = observations.get(current_clue, [])
 	for index in 3:
 		var detail: Button = get_node("Workbench/ObservationRail/Detail%d" % index)
-		detail.disabled = index in observed_details
-		detail.text = "✓ %s" % detail.text.trim_prefix("✓ ") if detail.disabled else detail.text
+		detail.disabled = false
+		detail.text = "✓ %s" % detail.text.trim_prefix("✓ ") if index in observed_details else detail.text.trim_prefix("✓ ")
 	var details_complete: bool = mechanics.evidence_details_complete(current_clue)
 	var hypothesis_confirmed: bool = mechanics.evidence_hypothesis_confirmed(current_clue)
+	if not details_complete:
+		$Workbench/Instructions.text = "先查看上排三处表面细节，再比较下排解释；已看过的细节可以随时重新查看。"
+	elif not hypothesis_confirmed:
+		$Workbench/Instructions.text = "三处细节已看齐。比较下排解释，选择能同时说明它们的一项；可点击带勾的细节回看。"
+	elif mechanics.evidence_operation_complete(current_clue):
+		$Workbench/Instructions.text = "实体检视已完成。记录证据后返回现场；表面细节仍可复查。" if current_clue not in state.observed_clue_ids else "证据已归档，可回看表面细节后返回现场。"
+	else:
+		$Workbench/Instructions.text = {
+			"CLUE-002": "沿外壳到 B 母线的箭头逐点点亮扫描头；再次确认同一点即可锁住该方向。" if bool(state.investigation_state.get("burn_baseline_locked", false)) else "旋转四段基线轮，让热层进入同一青色参考带，再锁定基线；已调好的段位会保留。",
+			"CLUE-003": "先交换相邻纸卷使机械时标连续，再逐卷转面；拉下走带杆复核两道接缝。",
+			"CLUE-004": "按左泄压锁、右锁、抬盖的顺序打开铭牌，再让机械触针沿连续批准槽前进。",
+		}.get(current_clue, "")
 	for index in 3:
 		var hypothesis: Button = get_node("Workbench/HypothesisRail/Hypothesis%d" % index)
 		hypothesis.disabled = not details_complete or hypothesis_confirmed

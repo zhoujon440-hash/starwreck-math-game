@@ -1,6 +1,16 @@
 # SCN-G01-00 HOPA Quality Self-Review
 
-## Current verdict — 2026-09-27
+## Current verdict — 2026-09-28
+
+### Burn target alignment and evidence rereading
+
+**NOT READY / PMO NOT PASSED.** Four visible burn trace vertices previously fell outside their scan buttons; the promised outside-to-B arrows were absent. The trace now meets each scan head, with direction strokes between controls and labeled hull/B endpoints. Three evidence close-ups now preserve checkmarks without disabling rereading. Guidance follows observation, interpretation, physical operation and completion gates instead of requesting a still-disabled mechanism on entry. Repeatable fact text no longer carries obsolete next-step commands.
+
+Seven geometry/direction assertions, fifteen reread/guidance assertions and one runtime viewport reread assertion failed before correction. Full Godot 4.7.2 unit tests/runtime smoke then passed. Import, eight-asset provenance, six preflight tests, no-Web source scan, Windows export and whitespace checks passed. Independent read-only review found no Critical/Important regression; its completed-reread wording concern was corrected by separating facts from stage instructions. The initial review attempt hit a usage limit and did not count; the resumed review completed. No independent full-playthrough review has passed.
+
+Native-rendered fresh/scan/armed component fixtures were generated at 1366×768 and 1920×1080. Representative images were inspected for trace/button alignment, arrow direction, labels and guidance. They are explicitly NOT PLAYTHROUGH EVIDENCE. The fixture process reported one ObjectDB instance at exit; production unit/runtime tests did not report a leak. Limited actual Windows UI testing of `release/windows-burn-alignment-20260928` resumed the previously normally acquired isolated handlamp/CLUE-001 save. At actual 1366×768 it entered the burn close-up, read all three details, and reread the first detail while retaining the interpretation-stage guidance. Screenshot `tmp/burn-alignment-20260928/native-reread-1366.png` under the task workspace is diagnostic only. That EXE preceded the final factual-copy cleanup; no final-package byte-level GUI claim is made. Native capture failed twice with `SetIsBorderRequired / 0x80004002`; read-only PrintWindow was used, with all input through Computer Use. No save injection, full route, recording or player-duration claim.
+
+The preceding remote `ec319d29cf4bc4a14b98d0399231db2e2258acc9` now has all five successful Actions runs (Godot 36341181381 / 36341184044, CI 36341181417 / 36341184101, baseline 36341184061). Downloaded artifact 10938633972 outer SHA-256 is `4773c1c2bb89510591b9064fcb7981835c4c1651231c2bc6fea59e72d43d6ab3`. Its inner Windows ZIP is 45,028,791 bytes, SHA-256 `3592ac685bf6e4e1f0f3977324d678f4d8b4fd558e3dd3c90f49b3efd61e231a`, matching its included checksum. This preceding artifact does not contain the burn/reread patch. Current-HEAD CI and complete ordinary-player 15–25 minute evidence remain required. Several close-ups are still schematic rather than mature physical HOPA scenes.
 
 ### Emergency fixture alignment follow-up
 

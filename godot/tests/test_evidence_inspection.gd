@@ -10,6 +10,7 @@ const FORENSIC_CONFIG := {
 }
 
 func run(t) -> void:
+	_test_revisitable_observations(t)
 	_test_observable_forensic_surfaces(t)
 	t.truthy(ResourceLoader.exists(MECHANICS_PATH), "multi-step evidence inspection mechanics must exist")
 	if not ResourceLoader.exists(MECHANICS_PATH):
@@ -173,6 +174,39 @@ func run(t) -> void:
 	t.truthy(not mechanics.can_take_fuse(), "one retaining clip cannot release the fuse")
 	t.truthy(mechanics.toggle_fuse_latch(1).ok and mechanics.can_take_fuse(), "both retaining clips release the correctly rated fuse")
 
+func _test_revisitable_observations(t) -> void:
+	# Previously read facts must remain available when comparing explanations,
+	# including after reopening; rereading must not mutate saved progress.
+	var state = preload("res://scripts/core/GameState.gd").new()
+	var view = preload("res://scenes/ui/EvidenceInspection.tscn").instantiate()
+	view.setup(state, FORENSIC_CONFIG)
+	var mutations := [0]
+	view.state_changed.connect(func(): mutations[0] += 1)
+	for clue in ["CLUE-002", "CLUE-003", "CLUE-004"]:
+		view.open_inspection(clue)
+		var first_guide: String = view.get_node("Workbench/Instructions").text
+		var texts: Array[String] = []
+		for detail in 3:
+			view._on_observation_detail(detail)
+			texts.append(view.get_node("Workbench/Readout").text.split("\n")[0])
+		t.truthy(first_guide != view.get_node("Workbench/Instructions").text, "instructions must advance from observing details to comparing interpretations")
+		var comparison_guide: String = view.get_node("Workbench/Instructions").text
+		view.close_inspection()
+		view.open_inspection(clue)
+		var before: Dictionary = state.snapshot().duplicate(true)
+		var writes: int = mutations[0]
+		for detail in 3:
+			var button: Button = view.get_node("Workbench/ObservationRail/Detail%d" % detail)
+			t.truthy(not button.disabled, "read evidence remains clickable after reopening the close-up")
+			t.truthy(button.text.begins_with("✓ "), "read evidence retains its completion marker without disabling access")
+			view._on_observation_detail(detail)
+			t.truthy(view.get_node("Workbench/Readout").text.begins_with(texts[detail]), "rereading restores that specific surface fact")
+		t.equal(state.snapshot(), before, "rereading observations must preserve all saved progress")
+		t.equal(mutations[0], writes, "rereading facts must not emit extra save mutations")
+		view._on_hypothesis({"CLUE-002": 1, "CLUE-003": 2, "CLUE-004": 0}[clue])
+		t.truthy(view.get_node("Workbench/Instructions").text != comparison_guide, "accepted interpretation advances instructions to its unlocked physical operation")
+	view.free()
+
 func _test_observable_forensic_surfaces(t) -> void:
 	# Missing live heat, reel identity binding, or pre-existing grooves makes these
 	# puzzles depend on invisible answers even when their rule tests still pass.
@@ -187,6 +221,24 @@ func _test_observable_forensic_surfaces(t) -> void:
 			view.mechanics.observe_evidence_detail(clue, detail)
 		view.mechanics.choose_evidence_hypothesis(clue, {"CLUE-002": 1, "CLUE-003": 2, "CLUE-004": 0}[clue])
 	view.open_inspection("CLUE-002")
+	# A player follows the drawn scar, not the invisible rectangle beside it.
+	# Moving either trace vertices or hit targets independently must fail here.
+	var burn_trace: Line2D = view.get_node("Workbench/BurnPanel/Trace")
+	for point in 4:
+		var scan: Button = view.get_node("Workbench/BurnPanel/Scan%d" % point)
+		t.truthy(scan.get_rect().has_point(burn_trace.points[point]), "each visible burn vertex must land inside its matching clickable scan head")
+	for segment in 3:
+		var arrow = view.get_node_or_null("Workbench/BurnPanel/Direction%d" % segment)
+		t.truthy(arrow != null, "the burn trace needs visible outside-to-bus direction between scan heads")
+		if arrow == null:
+			continue
+		var direction: Vector2 = (burn_trace.points[segment + 1] - burn_trace.points[segment]).normalized()
+		var tail: Vector2 = (arrow.points[0] + arrow.points[2]) * 0.5
+		t.truthy((arrow.points[1] - tail).dot(direction) > 12.0, "burn arrow tips must face the next scan head, not back toward the hull")
+		for point in 4:
+			var scan: Button = view.get_node("Workbench/BurnPanel/Scan%d" % point)
+			for vertex in arrow.points:
+				t.truthy(not scan.get_rect().has_point(vertex), "direction strokes must remain between controls, clear of their text")
 	var reference = view.get_node_or_null("Workbench/BurnPanel/ThermalReference")
 	t.truthy(reference != null, "burn baseline needs a visible common thermal reference before adjustment")
 	for segment in 4:
