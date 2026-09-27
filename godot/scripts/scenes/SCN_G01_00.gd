@@ -564,6 +564,8 @@ func _restore_from_state() -> void:
 		else:
 			state.current_view = "COCKPIT"
 	_update_objective()
+	if flashlight.active and state.world_state != "POWER_RESTORED":
+		status_label.text = current_objective_text()
 
 func _update_objective() -> void:
 	phase_label.text = "SCN-G01-00 · %s" % state.scene_phase

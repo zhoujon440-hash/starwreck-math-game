@@ -110,6 +110,7 @@ func _run() -> void:
 		var burn_resumed = await _resume_scene(packed, preload("res://scripts/core/SaveService.gd").new(SMOKE_SAVE).load_state())
 		var burn_resumed_inspection = burn_resumed.get_node("UI/EvidenceInspection")
 		_require(burn_resumed.state.current_view == "EVIDENCE" and burn_resumed_inspection.visible, "disk resume restores the active burn close-up")
+		_require(burn_resumed.status_label.text == burn_resumed.current_objective_text(), "resumed burn status describes the current investigation instead of requesting an owned lamp")
 		_require(not burn_resumed.get_node("World/FaultRecordHotspot").input_pickable, "resumed burn close-up keeps exclusive cockpit input")
 		await _require_modal_guidance(burn_resumed, "沿四个方向稳定复扫烧蚀切口，确认冲击由外向内", "BURN_SCAN", "resumed burn close-up")
 		await _viewport_click(burn_resumed_inspection.get_node("Workbench/BurnPanel/Scan0").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
@@ -264,6 +265,7 @@ func _run() -> void:
 	root.add_child(cabinet_resumed)
 	await process_frame
 	_require(cabinet_resumed.state.current_view == "CABINET" and cabinet_resumed.cabinet_world.visible, "disk resume restores the active cabinet close-up")
+	_require(cabinet_resumed.status_label.text == cabinet_resumed.current_objective_text(), "resumed cabinet status describes current progress instead of requesting an owned lamp")
 	_require(cabinet_resumed.get_node("UI/ObjectivePanel").visible and cabinet_resumed.get_node("UI/StatusStrip").visible, "cabinet resume restores readable guidance")
 	_require(cabinet_resumed.get_node("UI/HintDock").visible and not cabinet_resumed.get_node("UI/BoardButton").visible and not cabinet_resumed.inventory_hud.visible, "cabinet resume exposes hints but suppresses board and inventory")
 	cabinet_resumed._toast("late toast after cabinet disk resume")
