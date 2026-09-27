@@ -74,6 +74,20 @@ func run(t) -> void:
 			t.equal(signal_console.get_node("CycleDrum/Tape/PhaseScale").get_child_count(), 24, "phase frame needs twelve etched ticks and twelve readable labels")
 			t.truthy(signal_console.get_node("CycleDrum/Tape/PhaseScale/Number11").get_theme_font_size("font_size") >= 16, "phase labels must remain legible at the 1366 contract")
 		var panel_hotspot: Area2D = cockpit.get_node("World/PowerPanelHotspot")
+		# Hand-checked painted fixture bounds after the background's aspect-cover transform.
+		# A click on the tube must hit evidence, never the unrelated planet/window.
+		var strip: Area2D = cockpit.get_node("World/EmergencyStripHotspot")
+		var strip_shape: RectangleShape2D = strip.get_node("CollisionShape2D").shape
+		var strip_rect := Rect2(strip.position - strip_shape.size * 0.5, strip_shape.size)
+		t.truthy(strip_rect.has_point(Vector2(1640, 55)), "painted emergency tube must be an observation target")
+		t.truthy(not strip_rect.has_point(Vector2(550, 150)), "planet/window must not award emergency-strip evidence")
+		var fixture_bounds := Rect2(1540, 10, 200, 90)
+		for glow_path in ["World/EmergencyGlow", "World/EmergencyStripHotspot/Glow"]:
+			var strip_glow: Polygon2D = cockpit.get_node(glow_path)
+			var local_offset := strip.position if strip_glow.get_parent() == strip else Vector2.ZERO
+			for point in strip_glow.polygon:
+				t.truthy(fixture_bounds.has_point(point + strip_glow.position + local_offset), "emergency glow stays on the physical lamp, not the window or HUD")
+		t.truthy(not cockpit.get_node("UI/HintDock").get_rect().intersects(strip_rect), "initial cockpit hint must not cover the emergency tube")
 		t.truthy(cockpit.has_node("World/BurnMarkHotspot"), "directional B-branch damage needs its own inspection target")
 		t.truthy(panel_hotspot.get_script() == null and not panel_hotspot.is_in_group("inspectables"), "power-panel entrance must not compete with clue inspection input")
 		var panel_shape: RectangleShape2D = panel_hotspot.get_node("CollisionShape2D").shape

@@ -568,6 +568,9 @@ func _restore_from_state() -> void:
 		status_label.text = current_objective_text()
 
 func _update_objective() -> void:
+	# The cockpit's painted emergency fixture occupies the usual top-right rail.
+	# Modal views retain that rail so hints do not cover their return/mechanism controls.
+	$UI/HintDock.position.y = 116.0 if state.current_view == "COCKPIT" else 34.0
 	phase_label.text = "SCN-G01-00 · %s" % state.scene_phase
 	objective_label.text = current_objective_text()
 
