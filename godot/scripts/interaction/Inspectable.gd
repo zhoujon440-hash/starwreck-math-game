@@ -18,7 +18,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not has_node("Glow"):
 		return
-	var can_reveal = hovered and (not flashlight_required or (flashlight != null and flashlight.is_point_lit(global_position)))
+	var can_reveal = hovered and input_pickable and not get_tree().paused and (not flashlight_required or (flashlight != null and flashlight.is_point_lit(global_position)))
 	var target_alpha = 1.0 if can_reveal else 0.0
 	$Glow.modulate.a = move_toward($Glow.modulate.a, target_alpha, delta * 4.5)
 
@@ -31,4 +31,3 @@ func _input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 
 func bind_flashlight(controller: Node) -> void:
 	flashlight = controller
-

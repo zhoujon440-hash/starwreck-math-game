@@ -6,6 +6,47 @@ var failures: Array[String] = []
 func _init() -> void:
 	call_deferred("_run")
 
+func _require_hover_feedback(scene: Node) -> void:
+	# Regression: a transparent base color and an enter-only light check made
+	# stationary, illuminated evidence targets look non-interactive.
+	var lamp = scene.flashlight
+	lamp.set_process(false)
+	for path in ["World/EmergencyStripHotspot", "World/BurnMarkHotspot", "World/FaultRecordHotspot", "World/CouplerPlateHotspot", "World/MaintenanceCabinetWorld/OldLabelHotspot", "World/MaintenanceCabinetWorld/RevisionMarkHotspot"]:
+		var hotspot: Area2D = scene.get_node(path)
+		var glow: Polygon2D = hotspot.get_node("Glow")
+		var was_pickable := hotspot.input_pickable
+		hotspot.input_pickable = true
+		lamp.global_position = Vector2(-1000, -1000)
+		hotspot.mouse_entered.emit()
+		await create_timer(0.28).timeout
+		_require(glow.color.a * glow.modulate.a < 0.001, "%s stays dark before the beam arrives" % path)
+		lamp.global_position = hotspot.global_position
+		await create_timer(0.28).timeout
+		var visible_alpha := glow.color.a * glow.modulate.a
+		_require(visible_alpha > 0.02 and visible_alpha <= 0.25, "%s reveals restrained feedback when light catches up without re-entering" % path)
+		hotspot.input_pickable = false
+		await create_timer(0.28).timeout
+		_require(glow.color.a * glow.modulate.a < 0.001, "%s clears feedback when interaction is disabled" % path)
+		hotspot.input_pickable = true
+		lamp.set_active(false)
+		await create_timer(0.28).timeout
+		_require(glow.color.a * glow.modulate.a < 0.001, "%s never highlights with the lamp off" % path)
+		lamp.set_active(true)
+		await create_timer(0.28).timeout
+		_require(glow.color.a * glow.modulate.a > 0.02, "%s reveals again when the lamp is restored" % path)
+		paused = true
+		await create_timer(0.28).timeout
+		_require(glow.color.a * glow.modulate.a < 0.001, "%s clears feedback while a paused workbench owns input" % path)
+		paused = false
+		await create_timer(0.28).timeout
+		_require(glow.color.a * glow.modulate.a > 0.02, "%s reveals again after returning to exploration" % path)
+		hotspot.mouse_exited.emit()
+		await create_timer(0.28).timeout
+		_require(glow.color.a * glow.modulate.a < 0.001, "%s clears feedback when the pointer leaves" % path)
+		hotspot.input_pickable = was_pickable
+	_require(scene.state.observed_clue_ids.is_empty(), "hover feedback must not collect evidence")
+	lamp.set_process(true)
+
 func _run() -> void:
 	_cleanup()
 	var packed = load("res://scenes/g01/SCN_G01_00.tscn")
@@ -27,6 +68,7 @@ func _run() -> void:
 	scene.save_service = preload("res://scripts/core/SaveService.gd").new(SMOKE_SAVE)
 	_require(scene.inventory_service.acquire("ITM-G01-001"), "flashlight acquisition")
 	scene.flashlight.set_active(true)
+	await _require_hover_feedback(scene)
 	scene._on_clue_observed("CLUE-001")
 	var inspection = scene.get_node("UI/EvidenceInspection")
 	_require(inspection.state == scene.state and inspection.mechanics != null, "scene injects its state and mechanics into the live forensic close-up")

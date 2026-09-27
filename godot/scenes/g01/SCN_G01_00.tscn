@@ -152,7 +152,7 @@ clue_id = "CLUE-001"
 shape = SubResource("Shape_strip")
 [node name="Glow" type="Polygon2D" parent="World/EmergencyStripHotspot"]
 polygon = PackedVector2Array(-184, -54, 184, -54, 184, 54, -184, 54)
-color = Color(0.95, 0.28, 0.18, 0)
+color = Color(0.95, 0.28, 0.18, 0.18)
 
 [node name="FaultRecordHotspot" type="Area2D" parent="World"]
 position = Vector2(1320, 515)
@@ -243,7 +243,7 @@ modulate = Color(0.62, 0.59, 0.52, 0.8)
 shape = SubResource("Shape_plate")
 [node name="Glow" type="Polygon2D" parent="World/MaintenanceCabinetWorld/OldLabelHotspot"]
 polygon = PackedVector2Array(-116, -56, 116, -56, 116, 56, -116, 56)
-color = Color(0.84, 0.62, 0.27, 0)
+color = Color(0.84, 0.62, 0.27, 0.18)
 [node name="RevisionMarkHotspot" type="Area2D" parent="World/MaintenanceCabinetWorld" groups=["inspectables"]]
 position = Vector2(1320, 330)
 input_pickable = false
@@ -253,7 +253,7 @@ clue_id = "CLUE-007"
 shape = SubResource("Shape_plate")
 [node name="Glow" type="Polygon2D" parent="World/MaintenanceCabinetWorld/RevisionMarkHotspot"]
 polygon = PackedVector2Array(-116, -56, 116, -56, 116, 56, -116, 56)
-color = Color(0.3, 0.88, 0.86, 0)
+color = Color(0.3, 0.88, 0.86, 0.18)
 [node name="RevisionText" type="Label" parent="World/MaintenanceCabinetWorld/RevisionMarkHotspot"]
 offset_left = -130.0
 offset_top = -55.0

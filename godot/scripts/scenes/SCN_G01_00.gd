@@ -10,6 +10,13 @@ var save_service = preload("res://scripts/core/SaveService.gd").new()
 var scene_data: Dictionary = {}
 var emergency_clock := 0.0
 var toast_tween: Tween
+var hovered_evidence: Array[Area2D] = []
+
+const EVIDENCE_HOTSPOT_PATHS: Array[NodePath] = [
+	^"World/BurnMarkHotspot",
+	^"World/FaultRecordHotspot",
+	^"World/CouplerPlateHotspot",
+]
 
 const COCKPIT_HOTSPOT_PATHS: Array[NodePath] = [
 	^"World/PowerPanelHotspot",
@@ -77,7 +84,8 @@ func _ready() -> void:
 	$World/BurnMarkHotspot.input_event.connect(_on_evidence_hotspot_input.bind("CLUE-002"))
 	$World/FaultRecordHotspot.input_event.connect(_on_evidence_hotspot_input.bind("CLUE-003"))
 	$World/CouplerPlateHotspot.input_event.connect(_on_evidence_hotspot_input.bind("CLUE-004"))
-	for hotspot in [$World/BurnMarkHotspot, $World/FaultRecordHotspot, $World/CouplerPlateHotspot]:
+	for path in EVIDENCE_HOTSPOT_PATHS:
+		var hotspot: Area2D = get_node(path)
 		hotspot.mouse_entered.connect(_on_evidence_hover.bind(hotspot, true))
 		hotspot.mouse_exited.connect(_on_evidence_hover.bind(hotspot, false))
 	cabinet_hotspot.input_event.connect(_on_cabinet_input)
@@ -99,6 +107,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	state.elapsed_seconds += delta
+	_update_evidence_highlights(delta)
 	emergency_clock += delta
 	if state.world_state != "POWER_RESTORED":
 		emergency_glow.modulate.a = 0.58 + sin(emergency_clock * 2.1) * 0.28
@@ -170,9 +179,19 @@ func _on_evidence_hotspot_input(_viewport: Node, event: InputEvent, _shape_idx: 
 	_save()
 
 func _on_evidence_hover(hotspot: Area2D, hovered: bool) -> void:
-	var glow: Polygon2D = hotspot.get_node("Glow")
-	var target_alpha := 0.2 if hovered and flashlight.is_point_lit(hotspot.global_position) else 0.0
-	create_tween().tween_property(glow, "color:a", target_alpha, 0.12)
+	if hovered and hotspot not in hovered_evidence:
+		hovered_evidence.append(hotspot)
+	elif not hovered:
+		hovered_evidence.erase(hotspot)
+
+func _update_evidence_highlights(delta: float) -> void:
+	# The beam trails the pointer, so eligibility must follow it every frame,
+	# not just the instant the pointer enters an unlit surface.
+	for path in EVIDENCE_HOTSPOT_PATHS:
+		var hotspot: Area2D = get_node(path)
+		var glow: Polygon2D = hotspot.get_node("Glow")
+		var can_reveal: bool = hotspot in hovered_evidence and hotspot.input_pickable and not get_tree().paused and flashlight.is_point_lit(hotspot.global_position)
+		glow.color.a = move_toward(glow.color.a, 0.2 if can_reveal else 0.0, delta * 1.8)
 
 func _on_inspection_state_changed() -> void:
 	_mark_progress()
