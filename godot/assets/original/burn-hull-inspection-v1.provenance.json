@@ -1,0 +1,14 @@
+{
+  "asset": "godot/assets/original/burn-hull-inspection-v1.png",
+  "sha256": "dc559ef847e97c19f2d2426034412f1059b70c8668682794c8b502b282142d1f",
+  "created_on": "2026-09-28",
+  "origin": "Generated with OpenAI built-in image_gen tool for this project; no reference images supplied.",
+  "source_filename": "exec-55571ef8-e62f-45f4-8fc3-8ea19201a426.png",
+  "dimensions": {
+    "width": 2048,
+    "height": 683
+  },
+  "prompt": "Use case: stylized-concept. Asset type: original production 2D adventure game inspection background, not a UI mockup. Create a very wide 3:1 horizontal image, 1536x512 if possible. Straight-on orthographic macro view of a damaged spacecraft interior hull panel, tactile painterly industrial realism, original design. Dark desaturated blue steel, rubbed edges, tiny bolts, inset copper conduits, brittle ceramic insulation, soot and heat-discolored metal, directional warm inspection light balanced with cool shadows. Absolutely no text, numbers, letters, logos, watermark, interface buttons, circles, reticles, arrows, hands or characters. Layout is important for a game overlay: top 35 percent is relatively quiet dark metal so live instrument controls can be placed over it. Lower two thirds show ONE continuous jagged heat-scorched groove running from torn hull entry on the right near (1190,220), through (870,343), (551,301), ending at a copper bus connector near (232,403). Those coordinates refer to 1536x512 canvas. Burned edges are whitish at the torn right-hand entry, layered red-brown and black inward, visibly gouged and cracked rather than a glowing laser line. Restrained highlights keep the scar readable on dark steel. Make four landmarks on this route identifiable by material detail, not artificial circles. Keep 50 pixels safe margin around the whole canvas, except metal plate can run edge to edge. Fine physical construction detail around edges; no busy clutter or additional unrelated objects. Original salvage spacecraft mystery environment, no recognizable franchise or commercial hidden object game interface.",
+  "usage": "Original CLUE-002 hull material background. Labels, scan controls, and direction overlays are native Godot nodes. No commercial game assets, brands, interfaces, or reference trade dress requested.",
+  "limitations": "Artwork and component renders are not playthrough evidence. Source prompt coordinates are approximate generation requests; native hit regions are aligned to inspected output landmarks."
+}

@@ -38,7 +38,7 @@ The preceding hover fix is synchronized as `d06c13407ec1af69741fda1ca20abc50cc76
 
 ## Prior checkpoint — 2026-09-14
 
-**NOT READY / PMO NOT PASSED.** This is implementation self-review, not owner acceptance. The current patch fixes six evidence-hover targets on top of the `b59fffd` / remote `d0849431` CI remediation. Godot 4.7.2 import, headless tests, runtime smoke, provenance (8 assets), Windows export and an isolated exported-EXE launch passed locally. These gates do not prove ordinary-player quality or duration.
+**NOT READY / PMO NOT PASSED.** This is implementation self-review, not owner acceptance. The current patch adds an original physical hull surface to CLUE-002 on top of local `dcd1ba6` / remote `a5376420`, retaining the existing scan, recovery and save rules. Godot 4.7.2 import, headless tests and runtime smoke passed locally. These gates do not prove ordinary-player quality or duration.
 
 Only SCN-G01-00 is in scope. PR #23 remains Draft and unmerged; Issue #22 stays open; PR #21 and subsequent-scene gameplay are not changed. No READY signal is issued for this candidate.
 
@@ -55,6 +55,15 @@ This limited GUI pass also exposed remaining presentation concerns: the strip ta
 The d0849431 recording was interrupted and hit its 2,400-second capture limit after only initial exploration. It is retained as **incomplete diagnostic footage**, not a completed run or ordinary-player duration evidence. No elapsed idle/tool time may count toward the 15–25 minute requirement.
 
 ## Findings and remediation
+
+### 2026-09-28 original burn-hull checkpoint
+
+- An original 2048×683 raster hull replaces the empty schematic surface. Four scan regions and the direction trace are aligned with the torn outer edge, inward copper conduit, pale ceramic and bus clamp. Transparent normal, hover, pressed, disabled and focus styles keep the evidence visible; the background ignores input.
+- `godot/assets/original/burn-hull-inspection-v1.provenance.json` records the complete generation prompt, dimensions and SHA-256 (`dc559ef847e97c19f2d2426034412f1059b70c8668682794c8b502b282142d1f`). The built-in image generation tool used no reference image. The inherited-eight-assets checker and the new original asset's separate hash check both passed.
+- A separate read-only reviewer inspected the diff and actual Godot component renders at 1366×768 and 1920×1080: no Critical or Important issue, one minor 120×8 local-pixel meter/scan overlap. A regression test reproduced that overlap; moving the meter and caption up 16 pixels fixes it with clearance for the focus border. Full unit and runtime tests passed afterward.
+- Eight constructed component states are labeled NOT PLAYTHROUGH EVIDENCE. Limited native exported-EXE observation confirmed the surface and normal resumed observation/interpretation UI at 1366×768, but later input could not be verified after the client became zero-size. This is not a completed scan, a clean-save route, a full recording or a duration result.
+- Before this patch, all five checks for remote `a5376420` were successful. Downloaded Actions artifact `10945251932` has archive SHA-256 `3c9edc5535a614d929632be99deab80a368ea54f551045f3f9474dc4a6f73e89`; its inner Windows ZIP is 45,032,068 bytes with SHA-256 `93bc67c1ef533e48fd7cabb506031ca3dabd6d67d734b104bbe6518d0d8df4e3`, matching its included sidecar. These hashes identify the preceding build, not this new hull patch.
+- Open product gates remain: consistent material-based presentation in other close-ups, ordinary-player comprehension and a real uninterrupted 15–25 minute clean-save route, current-HEAD footage/clips/screenshots/manifest, packaged-build experience review and second formal PMO review. No READY signal is issued.
 
 The following fixes belong to `f451d1b`. Tests reproduced the defects before their fixes. A separate reviewer checked the substantive forensic/configuration, receiver and restored-save patches and found no new blocking issue. The main agent additionally inspected native-rendered fixtures and corrected datum-label overlap and an unplaced plate probe.
 

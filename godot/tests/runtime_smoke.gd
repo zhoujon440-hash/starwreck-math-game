@@ -110,6 +110,11 @@ func _run() -> void:
 		_require(not cockpit_fault_hotspot.input_pickable, "burn close-up exclusively owns overlapping cockpit input")
 		var burn_before: int = scene.state.investigation_state["burn_scan_points"].size()
 		var burn_trace: Line2D = inspection.get_node("Workbench/BurnPanel/Trace")
+		for index in 4:
+			var scan: Button = inspection.get_node("Workbench/BurnPanel/Scan%d" % index)
+			for state_name in ["normal", "hover", "pressed", "disabled", "focus"]:
+				var live_style: StyleBox = scan.get_theme_stylebox(state_name)
+				_require(live_style is StyleBoxFlat and not live_style.draw_center, "live scan theme must expose the material evidence in every interaction state")
 		var scan0_center: Vector2 = burn_trace.to_global(burn_trace.points[0])
 		await _viewport_click(scan0_center, MOUSE_BUTTON_LEFT)
 		_require(scene.state.investigation_state["burn_scan_points"].size() == burn_before, "one physical burn click only arms the next direction point")

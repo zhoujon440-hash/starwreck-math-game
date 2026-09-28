@@ -10,6 +10,7 @@ const FORENSIC_CONFIG := {
 }
 
 func run(t) -> void:
+	_test_burn_material_visibility(t)
 	_test_revisitable_observations(t)
 	_test_observable_forensic_surfaces(t)
 	t.truthy(ResourceLoader.exists(MECHANICS_PATH), "multi-step evidence inspection mechanics must exist")
@@ -205,6 +206,37 @@ func _test_revisitable_observations(t) -> void:
 		t.equal(mutations[0], writes, "rereading facts must not emit extra save mutations")
 		view._on_hypothesis({"CLUE-002": 1, "CLUE-003": 2, "CLUE-004": 0}[clue])
 		t.truthy(view.get_node("Workbench/Instructions").text != comparison_guide, "accepted interpretation advances instructions to its unlocked physical operation")
+	view.free()
+
+func _test_burn_material_visibility(t) -> void:
+	# A missing/cropped background or opaque scan states hide the very material
+	# evidence the player must inspect; decorative controls must not eat clicks.
+	var view = preload("res://scenes/ui/EvidenceInspection.tscn").instantiate()
+	var surface = view.get_node_or_null("Workbench/BurnPanel/HullSurface")
+	t.truthy(surface is TextureRect and surface.texture != null, "burn inspection must expose the original physical hull surface")
+	if surface is TextureRect and surface.texture != null:
+		t.equal(surface.mouse_filter, Control.MOUSE_FILTER_IGNORE, "hull art cannot intercept scan input")
+		t.equal(surface.stretch_mode, TextureRect.STRETCH_SCALE, "hull art must not crop away the authored bus or entry landmarks")
+		t.truthy(surface.get_rect().encloses(Rect2(0, 0, 1300, 424)), "hull texture covers the full forensic surface")
+		# Hand-selected material landmarks from the uncropped 2048x683 art:
+		# white entry edge, inward copper conduit, pale ceramic, B bus clamp.
+		var landmarks := [Vector2(1843, 290), Vector2(1292, 430), Vector2(709, 370), Vector2(202, 456)]
+		for index in 4:
+			var scan: Button = view.get_node("Workbench/BurnPanel/Scan%d" % index)
+			var point: Vector2 = landmarks[index] * Vector2(1300.0 / 2048.0, 424.0 / 683.0)
+			t.truthy(scan.get_rect().has_point(point), "scan target must cover its visible material landmark rather than empty metal")
+			t.truthy(surface.get_index() < scan.get_index(), "the hull surface must render behind live scan controls")
+	for index in 4:
+		var scan: Button = view.get_node("Workbench/BurnPanel/Scan%d" % index)
+		var meter: ProgressBar = view.get_node("Workbench/BurnPanel/HoldMeter")
+		t.truthy(not scan.get_rect().grow(4).intersects(meter.get_rect()), "scan focus borders must remain clear of the stability meter")
+		t.truthy(scan.theme != null, "scan controls must supply a transparent evidence-viewing theme")
+		for state_name in ["normal", "hover", "pressed", "disabled", "focus"]:
+			# This synchronous unit fixture is outside the SceneTree. Theme lookup
+			# there falls back to the engine default; runtime_smoke checks the live
+			# resolved theme in the actual scene as well.
+			var style: StyleBox = scan.theme.get_stylebox(state_name, "Button") if scan.theme != null else null
+			t.truthy(style is StyleBoxFlat and not style.draw_center, "every scan state must leave the physical damage visible")
 	view.free()
 
 func _test_observable_forensic_surfaces(t) -> void:
