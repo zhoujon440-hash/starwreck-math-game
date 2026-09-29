@@ -34,9 +34,14 @@ func run(t) -> void:
 	var inventory_before: Array[String] = state.inventory_item_ids.duplicate()
 	var wrong = puzzle.place_plate(0, "AC_PATH")
 	_assert_result_shape(t, wrong, "wrong plate placement")
-	t.truthy(wrong.ok and wrong.changed and wrong.feedback.contains("年代"), "wrong path plate stays seated with a specific era comparison")
+	t.truthy(wrong.ok and wrong.changed and wrong.feedback.contains("比较器"), "wrong path plate stays seated while the physical comparator reports only its measured failure")
+	for leaked_answer in ["只有", "必须", "Rev.3", "A↔C", "保险丝"]:
+		t.truthy(leaked_answer not in wrong.feedback, "wrong placement feedback must not reveal the accepted plate: %s" % leaked_answer)
 	t.equal(state.investigation_state["repair_synthesis_steps"], [{"slot": 0, "plate_id": "AC_PATH"}], "wrong placement is preserved for physical recovery")
-	t.truthy(not puzzle.press_record().ok and not state.investigation_state["repair_synthesis_complete"], "wrong mapping cannot stamp the record")
+	var wrong_press: Dictionary = puzzle.press_record()
+	t.truthy(not wrong_press.ok and not state.investigation_state["repair_synthesis_complete"], "wrong mapping cannot stamp the record")
+	for leaked_answer in ["年代", "批准路径", "备用槽", "Rev.3", "A↔C", "保险丝"]:
+		t.truthy(leaked_answer not in wrong_press.feedback, "failed compression reports station lamps instead of the answer: %s" % leaked_answer)
 	var removed = puzzle.remove_plate(0)
 	t.truthy(removed.ok and removed.changed and state.investigation_state["repair_synthesis_steps"].is_empty(), "wrong plate can be removed without resetting another system")
 	t.equal(state.inventory_item_ids, inventory_before, "placement and recovery consume no carried item")
@@ -74,7 +79,9 @@ func run(t) -> void:
 	t.truthy(parsed is Dictionary, "SCN-G01-00 synthesis presentation data parses")
 	if parsed is Dictionary:
 		var config: Dictionary = parsed.get("repair_synthesis_workbench", {})
-		t.equal(config.get("slot_labels", []), ["年代", "批准路径", "备用槽"], "three mechanical slots keep the authored world labels")
+		t.truthy("slot_labels" not in config, "repair stations must not expose answer-category slot labels")
+		t.equal(config.get("station_ids", []), ["REVISION_COMPARATOR", "CONTINUITY_BRIDGE", "TOLERANCE_GAUGE"], "three stations are physical instruments rather than answer-labelled slots")
+		t.equal(config.get("station_labels", []), ["双印比较器", "三端导通桥", "圆筒公差规"], "instrument names describe hardware without spelling out the mapping")
 		t.equal(config.get("plate_ids", []), ["REV3_STAMP", "AC_PATH", "FUSE_SPEC"], "three brass plates keep the authored evidence identities")
 		t.equal(parsed.get("clues", []).size(), 7, "synthesis adds no eighth clue")
 		t.equal(parsed.get("deductions", []).size(), 4, "synthesis adds no fifth deduction")
@@ -82,20 +89,35 @@ func run(t) -> void:
 	if ResourceLoader.exists(WORKBENCH_PATH):
 		var workbench = load(WORKBENCH_PATH).instantiate()
 		for path in [
+			"Bench/PhysicalBackdrop",
+			"Bench/FixedReferences/OldTagReference",
+			"Bench/FixedReferences/TerminalReference",
+			"Bench/FixedReferences/ToleranceReference",
 			"Bench/PlateRack/REV3_STAMP",
 			"Bench/PlateRack/AC_PATH",
 			"Bench/PlateRack/FUSE_SPEC",
 			"Bench/SlotRack/Slot0",
+			"Bench/SlotRack/Slot0/ComparatorNeedle",
 			"Bench/SlotRack/Slot1",
+			"Bench/SlotRack/Slot1/ContinuityTrace",
 			"Bench/SlotRack/Slot2",
+			"Bench/SlotRack/Slot2/ToleranceBand",
 			"Bench/CompressionHandle",
 			"Bench/Readout",
 			"Bench/Return",
 		]:
 			t.truthy(workbench.has_node(path), "workbench exposes physical control %s" % path)
+		if workbench.has_node("Bench/PhysicalBackdrop"):
+			t.truthy(workbench.get_node("Bench/PhysicalBackdrop").z_index >= 0, "physical workbench art must render above the full-screen dim layer")
 		if workbench.has_node("Bench/SlotRack/Slot0"):
 			var slot: Button = workbench.get_node("Bench/SlotRack/Slot0")
 			t.truthy(slot.custom_minimum_size.x >= 220.0 and slot.custom_minimum_size.y >= 72.0, "mechanical slots remain readable and clickable after 1366x768 canvas scaling")
+		for slot_path in ["Bench/SlotRack/Slot0", "Bench/SlotRack/Slot1", "Bench/SlotRack/Slot2"]:
+			if workbench.has_node(slot_path):
+				var slot_button: Button = workbench.get_node(slot_path)
+				for leaked_label in ["年代", "批准路径", "备用槽", "答案", "正确"]:
+					t.truthy(leaked_label not in slot_button.text, "interactive station cannot carry an answer label: %s" % leaked_label)
+		t.truthy(ResourceLoader.exists("res://assets/original/repair-synthesis-workbench-v1.png"), "mature HOPA synthesis view needs an original authored physical workbench surface")
 		workbench.free()
 
 func _assert_result_shape(t, result: Dictionary, context: String) -> void:

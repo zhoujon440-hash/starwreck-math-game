@@ -1,6 +1,18 @@
 # SCN-G01-00 HOPA Quality Self-Review
 
-## Current verdict — 2026-09-28
+## Current verdict — 2026-09-29
+
+### Physical repair-record synthesis checkpoint
+
+**NOT READY / PMO NOT PASSED.** A fresh experience audit found that the repair-record synthesis still presented three answer-labelled buttons and exposed the accepted plate in failure copy. The interaction has been rebuilt as an original physical workbench: a double-imprint comparator, three-terminal continuity bridge and cylindrical tolerance gauge now report only measured physical outcomes. The three movable plates carry evidence engravings rather than answer categories, incorrect placements remain recoverable, and a failed compression tells the player to re-read red instruments without naming the correct mapping.
+
+The workbench uses a new original 1672×941 painted surface generated for this project with no reference image. `godot/assets/original/repair-synthesis-workbench-v1.provenance.json` records the complete prompt, source, dimensions and SHA-256 `331ab8842db68c9b1d0425ba16629d8511ee39d1336daa193ac09cd4780316a9`. The provenance gate now validates every original-asset sidecar as well as the eight inherited assets. The initial native render caught the backdrop below the full-screen dim layer; moving it into the visible canvas order fixed the actual composition. A second runtime check caught the workbench return control inside the later inventory HUD's input strip; moving it above that strip restored the deduction board through real viewport input.
+
+The new answer-leak, physical-node, asset-existence and visible-layer assertions failed before remediation. Godot 4.7.2 import, the complete unit suite, runtime smoke, original/inherited provenance, six preflight process tests, Windows-only preset validation, no-Web source scan and whitespace checks pass locally. Native Godot diagnostic renders were inspected at the 1920×1080 and 1366×768 layouts for material visibility, hit-region alignment, label separation and return-control clearance. They are component diagnostics only, are not committed playthrough screenshots, and do not satisfy the evidence gate.
+
+Current-HEAD CI, the matching Windows ZIP/SHA, a continuous clean-save playthrough, honest 15–25 minute route evidence, the required extracts/screenshots/manifest and independent packaged-build experience review remain open. No READY signal is issued. PR #23 must remain Draft and unmerged, and SCN-G01-01 remains out of scope.
+
+## Prior checkpoint — 2026-09-28
 
 ### Burn target alignment and evidence rereading
 

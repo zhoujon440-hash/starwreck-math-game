@@ -58,11 +58,11 @@ func press_record() -> Dictionary:
 		return _result(true, true, "三枚校验片已经压合成正式维修记录。", false)
 	var steps: Array = state.investigation_state["repair_synthesis_steps"]
 	if steps.size() != ACCEPTED_MAPPING.size():
-		return _result(false, false, "压合杆没有吃合：年代、批准路径、备用槽三项记录仍未放齐。", false)
+		return _result(false, false, "压合杆没有吃合：三台检具尚未全部装片并闭锁。", false)
 	for slot_index in ACCEPTED_MAPPING:
 		var plate_id := _plate_at_slot(int(slot_index))
 		if plate_id != str(ACCEPTED_MAPPING[slot_index]):
-			return _result(false, false, _placement_feedback(int(slot_index), plate_id), false)
+			return _result(false, false, "压合联锁拒绝：检查仍亮红灯的检具，重新读取它的实际测量结果。", false)
 	state.investigation_state["repair_synthesis_complete"] = true
 	synthesis_completed.emit()
 	return _result(true, true, "压合完成：三项旧记录已合成一份可追溯的 Rev.3 维修记录。", true)
@@ -81,14 +81,14 @@ func _plate_at_slot(slot_index: int) -> String:
 func _placement_feedback(slot_index: int, plate_id: String) -> String:
 	if plate_id == str(ACCEPTED_MAPPING.get(slot_index, "")):
 		return [
-			"年代槽咬合：后压 Rev.3 复检戳晚于星宇的旧手写标签。",
-			"批准路径槽咬合：铭牌的 A↔C 连续刻槽绕开受损 B 支路。",
-			"备用槽咬合：焊花姐的公用保险丝规格与 Rev.3 备用槽匹配。",
+			"双印比较器闭锁：活动片的后压痕覆盖固定旧印，指针越过基准线。",
+			"三端导通桥闭锁：外侧两端形成连续铜路，中间端保持断路。",
+			"圆筒公差规闭锁：活动片的直径与额定带同时落入绿色窗口。",
 		][slot_index]
 	return [
-		"年代槽保留了当前铜片，但它不能证明版本先后；只有后压 Rev.3 复检戳能与旧标签比较年代。",
-		"批准路径槽保留了当前铜片，但这里必须沿 Rev.3 铭牌核对备用 A↔C 连通，规格或年代不能代替路径。",
-		"备用槽保留了当前铜片，但这里要核对焊花姐公用保险丝的适配规格，版本戳或路径不能证明槽位匹配。",
+		"双印比较器未拾取可叠合的前后压痕；指针停在基准线左侧。",
+		"三端导通桥没有形成要求的外侧连续读数；红灯保持。",
+		"圆筒公差规的两组触点未同时闭合；读数落在绿色窗口之外。",
 	][slot_index]
 
 func _result(ok: bool, completed: bool, feedback: String, changed: bool) -> Dictionary:

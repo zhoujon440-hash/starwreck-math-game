@@ -38,7 +38,7 @@ func open_workbench() -> bool:
 		return false
 	selected_plate = ""
 	visible = true
-	readout.text = "把旧记录按年代、批准路径、备用槽压合；这一步不会给出最终复电顺序。"
+	readout.text = "把三块记录片分别送入能产生有效读数的检具；红灯只报告测量失败，不会给出正确组合。"
 	_refresh()
 	return true
 
@@ -50,7 +50,7 @@ func _on_plate_selected(plate_id: String) -> void:
 	if puzzle == null or state.investigation_state["repair_synthesis_complete"]:
 		return
 	selected_plate = plate_id
-	readout.text = "已提起铜片：%s。选择一个机械槽；已占用槽可先单击提片。" % _plate_label(plate_id)
+	readout.text = "已提起记录片：%s。选择一台检具；已装片的检具可先单击退片。" % _plate_label(plate_id)
 	_refresh()
 
 func _on_slot_pressed(slot_index: int) -> void:
@@ -92,16 +92,22 @@ func _refresh() -> void:
 		var button: Button = get_node("Bench/PlateRack/%s" % plate_id)
 		var placed_slot := _slot_for_plate(plate_id)
 		button.disabled = complete or placed_slot >= 0
-		button.text = "%s%s" % [_plate_label(plate_id), "  · 已入槽" if placed_slot >= 0 else ""]
+		button.text = "%s%s" % [_plate_label(plate_id), "  · 已装片" if placed_slot >= 0 else ""]
 		button.modulate = Color(0.62, 0.64, 0.58) if button.disabled else (Color(1.0, 0.86, 0.52) if selected_plate == plate_id else Color.WHITE)
-	var slot_labels: Array = config.get("slot_labels", ["年代", "批准路径", "备用槽"])
+	var station_labels: Array = config.get("station_labels", ["双印比较器", "三端导通桥", "圆筒公差规"])
 	for slot_index in 3:
 		var slot: Button = get_node("Bench/SlotRack/Slot%d" % slot_index)
 		var plate_id: String = str(puzzle.plate_at_slot(slot_index))
 		slot.disabled = complete
-		slot.text = "%s\n%s" % [str(slot_labels[slot_index]), "空槽 · 等待校验片" if plate_id.is_empty() else _plate_label(plate_id)]
+		slot.text = ""
+		var station_readout: Label = slot.get_node("Readout")
+		station_readout.text = "%s\n%s" % [str(station_labels[slot_index]), _station_readout(slot_index, plate_id)]
+		var station_lamp: ColorRect = slot.get_node("StationLamp")
+		var accepted := not plate_id.is_empty() and plate_id == str(RepairSynthesisPuzzle.ACCEPTED_MAPPING[slot_index])
+		station_lamp.color = Color(0.22, 0.94, 0.66, 0.92) if accepted else Color(0.88, 0.2, 0.12, 0.88)
 	compression_handle.disabled = complete
-	compression_handle.text = "记录已压合" if complete else "压下记录杆 / PRESS RECORD"
+	compression_handle.text = ""
+	$Bench/HandleCaption.text = "记录已封存" if complete else "压合联锁杆"
 	$Bench/SealLamp.color = Color(0.32, 0.92, 0.68, 1.0) if complete else Color(0.9, 0.42, 0.18, 0.78)
 
 func _slot_for_plate(plate_id: String) -> int:
@@ -112,8 +118,15 @@ func _slot_for_plate(plate_id: String) -> int:
 
 func _plate_label(plate_id: String) -> String:
 	var labels: Dictionary = config.get("plate_labels", {
-		"REV3_STAMP": "Rev.3 复检戳",
-		"AC_PATH": "A↔C 连续路径",
-		"FUSE_SPEC": "公用保险丝规格",
+		"REV3_STAMP": "R3 / 17:42 / 双压痕",
+		"AC_PATH": "外侧连线 / 中端断路",
+		"FUSE_SPEC": "Ø12 / 40A / F-2",
 	})
 	return str(labels.get(plate_id, plate_id))
+
+func _station_readout(slot_index: int, plate_id: String) -> String:
+	if plate_id.is_empty():
+		return ["等待压痕读数", "等待三端读数", "等待触点读数"][slot_index]
+	if plate_id == str(RepairSynthesisPuzzle.ACCEPTED_MAPPING[slot_index]):
+		return ["指针越过旧印基准", "外侧导通 · 中端断路", "双触点进入绿色公差带"][slot_index]
+	return ["压痕不可叠合", "连续性读数不成立", "双触点未同时闭合"][slot_index]

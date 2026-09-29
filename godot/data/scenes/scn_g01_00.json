@@ -64,12 +64,13 @@
     "plate_trace_target": [0, 2, 3, 5]
   },
   "repair_synthesis_workbench": {
-    "slot_labels": ["年代", "批准路径", "备用槽"],
+    "station_ids": ["REVISION_COMPARATOR", "CONTINUITY_BRIDGE", "TOLERANCE_GAUGE"],
+    "station_labels": ["双印比较器", "三端导通桥", "圆筒公差规"],
     "plate_ids": ["REV3_STAMP", "AC_PATH", "FUSE_SPEC"],
     "plate_labels": {
-      "REV3_STAMP": "Rev.3 复检戳",
-      "AC_PATH": "A↔C 连续路径",
-      "FUSE_SPEC": "公用保险丝规格"
+      "REV3_STAMP": "R3 / 17:42 / 双压痕",
+      "AC_PATH": "外侧连线 / 中端断路",
+      "FUSE_SPEC": "Ø12 / 40A / F-2"
     }
   },
   "power_panel": {"deduction_gate":"DED-004","fuse_item":"ITM-G01-002","coupler_target_degrees":90.0,"coupler_tolerance":8.0,"sequence":["isolate_b","signal_window_diagnostic","install_fuse","align_coupler","latch_protector"]},

@@ -329,7 +329,9 @@ func _run() -> void:
 	await _viewport_click(synthesis_workbench.get_node("Bench/PlateRack/AC_PATH").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	await _viewport_click(synthesis_workbench.get_node("Bench/SlotRack/Slot0").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	_require(scene.state.investigation_state["repair_synthesis_steps"] == [{"slot": 0, "plate_id": "AC_PATH"}], "one plausible wrong era placement remains visible and recoverable")
-	_require(synthesis_workbench.get_node("Bench/Readout").text.contains("年代"), "wrong placement produces a world-specific era comparison")
+	_require(synthesis_workbench.get_node("Bench/Readout").text.contains("比较器"), "wrong placement produces a measured comparator failure without naming the accepted plate")
+	for leaked_answer in ["Rev.3", "A↔C", "保险丝"]:
+		_require(leaked_answer not in synthesis_workbench.get_node("Bench/Readout").text, "wrong station reading does not leak accepted evidence %s" % leaked_answer)
 	await _viewport_click(synthesis_workbench.get_node("Bench/SlotRack/Slot0").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
 	_require(scene.state.investigation_state["repair_synthesis_steps"].is_empty(), "clicking the occupied mechanical slot removes the wrong plate")
 	for placement in [
@@ -348,9 +350,9 @@ func _run() -> void:
 	await process_frame
 	var resumed_workbench: Control = synthesis_resumed.deduction_board.get_node("RepairSynthesisWorkbench")
 	_require(resumed_workbench.visible, "unfinished file-backed synthesis automatically reopens in the real workbench UI")
-	_require(resumed_workbench.get_node("Bench/SlotRack/Slot0").text.contains("Rev.3"), "JSON float slot 0 renders the Rev.3 stamp in 年代")
-	_require(resumed_workbench.get_node("Bench/SlotRack/Slot1").text.contains("A↔C"), "JSON float slot 1 renders the approved path")
-	_require(resumed_workbench.get_node("Bench/SlotRack/Slot2").text.contains("保险丝"), "JSON float slot 2 renders the fuse specification")
+	_require(resumed_workbench.get_node("Bench/SlotRack/Slot0/Readout").text.contains("指针越过旧印基准"), "JSON float slot 0 restores the comparator measurement")
+	_require(resumed_workbench.get_node("Bench/SlotRack/Slot1/Readout").text.contains("外侧导通"), "JSON float slot 1 restores the continuity measurement")
+	_require(resumed_workbench.get_node("Bench/SlotRack/Slot2/Readout").text.contains("绿色公差带"), "JSON float slot 2 restores the tolerance measurement")
 	synthesis_resumed.deduction_board.close_board()
 	synthesis_resumed.queue_free()
 	for _frame in 4:

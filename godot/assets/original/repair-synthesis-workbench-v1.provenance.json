@@ -1,0 +1,14 @@
+{
+  "asset": "godot/assets/original/repair-synthesis-workbench-v1.png",
+  "sha256": "331ab8842db68c9b1d0425ba16629d8511ee39d1336daa193ac09cd4780316a9",
+  "created_on": "2026-09-29",
+  "origin": "Generated with OpenAI built-in image_gen tool for this project; no reference images supplied.",
+  "source_filename": "exec-7b863e11-5e60-45d1-a8f0-1171c850361e.png",
+  "dimensions": {
+    "width": 1672,
+    "height": 941
+  },
+  "prompt": "Use case: stylized-concept. Asset type: original 2D game environment background for a Godot HOS/HOPA close-up. Create an original mature science-fiction spacecraft repair-record press workbench, seen almost straight-on with a slight top-down industrial perspective. The workbench is a permanent physical machine built into a damaged research vessel, not a generic app panel. Dark ship maintenance alcove with deep gunmetal chassis, worn copper rails, oxidized brass, bolts, cable glands, soot, hand-scratched maintenance marks, restrained cyan diagnostic light and amber mechanical lamps. One wide physical press machine with three clearly distinct empty instrument bays arranged left to right: a revision-imprint comparator with two small overlapping stamp beds and a needle dial; a three-terminal continuity bridge with A/B/C terminals and an inset copper trace channel; a cylindrical tolerance gauge with opposing caliper jaws and a narrow green tolerance band. Above them is a rack for three removable brass evidence plates. At far right, a heavy guarded compression lever and linkage. Leave central instrument faces and small nameplate areas blank for game-rendered overlays. Polished hand-painted cinematic adventure-game environment art, realistic materials, high detail, cohesive with a premium original HOPA game, readable interactive silhouettes, no photoreal camera noise. 16:9 full-frame close-up with safe margins for 1920x1080 and 1366x768 overlays. No people, characters, logos, text, letters, numbers, watermark, UI buttons, floating panels, modern touchscreen, recognizable brand or trade dress, or G5 imitation; all imagery original.",
+  "usage": "Original world-space surface for the repair-record synthesis close-up. Interaction labels, station lamps, plate identifiers, measurements and hit areas are native Godot nodes.",
+  "limitations": "Generated art and isolated component renders are not playthrough evidence. Final acceptance requires continuous current-HEAD Windows footage at both target resolutions."
+}
