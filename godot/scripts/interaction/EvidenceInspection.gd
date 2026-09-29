@@ -288,7 +288,7 @@ func _refresh_controls() -> void:
 	else:
 		$Workbench/Instructions.text = {
 			"CLUE-002": "沿外壳到 B 母线的箭头逐点点亮扫描头；再次确认同一点即可锁住该方向。" if bool(state.investigation_state.get("burn_baseline_locked", false)) else "旋转四段基线轮，让热层进入同一青色参考带，再锁定基线；已调好的段位会保留。",
-			"CLUE-003": "先交换相邻纸卷使机械时标连续，再逐卷转面；拉下走带杆复核两道接缝。",
+			"CLUE-003": "让三段物理时标与双压线在两道接缝连续，再用走带杆检验整段记录。",
 			"CLUE-004": "双锁共用一条压力联杆；根据每次回弹与残余压力判断释放条件，盖板解锁后让触针沿连续批准槽前进。",
 		}.get(current_clue, "")
 	for index in 3:
@@ -337,7 +337,7 @@ func _refresh_controls() -> void:
 		var seam: ColorRect = get_node("Workbench/TapePanel/SeamLight%d" % seam_index)
 		var order_ok := order.size() == order_target.size() and int(order[seam_index]) == int(order_target[seam_index]) and int(order[seam_index + 1]) == int(order_target[seam_index + 1])
 		var faces_ok := tape.size() == face_target.size() and int(tape[seam_index]) == int(face_target[seam_index]) and int(tape[seam_index + 1]) == int(face_target[seam_index + 1])
-		seam.color = Color(0.22, 0.84, 0.62, 0.95) if order_ok and faces_ok else Color(0.88, 0.42, 0.16, 0.8)
+		seam.color = Color(0.22, 0.84, 0.62, 0.58) if order_ok and faces_ok else Color(0.88, 0.42, 0.16, 0.48)
 
 	var plate: Array = state.investigation_state.get("plate_latches", [false, false])
 	$Workbench/PlatePanel/LatchLeft.text = "左锁 · 已泄压" if plate[0] else "左锁 · 泄压"

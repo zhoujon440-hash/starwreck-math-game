@@ -14,6 +14,7 @@ func run(t) -> void:
 	_test_revisitable_observations(t)
 	_test_observable_forensic_surfaces(t)
 	_test_plate_physical_surface_and_non_spoiling_guidance(t)
+	_test_tape_physical_surface_and_control_alignment(t)
 	t.truthy(ResourceLoader.exists(MECHANICS_PATH), "multi-step evidence inspection mechanics must exist")
 	if not ResourceLoader.exists(MECHANICS_PATH):
 		return
@@ -194,6 +195,42 @@ func _test_plate_physical_surface_and_non_spoiling_guidance(t) -> void:
 	t.truthy(not guide.contains("按左") and not guide.contains("顺序"), "ordinary Rev.3 guidance must expose interlock evidence without printing the latch solution")
 	view._on_plate_latch(1)
 	t.truthy(not view.get_node("Workbench/Readout").text.contains("先释放"), "a rejected latch describes residual pressure without naming the next action")
+	view.free()
+
+func _test_tape_physical_surface_and_control_alignment(t) -> void:
+	var view = preload("res://scenes/ui/EvidenceInspection.tscn").instantiate()
+	var panel: Control = view.get_node("Workbench/TapePanel")
+	var surface = panel.get_node_or_null("TapeBackdrop")
+	t.truthy(surface is TextureRect and surface.texture != null, "paper-tape reconstruction needs a reviewed physical machine surface")
+	if surface is TextureRect and surface.texture != null:
+		t.truthy(surface.texture.resource_path.contains("paper-tape-reconstruction-console-"), "paper-tape surface must resolve to the reviewed original console")
+		t.equal(surface.mouse_filter, Control.MOUSE_FILTER_IGNORE, "paper-tape art cannot intercept cartridge or lever input")
+	var paper_windows := [Rect2(112, 62, 236, 150), Rect2(532, 62, 236, 150), Rect2(962, 62, 236, 150)]
+	for index in 3:
+		var reel: Button = panel.get_node("Reel%d" % index)
+		t.truthy(reel.get_rect().encloses(paper_windows[index]), "reel %d input and live traces must cover its visible paper window" % index)
+		t.truthy(reel.theme != null, "reel %d must keep the physical paper visible in every button state" % index)
+		var time_ink: Color = reel.get_node("TimeMark").get_theme_color("font_color")
+		t.truthy(time_ink.get_luminance() < 0.55, "reel %d time stamp needs dark physical ink against ivory paper" % index)
+	var bridge_centers := [Vector2(435, 172), Vector2(870, 172)]
+	var lamp_centers := [Vector2(435, 84), Vector2(870, 84)]
+	for index in 2:
+		var bridge: Button = panel.get_node("SwapLeft" if index == 0 else "SwapRight")
+		t.truthy(bridge.get_rect().has_point(bridge_centers[index]), "swap control %d must sit on its physical seam bridge" % index)
+		t.truthy(bridge.theme != null, "swap control %d cannot hide its physical bridge" % index)
+		var lamp: ColorRect = panel.get_node("SeamLight%d" % index)
+		t.truthy(lamp.get_rect().has_point(lamp_centers[index]), "seam status %d must illuminate the matching inspection lamp" % index)
+	var run_lever: Button = panel.get_node("RunLever")
+	t.truthy(run_lever.get_rect().has_point(Vector2(650, 365)), "run input must remain anchored to the large guarded lever")
+	t.truthy(run_lever.theme != null, "run control cannot replace the guarded physical lever with an opaque software button")
+	var state = preload("res://scripts/core/GameState.gd").new()
+	view.setup(state, FORENSIC_CONFIG)
+	view.open_inspection("CLUE-003")
+	for detail in 3:
+		view._on_observation_detail(detail)
+	view._on_hypothesis(2)
+	var guide: String = view.get_node("Workbench/Instructions").text
+	t.truthy(not guide.contains("先交换") and not guide.contains("再逐卷"), "ordinary tape guidance must state continuity evidence without printing an operation sequence")
 	view.free()
 
 func _test_revisitable_observations(t) -> void:

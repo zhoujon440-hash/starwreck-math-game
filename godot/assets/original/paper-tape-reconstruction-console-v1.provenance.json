@@ -1,0 +1,14 @@
+{
+  "asset": "godot/assets/original/paper-tape-reconstruction-console-v1.png",
+  "sha256": "cbdd3dbc881d05dbebd0fb879f268c9b711fc7df6af744f8ee60cc4d9f303c9d",
+  "created_on": "2026-09-29",
+  "origin": "Generated with OpenAI built-in image_gen tool for this project; no reference images supplied.",
+  "source_filename": "exec-651f2412-0339-4db9-8df7-eb8293b7c5f1.png",
+  "dimensions": {
+    "width": 1672,
+    "height": 941
+  },
+  "prompt": "Create one original production-ready 16:9 raster background for a mature sci-fi hidden-object/adventure puzzle game. Straight-on orthographic close-up of a wall-mounted mechanical paper-tape reconstruction console inside an old spacecraft, no people. Dark navy hammered steel, worn brass, aged nickel, restrained amber and cyan practical lights, grime and believable mechanical wear, cinematic but highly legible. The console must have exactly THREE separate wide horizontal removable paper-tape cartridge windows arranged left-to-right across the middle, equal size, each showing blank warm ivory recording paper behind glass with subtle horizontal ruled fibers; each cartridge has physical rollers, knurled side hubs, retaining clips and a blank small brass identity plate. Leave the paper areas clean enough for live waveform lines and time stamps to be drawn by the game. Put exactly TWO distinct mechanical seam-transfer controls in the gaps between the three cartridges, one per gap, designed as short horizontal sliding bridge handles with mechanical arrow-shaped travel but no words. Put exactly TWO narrow seam inspection lamps vertically in those same gaps. Put ONE large guarded run lever centered below all three cartridges, clearly operable, with a long horizontal handle and visible detent arc. Add a blank brass title plaque above. All important machine parts must fit inside the central 80% height so a wide crop retains them. No readable text, no letters, no numbers, no icons that reveal a solution, no screens, no flat web UI, no rectangular software buttons, no brand, no logo, no copyrighted design, no recognizable trade dress, no G5 assets or imitation. Original object design, consistent with a rusty industrial space vessel and serious forensic machinery. Symmetrical front-facing composition, crisp material definition, 1672x941 or closest supported landscape resolution.",
+  "usage": "Original world-space surface for the three-cartridge paper-tape reconstruction console. Time marks, pressure rules, surge traces, cartridge rotation, adjacent swap actions, seam status and run verification remain native Godot nodes.",
+  "limitations": "Generated component art and isolated renders are not playthrough evidence. Final acceptance requires continuous current-HEAD Windows footage and matching 1920x1080 and 1366x768 screenshots."
+}

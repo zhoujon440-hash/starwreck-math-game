@@ -1,9 +1,10 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/interaction/EvidenceInspection.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/original/burn-hull-inspection-v1.png" id="2_hull"]
 [ext_resource type="Texture2D" path="res://assets/original/rev3-plate-inspector-closed-v1.png" id="3_plate_closed"]
 [ext_resource type="Texture2D" path="res://assets/original/rev3-plate-inspector-open-v1.png" id="4_plate_open"]
+[ext_resource type="Texture2D" path="res://assets/original/paper-tape-reconstruction-console-v1.png" id="5_tape_console"]
 
 [sub_resource type="StyleBoxFlat" id="Style_scan"]
 draw_center = false
@@ -369,36 +370,48 @@ offset_right = 1370.0
 offset_bottom = 734.0
 theme_override_styles/panel = SubResource("Style_device")
 
+[node name="TapeBackdrop" type="TextureRect" parent="Workbench/TapePanel"]
+offset_right = 1300.0
+offset_bottom = 424.0
+mouse_filter = 2
+texture = ExtResource("5_tape_console")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="Caption" type="Label" parent="Workbench/TapePanel"]
+visible = false
 offset_left = 48.0
 offset_top = 14.0
 offset_right = 1252.0
 offset_bottom = 54.0
 theme_override_colors/font_color = Color(0.76, 0.84, 0.75, 1)
 theme_override_font_sizes/font_size = 21
-text = "依据连续时标交换相邻纸卷，再逐卷转面并拉杆走带"
+text = "让三段物理时标与双压线在两道接缝连续"
 horizontal_alignment = 1
 
 [node name="SwapLeft" type="Button" parent="Workbench/TapePanel"]
-offset_left = 900.0
-offset_top = 70.0
-offset_right = 1060.0
-offset_bottom = 128.0
+offset_left = 380.0
+offset_top = 136.0
+offset_right = 490.0
+offset_bottom = 208.0
+theme = SubResource("Theme_scan")
 theme_override_font_sizes/font_size = 17
 text = "交换左缝"
 [node name="SwapRight" type="Button" parent="Workbench/TapePanel"]
-offset_left = 1080.0
-offset_top = 70.0
-offset_right = 1240.0
-offset_bottom = 128.0
+offset_left = 815.0
+offset_top = 136.0
+offset_right = 925.0
+offset_bottom = 208.0
+theme = SubResource("Theme_scan")
 theme_override_font_sizes/font_size = 17
 text = "交换右缝"
 
 [node name="Reel0" type="Button" parent="Workbench/TapePanel"]
-offset_left = 130.0
-offset_top = 136.0
-offset_right = 414.0
-offset_bottom = 304.0
+offset_left = 88.0
+offset_top = 50.0
+offset_right = 372.0
+offset_bottom = 235.0
+theme = SubResource("Theme_scan")
 theme_override_font_sizes/font_size = 25
 text = ""
 
@@ -407,19 +420,19 @@ offset_left = 8.0
 offset_top = 4.0
 offset_right = 276.0
 offset_bottom = 32.0
-theme_override_colors/font_color = Color(0.86, 0.81, 0.61, 1)
+theme_override_colors/font_color = Color(0.24, 0.17, 0.09, 1)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 mouse_filter = 2
 
 [node name="UpperPressLine" type="Line2D" parent="Workbench/TapePanel/Reel0"]
 width = 2.5
-default_color = Color(0.78, 0.69, 0.42, 0.88)
+default_color = Color(0.43, 0.3, 0.12, 0.9)
 antialiased = true
 
 [node name="LowerPressLine" type="Line2D" parent="Workbench/TapePanel/Reel0"]
 width = 2.5
-default_color = Color(0.78, 0.69, 0.42, 0.88)
+default_color = Color(0.43, 0.3, 0.12, 0.9)
 antialiased = true
 
 [node name="SurgeTrace" type="Line2D" parent="Workbench/TapePanel/Reel0"]
@@ -429,9 +442,10 @@ antialiased = true
 
 [node name="Reel1" type="Button" parent="Workbench/TapePanel"]
 offset_left = 508.0
-offset_top = 136.0
+offset_top = 50.0
 offset_right = 792.0
-offset_bottom = 304.0
+offset_bottom = 235.0
+theme = SubResource("Theme_scan")
 theme_override_font_sizes/font_size = 25
 text = ""
 
@@ -440,19 +454,19 @@ offset_left = 8.0
 offset_top = 4.0
 offset_right = 276.0
 offset_bottom = 32.0
-theme_override_colors/font_color = Color(0.86, 0.81, 0.61, 1)
+theme_override_colors/font_color = Color(0.24, 0.17, 0.09, 1)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 mouse_filter = 2
 
 [node name="UpperPressLine" type="Line2D" parent="Workbench/TapePanel/Reel1"]
 width = 2.5
-default_color = Color(0.78, 0.69, 0.42, 0.88)
+default_color = Color(0.43, 0.3, 0.12, 0.9)
 antialiased = true
 
 [node name="LowerPressLine" type="Line2D" parent="Workbench/TapePanel/Reel1"]
 width = 2.5
-default_color = Color(0.78, 0.69, 0.42, 0.88)
+default_color = Color(0.43, 0.3, 0.12, 0.9)
 antialiased = true
 
 [node name="SurgeTrace" type="Line2D" parent="Workbench/TapePanel/Reel1"]
@@ -461,10 +475,11 @@ default_color = Color(0.35, 0.91, 0.76, 1)
 antialiased = true
 
 [node name="Reel2" type="Button" parent="Workbench/TapePanel"]
-offset_left = 886.0
-offset_top = 136.0
-offset_right = 1170.0
-offset_bottom = 304.0
+offset_left = 940.0
+offset_top = 50.0
+offset_right = 1224.0
+offset_bottom = 235.0
+theme = SubResource("Theme_scan")
 theme_override_font_sizes/font_size = 25
 text = ""
 
@@ -473,19 +488,19 @@ offset_left = 8.0
 offset_top = 4.0
 offset_right = 276.0
 offset_bottom = 32.0
-theme_override_colors/font_color = Color(0.86, 0.81, 0.61, 1)
+theme_override_colors/font_color = Color(0.24, 0.17, 0.09, 1)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 mouse_filter = 2
 
 [node name="UpperPressLine" type="Line2D" parent="Workbench/TapePanel/Reel2"]
 width = 2.5
-default_color = Color(0.78, 0.69, 0.42, 0.88)
+default_color = Color(0.43, 0.3, 0.12, 0.9)
 antialiased = true
 
 [node name="LowerPressLine" type="Line2D" parent="Workbench/TapePanel/Reel2"]
 width = 2.5
-default_color = Color(0.78, 0.69, 0.42, 0.88)
+default_color = Color(0.43, 0.3, 0.12, 0.9)
 antialiased = true
 
 [node name="SurgeTrace" type="Line2D" parent="Workbench/TapePanel/Reel2"]
@@ -494,24 +509,25 @@ default_color = Color(0.35, 0.91, 0.76, 1)
 antialiased = true
 
 [node name="SeamLight0" type="ColorRect" parent="Workbench/TapePanel"]
-offset_left = 452.0
-offset_top = 154.0
-offset_right = 472.0
-offset_bottom = 286.0
-color = Color(0.88, 0.42, 0.16, 0.8)
+offset_left = 427.0
+offset_top = 40.0
+offset_right = 443.0
+offset_bottom = 128.0
+color = Color(0.88, 0.42, 0.16, 0.48)
 mouse_filter = 2
 [node name="SeamLight1" type="ColorRect" parent="Workbench/TapePanel"]
-offset_left = 830.0
-offset_top = 154.0
-offset_right = 850.0
-offset_bottom = 286.0
-color = Color(0.88, 0.42, 0.16, 0.8)
+offset_left = 862.0
+offset_top = 40.0
+offset_right = 878.0
+offset_bottom = 128.0
+color = Color(0.88, 0.42, 0.16, 0.48)
 mouse_filter = 2
 [node name="RunLever" type="Button" parent="Workbench/TapePanel"]
-offset_left = 430.0
-offset_top = 334.0
-offset_right = 870.0
-offset_bottom = 400.0
+offset_left = 500.0
+offset_top = 296.0
+offset_right = 930.0
+offset_bottom = 420.0
+theme = SubResource("Theme_scan")
 theme_override_font_sizes/font_size = 21
 text = "拉下走带杆 · 复核两道接缝"
 
