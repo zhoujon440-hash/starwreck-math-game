@@ -118,14 +118,14 @@ func _on_fuse_slot_input(_viewport: Node, event: InputEvent, _shape_idx: int) ->
 		if result.ok:
 			$StandbyFuseSlot/FuseInserted.visible = true
 		else:
-			_feedback_invalid("DIAGNOSTIC REQUIRED · FUSE RETURNED" if result.feedback == "DIAGNOSTIC_REQUIRED" else "SLOT REJECT · ITEM RETURNED")
+			_feedback_invalid("FUSE INTERLOCK OPEN · ITEM RETURNED" if result.feedback == "DIAGNOSTIC_REQUIRED" else "SLOT REJECT · ITEM RETURNED")
 
 func _on_fuse_item_dropped(item_id: String) -> void:
 	var result = install_fuse(item_id)
 	if result.ok:
 		$StandbyFuseSlot/FuseInserted.visible = true
 	else:
-		_feedback_invalid("DIAGNOSTIC REQUIRED · FUSE RETURNED" if result.feedback == "DIAGNOSTIC_REQUIRED" else "SLOT REJECT · ITEM RETURNED")
+		_feedback_invalid("FUSE INTERLOCK OPEN · ITEM RETURNED" if result.feedback == "DIAGNOSTIC_REQUIRED" else "SLOT REJECT · ITEM RETURNED")
 
 func _on_console_state_changed() -> void:
 	milestone_reached.emit("diagnostic_progress")

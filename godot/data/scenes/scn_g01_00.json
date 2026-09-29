@@ -32,7 +32,7 @@
     {"id":"DED-001","title":"备用储能幸存","text":"最低生命线与备用储能幸存。","requires_clues":["CLUE-001"],"requires_analysis":["CLUE-001"],"requires_edges":[]},
     {"id":"DED-002","title":"光网损伤 · 隔离B","text":"封锁光网击伤B支路；B必须保持机械隔离。","requires_clues":[],"requires_edges":[{"from":"CLUE-002","to":"CLUE-003","relation":"supports"}]},
     {"id":"DED-003","title":"Rev.3取代旧快修","text":"星宇旧有的B→C快修已被Rev.3复检记录取代。","requires_clues":[],"requires_edges":[{"from":"CLUE-007","to":"CLUE-006","relation":"supersedes"}]},
-    {"id":"DED-004","title":"分段恢复 · 备用A↔C","text":"保留B隔离；装入公用保险丝，耦合A↔C，再分段闭合总保护。","requires_deductions":["DED-001","DED-002","DED-003"],"requires_clues":["CLUE-004","CLUE-005"],"requires_edges":[{"from":"DED-002","to":"CLUE-004","relation":"supports"},{"from":"CLUE-004","to":"CLUE-005","relation":"supports"}],"requires_synthesis":true}
+    {"id":"DED-004","title":"分段恢复 · 备用A↔C","text":"受损B支路必须保持断开；公用保险丝只适配备用A↔C通路；总保护只接受完整且稳定的供电路径。","requires_deductions":["DED-001","DED-002","DED-003"],"requires_clues":["CLUE-004","CLUE-005"],"requires_edges":[{"from":"DED-002","to":"CLUE-004","relation":"supports"},{"from":"CLUE-004","to":"CLUE-005","relation":"supports"}],"requires_synthesis":true}
   ],
   "valid_relations": [
     {"from":"CLUE-002","to":"CLUE-003","relation":"supports"},
@@ -157,7 +157,7 @@
     ],
     "REPAIR": [
       "配电机构会用机械回弹和红灯表示当前步骤不安全。",
-      "先让故障支路与回路分离，再处理备用槽和耦合机构。",
+      "把每次回弹与已形成的三条回路约束逐一对照；被接受的机构状态会保留。",
       "正确的局部步骤会保持，不必因一次错误重新开始。"
     ],
     "BURN_BASELINE": [

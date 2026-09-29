@@ -37,8 +37,24 @@ func run(t) -> void:
 	t.truthy(packed != null)
 	if packed != null:
 		var panel = packed.instantiate()
-		for path in ["PanelShadow", "PanelFrame", "PanelFrame/BoltTL", "MetalWear", "ModuleBackplates", "BranchBus", "BIsolationLever", "BIsolationLever/LabelPlate", "StandbyFuseSlot", "StandbyFuseSlot/LabelPlate", "StandbyFuseSlot/ContactTop", "StandbyFuseSlot/DropTarget", "CouplerKnob", "CouplerKnob/LabelPlate", "CouplerKnob/DetentTicks", "ProtectorLever", "ProtectorLever/LabelPlate", "ProtectorLever/GuardRail", "WarningLamp", "StatusLamp", "FeedbackArc", "Close"]:
+		for path in ["PhysicalBackdrop", "PanelShadow", "PanelFrame", "PanelFrame/BoltTL", "MetalWear", "ModuleBackplates", "BranchBus", "BIsolationLever", "BIsolationLever/LabelPlate", "StandbyFuseSlot", "StandbyFuseSlot/LabelPlate", "StandbyFuseSlot/ContactTop", "StandbyFuseSlot/DropTarget", "CouplerKnob", "CouplerKnob/LabelPlate", "CouplerKnob/DetentTicks", "ProtectorLever", "ProtectorLever/LabelPlate", "ProtectorLever/GuardRail", "WarningLamp", "StatusLamp", "FeedbackArc", "Close"]:
 			t.truthy(panel.has_node(path), "power panel is missing required physical layer: %s" % path)
+		t.truthy(ResourceLoader.exists("res://assets/original/power-distribution-panel-v1.png"), "final four-action repair needs an original authored physical panel surface")
+		if panel.has_node("PhysicalBackdrop"):
+			t.truthy(panel.get_node("PhysicalBackdrop").z_index >= 0, "physical panel art must render above the focus shade")
+			t.truthy(not panel.get_node("PanelFrame").visible and not panel.get_node("ModuleBackplates").visible, "opaque schematic backing plates must not cover the physical panel art")
+		var safety_copy := str(panel.get_node("SafetyMark").text)
+		for leaked_order in ["BEFORE COUPLING", "ISOLATE DAMAGED BRANCH BEFORE", "先隔离", "操作顺序"]:
+			t.truthy(leaked_order not in safety_copy, "panel safety engraving must not reveal the internal operation order: %s" % leaked_order)
+		var panel_source := FileAccess.get_file_as_string("res://scripts/puzzle/PowerPanelPuzzle.gd")
+		t.truthy("DIAGNOSTIC REQUIRED · FUSE RETURNED" not in panel_source, "a rejected fuse reports a closed interlock without naming the missing next operation")
+		var scene_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/scenes/scn_g01_00.json"))
+		if scene_data is Dictionary:
+			for deduction in scene_data.get("deductions", []):
+				if str(deduction.get("id", "")) == "DED-004":
+					var deduction_copy := str(deduction.get("text", ""))
+					for leaked_order in ["装入公用保险丝，耦合", "再分段闭合", "然后", "操作顺序"]:
+						t.truthy(leaked_order not in deduction_copy, "final deduction states circuit constraints without spelling out the click order: %s" % leaked_order)
 		t.equal(panel.get_node("StandbyFuseSlot/DropTarget").mouse_filter, Control.MOUSE_FILTER_PASS, "drag target must pass click-to-arm input through to the physical slot")
 		var aligned_state = preload("res://scripts/core/GameState.gd").new()
 		aligned_state.unlocked_deduction_ids.append("DED-004")

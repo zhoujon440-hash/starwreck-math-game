@@ -52,7 +52,9 @@ func run(t) -> void:
 			for forbidden_synthesis_spoiler in ["REV3_STAMP", "AC_PATH", "FUSE_SPEC"]:
 				t.truthy(forbidden_synthesis_spoiler not in str(hints["SYNTHESIS"][2]), "synthesis tier-3 hint must not reveal the full plate mapping")
 		if hints.has("REPAIR") and hints["REPAIR"] is Array and hints["REPAIR"].size() == 3:
-			t.truthy("B隔离" not in str(hints["REPAIR"][2]), "repair tier-3 hint must not restate the full approved order once repair begins")
+			for repair_hint in hints["REPAIR"]:
+				for forbidden_repair_order in ["先让故障支路", "再处理备用槽", "B隔离", "总保护"]:
+					t.truthy(forbidden_repair_order not in str(repair_hint), "repair hints must report evidence and interlocks without spelling out the operation order: %s" % forbidden_repair_order)
 	var math_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/scenes/scn_g01_00_math.json"))
 	t.truthy(math_data is Dictionary, "signal-window configuration must be readable")
 	if math_data is Dictionary:

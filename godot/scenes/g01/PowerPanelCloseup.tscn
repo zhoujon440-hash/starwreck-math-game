@@ -1,9 +1,10 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/puzzle/PowerPanelPuzzle.gd" id="1_puzzle"]
 [ext_resource type="Texture2D" path="res://assets/inherited/ITM-G01-002-layer.png" id="2_fuse"]
 [ext_resource type="Script" path="res://scripts/puzzle/FuseDropTarget.gd" id="3_drop"]
 [ext_resource type="PackedScene" path="res://scenes/g01/SignalWindowConsole.tscn" id="4_console"]
+[ext_resource type="Texture2D" path="res://assets/original/power-distribution-panel-v1.png" id="5_panel"]
 
 [sub_resource type="RectangleShape2D" id="Shape_lever"]
 size = Vector2(150, 240)
@@ -39,11 +40,22 @@ offset_bottom = 1080.0
 color = Color(0.004, 0.009, 0.014, 0.94)
 mouse_filter = 2
 
+[node name="PhysicalBackdrop" type="TextureRect" parent="."]
+z_index = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+texture = ExtResource("5_panel")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="PanelShadow" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(130, 84, 1818, 84, 1874, 136, 1874, 990, 1820, 1042, 128, 1042, 48, 988, 48, 134)
 color = Color(0, 0.008, 0.012, 0.82)
 
 [node name="PanelFrame" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(112, 64, 1808, 64, 1854, 112, 1854, 976, 1808, 1024, 112, 1024, 66, 976, 66, 112)
 color = Color(0.09, 0.105, 0.11, 1)
 
@@ -92,6 +104,7 @@ width = 6.0
 default_color = Color(0.13, 0.18, 0.18, 0.72)
 
 [node name="MetalWear" type="Node2D" parent="."]
+visible = false
 
 [node name="ScratchA" type="Line2D" parent="MetalWear"]
 points = PackedVector2Array(222, 255, 374, 244, 468, 251)
@@ -109,6 +122,7 @@ width = 3.0
 default_color = Color(0.31, 0.25, 0.19, 0.16)
 
 [node name="ModuleBackplates" type="Node2D" parent="."]
+visible = false
 
 [node name="BranchPlate" type="Polygon2D" parent="ModuleBackplates"]
 polygon = PackedVector2Array(202, 246, 650, 246, 666, 266, 666, 808, 646, 828, 204, 828, 186, 808, 186, 266)
@@ -137,6 +151,7 @@ width = 3.0
 default_color = Color(0.13, 0.2, 0.2, 0.52)
 
 [node name="BranchBusShadow" type="Line2D" parent="."]
+visible = false
 points = PackedVector2Array(272, 325, 1656, 325, 1656, 756, 290, 756)
 width = 29.0
 default_color = Color(0.004, 0.012, 0.014, 0.88)
@@ -145,6 +160,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 
 [node name="BranchBus" type="Line2D" parent="."]
+visible = false
 points = PackedVector2Array(268, 318, 1648, 318, 1648, 748, 286, 748)
 width = 18.0
 default_color = Color(0.16, 0.34, 0.36, 1)
@@ -176,13 +192,14 @@ theme_override_font_sizes/font_size = 15
 text = "A/C STANDBY BUS"
 
 [node name="Header" type="Label" parent="."]
-offset_left = 174.0
-offset_top = 106.0
-offset_right = 1190.0
-offset_bottom = 154.0
+offset_left = 560.0
+offset_top = 44.0
+offset_right = 1360.0
+offset_bottom = 94.0
 theme_override_colors/font_color = Color(0.56, 0.87, 0.9, 1)
 theme_override_font_sizes/font_size = 30
 text = "领航舱配电总成  /  NAV POWER DISTRIBUTION"
+horizontal_alignment = 1
 
 [node name="Serial" type="Label" parent="."]
 offset_left = 1390.0
@@ -196,88 +213,103 @@ horizontal_alignment = 2
 
 [node name="SafetyMark" type="Label" parent="."]
 offset_left = 172.0
-offset_top = 182.0
+offset_top = 152.0
 offset_right = 1748.0
-offset_bottom = 222.0
+offset_bottom = 192.0
 theme_override_colors/font_color = Color(0.76, 0.56, 0.25, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.92)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 17
-text = "⚠  WARNING · ISOLATE DAMAGED BRANCH BEFORE COUPLING · DEVICE WILL REJECT UNSAFE LOAD"
+text = "⚠  REV.3 SERVICE INTERLOCK · VERIFY THE TRACE RECORD BEFORE ENERGIZING"
 horizontal_alignment = 1
 
 [node name="BIsolationLever" type="Area2D" parent="."]
-position = Vector2(430, 390)
+position = Vector2(370, 450)
 input_pickable = true
 
 [node name="Housing" type="Polygon2D" parent="BIsolationLever"]
+visible = false
 polygon = PackedVector2Array(-118, -128, 118, -128, 118, 266, -118, 266)
 color = Color(0.055, 0.075, 0.08, 1)
 
 [node name="HousingLip" type="Line2D" parent="BIsolationLever"]
+visible = false
 points = PackedVector2Array(-114, 258, -114, -122, 114, -122)
 width = 5.0
 default_color = Color(0.17, 0.21, 0.21, 0.76)
 
 [node name="Track" type="Polygon2D" parent="BIsolationLever"]
+visible = false
 polygon = PackedVector2Array(-32, -92, 32, -92, 32, 124, -32, 124)
 color = Color(0.012, 0.02, 0.024, 1)
 
 [node name="TrackGlow" type="Polygon2D" parent="BIsolationLever"]
+visible = false
 polygon = PackedVector2Array(-5, -85, 5, -85, 5, 116, -5, 116)
 color = Color(0.33, 0.68, 0.69, 0.42)
 
 [node name="Handle" type="Polygon2D" parent="BIsolationLever"]
-polygon = PackedVector2Array(-78, -44, 78, -44, 92, 0, 78, 44, -78, 44, -92, 0)
-color = Color(0.78, 0.4, 0.12, 1)
+polygon = PackedVector2Array(-34, -26, 34, -26, 44, 0, 34, 26, -34, 26, -44, 0)
+color = Color(0.94, 0.42, 0.1, 0.38)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="BIsolationLever"]
 shape = SubResource("Shape_lever")
 
 [node name="LabelPlate" type="Polygon2D" parent="BIsolationLever"]
+visible = false
 polygon = PackedVector2Array(-128, 164, 128, 164, 128, 248, -128, 248)
 color = Color(0.024, 0.043, 0.048, 0.98)
 
 [node name="Label" type="Label" parent="BIsolationLever"]
 offset_left = -126.0
-offset_top = 176.0
+offset_top = 300.0
 offset_right = 126.0
-offset_bottom = 244.0
+offset_bottom = 368.0
 theme_override_colors/font_color = Color(0.69, 0.8, 0.8, 1)
 theme_override_font_sizes/font_size = 20
 text = "B 支路隔离\nBRANCH B ISOLATOR"
 horizontal_alignment = 1
 
 [node name="StandbyFuseSlot" type="Area2D" parent="."]
-position = Vector2(810, 530)
+position = Vector2(760, 450)
 input_pickable = true
 
 [node name="Housing" type="Polygon2D" parent="StandbyFuseSlot"]
+visible = false
 polygon = PackedVector2Array(-130, -192, 130, -192, 130, 192, -130, 192)
 color = Color(0.045, 0.072, 0.078, 1)
 
 [node name="HousingLip" type="Line2D" parent="StandbyFuseSlot"]
+visible = false
 points = PackedVector2Array(-126, 184, -126, -186, 126, -186)
 width = 5.0
 default_color = Color(0.15, 0.22, 0.22, 0.76)
 
 [node name="Slot" type="Polygon2D" parent="StandbyFuseSlot"]
+visible = false
 polygon = PackedVector2Array(-80, -132, 80, -132, 80, 132, -80, 132)
 color = Color(0.01, 0.026, 0.032, 1)
 
 [node name="GuideLeft" type="Line2D" parent="StandbyFuseSlot"]
+visible = false
 points = PackedVector2Array(-62, -112, -62, 112)
 width = 5.0
 default_color = Color(0.24, 0.65, 0.69, 0.6)
 
 [node name="GuideRight" type="Line2D" parent="StandbyFuseSlot"]
+visible = false
 points = PackedVector2Array(62, -112, 62, 112)
 width = 5.0
 default_color = Color(0.24, 0.65, 0.69, 0.6)
 
 [node name="ContactTop" type="Polygon2D" parent="StandbyFuseSlot"]
+visible = false
 polygon = PackedVector2Array(-60, -142, 60, -142, 48, -116, -48, -116)
 color = Color(0.48, 0.36, 0.16, 1)
 
 [node name="ContactBottom" type="Polygon2D" parent="StandbyFuseSlot"]
+visible = false
 polygon = PackedVector2Array(-48, 116, 48, 116, 60, 142, -60, 142)
 color = Color(0.42, 0.31, 0.14, 1)
 
@@ -300,40 +332,45 @@ script = ExtResource("3_drop")
 shape = SubResource("Shape_slot")
 
 [node name="LabelPlate" type="Polygon2D" parent="StandbyFuseSlot"]
+visible = false
 polygon = PackedVector2Array(-138, 198, 138, 198, 138, 282, -138, 282)
 color = Color(0.024, 0.043, 0.048, 0.98)
 
 [node name="Label" type="Label" parent="StandbyFuseSlot"]
 offset_left = -136.0
-offset_top = 206.0
+offset_top = 300.0
 offset_right = 136.0
-offset_bottom = 274.0
+offset_bottom = 368.0
 theme_override_colors/font_color = Color(0.69, 0.8, 0.8, 1)
 theme_override_font_sizes/font_size = 20
 text = "备用保险丝槽\nSTANDBY COUPLER FUSE"
 horizontal_alignment = 1
 
 [node name="CouplerKnob" type="Area2D" parent="."]
-position = Vector2(1210, 530)
+position = Vector2(1148, 450)
 input_pickable = true
 
 [node name="OuterRing" type="Polygon2D" parent="CouplerKnob"]
+visible = false
 polygon = PackedVector2Array(-132, -98, -98, -132, 98, -132, 132, -98, 132, 98, 98, 132, -98, 132, -132, 98)
 color = Color(0.09, 0.14, 0.15, 1)
 
 [node name="RingShadow" type="Polygon2D" parent="CouplerKnob"]
+visible = false
 polygon = PackedVector2Array(-110, -86, -86, -110, 86, -110, 110, -86, 110, 86, 86, 110, -86, 110, -110, 86)
 color = Color(0.012, 0.024, 0.027, 0.84)
 
 [node name="Dial" type="Polygon2D" parent="CouplerKnob"]
+visible = false
 polygon = PackedVector2Array(-88, -88, 88, -88, 88, 88, -88, 88)
 color = Color(0.17, 0.24, 0.25, 1)
 
 [node name="Needle" type="Polygon2D" parent="CouplerKnob"]
-polygon = PackedVector2Array(-10, -104, 10, -104, 16, 20, -16, 20)
-color = Color(0.25, 0.88, 0.88, 1)
+polygon = PackedVector2Array(-5, -110, 5, -110, 9, 5, -9, 5)
+color = Color(0.25, 0.95, 0.92, 0.62)
 
 [node name="DetentTicks" type="Node2D" parent="CouplerKnob"]
+visible = false
 
 [node name="TickN" type="Line2D" parent="CouplerKnob/DetentTicks"]
 points = PackedVector2Array(0, -152, 0, -126)
@@ -369,37 +406,41 @@ default_color = Color(0.34, 0.46, 0.46, 0.7)
 shape = SubResource("Shape_knob")
 
 [node name="LabelPlate" type="Polygon2D" parent="CouplerKnob"]
+visible = false
 polygon = PackedVector2Array(-148, 162, 148, 162, 148, 246, -148, 246)
 color = Color(0.024, 0.043, 0.048, 0.98)
 
 [node name="Label" type="Label" parent="CouplerKnob"]
 offset_left = -145.0
-offset_top = 170.0
+offset_top = 300.0
 offset_right = 145.0
-offset_bottom = 238.0
+offset_bottom = 368.0
 theme_override_colors/font_color = Color(0.69, 0.8, 0.8, 1)
 theme_override_font_sizes/font_size = 20
 text = "A ↔ C 耦合机构\nSTANDBY COUPLER"
 horizontal_alignment = 1
 
 [node name="ProtectorLever" type="Area2D" parent="."]
-position = Vector2(1580, 530)
+position = Vector2(1545, 450)
 input_pickable = true
 
 [node name="Base" type="Polygon2D" parent="ProtectorLever"]
+visible = false
 polygon = PackedVector2Array(-94, -174, 94, -174, 94, 174, -94, 174)
 color = Color(0.075, 0.098, 0.102, 1)
 
 [node name="BaseLip" type="Line2D" parent="ProtectorLever"]
+visible = false
 points = PackedVector2Array(-88, 166, -88, -168, 88, -168)
 width = 5.0
 default_color = Color(0.18, 0.22, 0.21, 0.7)
 
 [node name="Handle" type="Polygon2D" parent="ProtectorLever"]
-polygon = PackedVector2Array(-50, -140, 50, -140, 62, 70, 0, 130, -62, 70)
-color = Color(0.55, 0.64, 0.64, 1)
+polygon = PackedVector2Array(-18, -118, 18, -118, 25, 74, 0, 100, -25, 74)
+color = Color(0.68, 0.92, 0.9, 0.32)
 
 [node name="GuardRail" type="Line2D" parent="ProtectorLever"]
+visible = false
 points = PackedVector2Array(-76, -150, -76, 130, -54, 158, 54, 158, 76, 130, 76, -150)
 width = 6.0
 default_color = Color(0.22, 0.31, 0.31, 0.86)
@@ -408,14 +449,15 @@ default_color = Color(0.22, 0.31, 0.31, 0.86)
 shape = SubResource("Shape_protector")
 
 [node name="LabelPlate" type="Polygon2D" parent="ProtectorLever"]
+visible = false
 polygon = PackedVector2Array(-128, 198, 128, 198, 128, 282, -128, 282)
 color = Color(0.024, 0.043, 0.048, 0.98)
 
 [node name="Label" type="Label" parent="ProtectorLever"]
 offset_left = -125.0
-offset_top = 206.0
+offset_top = 300.0
 offset_right = 125.0
-offset_bottom = 274.0
+offset_bottom = 368.0
 theme_override_colors/font_color = Color(0.69, 0.8, 0.8, 1)
 theme_override_font_sizes/font_size = 20
 text = "总保护开关\nMASTER PROTECT"
@@ -427,6 +469,7 @@ position = Vector2(550, 184)
 z_index = 20
 
 [node name="WarningLamp" type="Polygon2D" parent="."]
+visible = false
 polygon = PackedVector2Array(296, 174, 322, 174, 336, 198, 322, 222, 296, 222, 282, 198)
 color = Color(0.28, 0.14, 0.035, 1)
 

@@ -1,0 +1,14 @@
+{
+  "asset": "godot/assets/original/power-distribution-panel-v1.png",
+  "sha256": "886ca239c7fcea3ca7d6134f4cde1fe5abb32db657be9fb44962927c38efc2ee",
+  "created_on": "2026-09-29",
+  "origin": "Generated with OpenAI built-in image_gen tool for this project; no reference images supplied.",
+  "source_filename": "exec-cc30035f-9d02-4982-9fd8-7621d2159417.png",
+  "dimensions": {
+    "width": 1672,
+    "height": 941
+  },
+  "prompt": "Use case: stylized-concept. Asset type: original 2D game environment background for a Godot Windows HOS/HOPA close-up. Create an original mature science-fiction research-vessel electrical power distribution assembly, viewed almost perfectly straight-on with a very slight industrial top-down perspective. Full 16:9 frame, safe margins for 1920x1080 and 1366x768. The assembly is a permanent physical machine in a damaged ship: heavy brushed gunmetal cabinet, oxidized copper bus bars, ceramic insulators, armored conduits, recessed bolts, gasket seams, soot, chipped enamel, restrained cyan diagnostic glow and amber warning lamps. Arrange exactly four clearly separated physical mechanism bays across the panel, aligned left to right at roughly 22%, 42%, 63%, and 82% of frame width: (1) a large vertical isolation lever in a long guarded track, (2) an empty cylindrical cartridge-fuse cradle with upper and lower brass contacts and guide rails, (3) a large circular rotary coupling mechanism with visible detents and a mechanical pointer, (4) a guarded master protection switch with a substantial vertical handle. Include a small physical warning lamp near upper left, a narrow physical status sight glass near lower center, and routed copper conductors linking the four mechanisms. Leave blank metal nameplates below each mechanism and a blank header plate above; game-rendered labels will overlay them. The scene should feel hand-painted, cinematic, tactile, premium, and specifically designed for a serious original adventure puzzle rather than a flat control UI. Readable silhouettes and strong material differentiation; all imagery original. No people, characters, text, letters, numbers, symbols, arrows, logos, watermark, UI buttons, floating panels, touchscreen, classroom quiz styling, recognizable brand, recognizable trade dress, or imitation of G5 artwork or interface.",
+  "usage": "Original world-space surface for the four-action power-distribution close-up. State overlays, hit areas, labels, drag behavior, fuse inventory placement and safety feedback remain native Godot nodes.",
+  "limitations": "Generated art and isolated component renders are not playthrough evidence. Final acceptance requires continuous current-HEAD Windows footage and matching 1920x1080 and 1366x768 screenshots."
+}
