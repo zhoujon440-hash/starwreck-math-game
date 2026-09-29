@@ -100,7 +100,7 @@ func _populate_signal_copy() -> void:
 	var maintenance: Dictionary = ending_signals[0]
 	var weak: Dictionary = ending_signals[1]
 	$MaintenanceCarrier/Message.text = "%s · %s\n%s" % [maintenance.get("channel", "AUTO-MAINT"), maintenance.get("timbre", "稳定窄带 · 自动维护广播"), maintenance.get("text", "")]
-	$WeakCarrier/Message.text = "%s · %s · SENDER %s\n%s" % [weak.get("channel", "WEAK-INTERVENTION"), weak.get("timbre", "衰减宽带 · 未知干预"), weak.get("sender", "UNKNOWN"), weak.get("text", "")]
+	$WeakCarrier/Message.text = "%s · SENDER %s\n%s\n%s" % [weak.get("channel", "WEAK-INTERVENTION"), weak.get("sender", "UNKNOWN"), weak.get("timbre", "衰减宽带 · 未知干预"), weak.get("text", "")]
 
 func _refresh_visuals() -> void:
 	if state == null:
@@ -154,7 +154,7 @@ func _feedback_copy(code: String) -> String:
 		"GAIN_ADJUSTED": "增益轮停入下一档；锁框等待稳定载波。",
 		"WEAK_PHASE_SET": "弱路相位环停入下一格；前缘仍需复核。",
 		"MAINTENANCE_GAIN_MISMATCH": "维护载波尚未进入绿色参考框；旋钮位置保持。",
-		"MAINTENANCE_CHANNEL_REQUIRED": "先锁定自动维护窄带，再分离它前缘的弱回波。",
+		"MAINTENANCE_CHANNEL_REQUIRED": "弱路锁桨被机械联锁拒绝；第一路基准尚未建立。",
 		"WEAK_GAIN_MISMATCH": "弱回波波峰未落入绿色参考带；旋钮位置保持。",
 		"WEAK_PHASE_MISMATCH": "弱路前缘没有落在提前一格的位置；相位轮保持。",
 		"MAINTENANCE_LOCKED": "自动维护载波锁定；第一条记录已显影。",

@@ -243,14 +243,14 @@ func run(t) -> void:
 		objective_state.world_state = "POWER_RESTORED"
 		objective_state.scene_phase = "POWER_RESTORED"
 		objective_state.current_view = "SIGNAL_VERIFY"
-		t.equal(scene.current_objective_text(), "先把自动维护载波调进绿色参考框并锁定")
+		t.equal(scene.current_objective_text(), "校准船尾两路载波，保全冲突记录")
 		objective_state.math_state["signal_verification"]["maintenance_gain"] = 3
 		objective_state.math_state["signal_verification"]["maintenance_locked"] = true
-		t.equal(scene.current_objective_text(), "再分离前缘弱回波，把相位停在提前一格的位置")
+		t.equal(scene.current_objective_text(), "追踪尚未显影的第二路载波")
 		objective_state.math_state["signal_verification"]["weak_gain"] = 2
 		objective_state.math_state["signal_verification"]["weak_phase"] = 11
 		objective_state.math_state["signal_verification"]["weak_locked"] = true
-		t.equal(scene.current_objective_text(), "两路记录都先保留，再压下封存杆")
+		t.equal(scene.current_objective_text(), "判断两条冲突记录该如何处置")
 		objective_state.math_state["signal_verification"]["retained_channels"] = ["maintenance"]
-		t.equal(scene.current_objective_text(), "第二路记录还未保留；两枚保留闸都压下后才能封存")
+		t.equal(scene.current_objective_text(), "封存联锁仍缺少一条独立记录")
 		scene.free()

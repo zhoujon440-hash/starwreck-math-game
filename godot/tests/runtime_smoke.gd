@@ -579,8 +579,8 @@ func _run() -> void:
 	await create_timer(3.15).timeout
 	var receiver: Control = repair_scene.get_node("UI/DualSignalVerification")
 	_require(receiver.visible and repair_scene.state.current_view == "SIGNAL_VERIFY", "power restoration opens the exclusive physical receiver")
-	_require(repair_scene.current_objective_text() == "先把自动维护载波调进绿色参考框并锁定", "receiver opens with the maintenance-carrier objective")
-	await _require_modal_guidance(repair_scene, "先把自动维护载波调进绿色参考框并锁定", "MAINTENANCE", "receiver close-up")
+	_require(repair_scene.current_objective_text() == "校准船尾两路载波，保全冲突记录", "receiver opens with a non-spoiling dual-carrier objective")
+	await _require_modal_guidance(repair_scene, "校准船尾两路载波，保全冲突记录", "MAINTENANCE", "receiver close-up")
 	_require(not repair_scene.get_node("World/PowerPanelHotspot").input_pickable and not repair_scene.power_panel.visible, "receiver blocks cockpit and panel input")
 	_require(not receiver.get_node("MaintenanceCarrier/Message").visible and not receiver.get_node("WeakCarrier/Message").visible, "no signal copy appears before a physical lock")
 	var pre_seal_exchange: String = repair_scene.completion_card.get_node("Text").text
@@ -589,7 +589,7 @@ func _run() -> void:
 		await _viewport_click(receiver.get_node("MaintenanceCarrier/GainWheel/Increase").global_position, MOUSE_BUTTON_LEFT)
 	await _viewport_click(receiver.get_node("MaintenanceCarrier/LockPaddle").global_position, MOUSE_BUTTON_LEFT)
 	_require(receiver.get_node("MaintenanceCarrier/Message").visible and not receiver.get_node("WeakCarrier/Message").visible, "viewport maintenance lock reveals only the first broadcast")
-	_require(repair_scene.current_objective_text() == "再分离前缘弱回波，把相位停在提前一格的位置", "receiver objective advances to the weak carrier after maintenance lock")
+	_require(repair_scene.current_objective_text() == "追踪尚未显影的第二路载波", "receiver objective advances without printing the weak-channel solution")
 	for _step in 2:
 		await _viewport_click(receiver.get_node("WeakCarrier/GainWheel/Increase").global_position, MOUSE_BUTTON_LEFT)
 	for _step in 11:
@@ -597,11 +597,11 @@ func _run() -> void:
 	await _viewport_click(receiver.get_node("WeakCarrier/LockPaddle").global_position, MOUSE_BUTTON_LEFT)
 	_require(receiver.get_node("WeakCarrier/Message").visible, "viewport weak lock reveals the second record")
 	_require(receiver.get_node("WeakCarrier/Message").text.contains("SENDER UNKNOWN") and receiver.get_node("WeakCarrier/Message").text.contains("文明修复者，请不要来。"), "the weak warning remains UNKNOWN with its exact text")
-	_require(repair_scene.current_objective_text() == "两路记录都先保留，再压下封存杆", "receiver objective advances to the keep gates after both carriers lock")
+	_require(repair_scene.current_objective_text() == "判断两条冲突记录该如何处置", "receiver objective advances to a non-spoiling record decision")
 	await _viewport_click(receiver.get_node("KeepGates/MaintenanceGate").global_position, MOUSE_BUTTON_LEFT)
 	await _viewport_click(receiver.get_node("SealLever").global_position, MOUSE_BUTTON_LEFT)
 	_require(not repair_scene.state.math_state["signal_verification"]["sealed"], "one physical keep gate cannot seal either record")
-	_require(repair_scene.current_objective_text() == "第二路记录还未保留；两枚保留闸都压下后才能封存", "receiver objective narrows to the final keep gate after only one record is retained")
+	_require(repair_scene.current_objective_text() == "封存联锁仍缺少一条独立记录", "receiver objective reports the incomplete interlock without naming the missing action")
 	await _viewport_click(receiver.get_node("KeepGates/WeakGate").global_position, MOUSE_BUTTON_LEFT)
 	await _viewport_click(receiver.get_node("SealLever").global_position, MOUSE_BUTTON_LEFT)
 	_require(repair_scene.state.math_state["signal_verification"]["sealed"], "both independent physical keep gates seal the record")

@@ -602,13 +602,13 @@ func current_objective_text() -> String:
 		"WINDOWS":
 			return "转动三枚采样窗，避开占用槽并保持等距"
 		"MAINTENANCE":
-			return "先把自动维护载波调进绿色参考框并锁定"
+			return "校准船尾两路载波，保全冲突记录"
 		"WEAK":
-			return "再分离前缘弱回波，把相位停在提前一格的位置"
+			return "追踪尚未显影的第二路载波"
 		"KEEP_GATES":
-			return "两路记录都先保留，再压下封存杆"
+			return "判断两条冲突记录该如何处置"
 		"KEEP_FINAL":
-			return "第二路记录还未保留；两枚保留闸都压下后才能封存"
+			return "封存联锁仍缺少一条独立记录"
 		"REPAIR":
 			return "依据维修记录复核配电机构，让船尾天线安全恢复供电"
 	if state.observed_clue_ids.size() < 4:

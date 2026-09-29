@@ -15,6 +15,17 @@ func run(t) -> void:
 	_test_receiver_contract_and_completion_boundary(t)
 	_test_partial_receiver_state_round_trips_strictly(t)
 	_test_tuning_changes_visible_signal_before_lock(t)
+	_test_receiver_uses_physical_machine_without_order_copy(t)
+
+func _test_receiver_uses_physical_machine_without_order_copy(t) -> void:
+	var receiver = RECEIVER_SCENE.instantiate()
+	t.truthy(receiver.has_node("PhysicalBackdrop"), "dual-signal verification must be staged on an original physical receiver surface")
+	if receiver.has_node("PhysicalBackdrop"):
+		var backdrop = receiver.get_node("PhysicalBackdrop")
+		t.truthy(backdrop.texture != null and backdrop.texture.resource_path.ends_with("stern-dual-carrier-receiver-v1.png"), "receiver backdrop must resolve to the reviewed original stern machine")
+	t.truthy(not receiver.get_node("FeedbackReadout").text.contains("先"), "the receiver must not print the first operation in its initial status")
+	t.truthy(not receiver._feedback_copy("MAINTENANCE_CHANNEL_REQUIRED").contains("先"), "an interlock rejection must describe the blocked state without disclosing the solution order")
+	receiver.free()
 
 func _test_tuning_changes_visible_signal_before_lock(t) -> void:
 	var receiver = RECEIVER_SCENE.instantiate()

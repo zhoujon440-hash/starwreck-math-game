@@ -1,0 +1,14 @@
+{
+  "asset": "godot/assets/original/stern-dual-carrier-receiver-v1.png",
+  "sha256": "25162db9bf0e2ff28b58597f55dbd98df558fd854afe7545e9090926d4b6c22d",
+  "created_on": "2026-09-29",
+  "origin": "Generated with OpenAI built-in image_gen tool for this project; no reference images supplied.",
+  "source_filename": "exec-b9ea8a0d-c185-4bcd-a545-e6da09b515f3.png",
+  "dimensions": {
+    "width": 1672,
+    "height": 941
+  },
+  "prompt": "Use case: stylized-concept. Asset type: original 2D game environment background for a Godot Windows HOS/HOPA close-up. Create an original mature science-fiction research-vessel stern dual-carrier archival receiver, viewed almost perfectly straight-on with a very slight industrial top-down perspective. Full 16:9 frame with safe margins for 1920x1080 and 1366x768. This is one large permanent physical machine set into a damaged ship bulkhead, not a generic app panel: brushed gunmetal enclosure, worn navy enamel, oxidized brass, copper signal conduits, ceramic insulators, recessed bolts, gasket seams, soot and restrained cyan/amber instrument glow. Arrange two large distinct analog receiver bays side by side across the middle. Each bay has a wide blank dark waveform glass near the upper portion; below it a substantial ribbed rotary gain wheel, a guarded mechanical lock paddle, and a small physical lamp. The right bay additionally has a separate twelve-detent phase wheel with a physical pointer and a tiny fixed reference notch. Along the lower third place two independent heavy record-retention knife gates, one under each receiver bay, with visibly separate mechanisms. At far lower right place one large guarded archival seal lever. Include exposed linkages and cable runs so the receiver feels mechanically plausible. Leave blank metal nameplates for game-rendered labels and blank waveform glass for dynamic Godot traces. Strong readable silhouettes, tactile premium hand-painted cinematic adventure-game environment art, serious original HOPA quality, dark spacious composition. No people, characters, text, letters, numbers, symbols, arrows, logos, watermark, UI buttons, floating panels, touchscreen, classroom quiz styling, recognizable brand, recognizable trade dress, or imitation of G5 artwork/interface. All imagery original; no reference images.",
+  "usage": "Original world-space surface for the stern dual-carrier archival receiver. Wave traces, gain and phase states, lock lamps, record messages, independent retain gates, hit areas and seal state remain native Godot nodes.",
+  "limitations": "Generated art and isolated receiver renders are not playthrough evidence. Final acceptance requires continuous current-HEAD Windows footage and matching 1920x1080 and 1366x768 screenshots."
+}
