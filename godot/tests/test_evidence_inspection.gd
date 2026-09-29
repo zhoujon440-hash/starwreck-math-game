@@ -13,6 +13,7 @@ func run(t) -> void:
 	_test_burn_material_visibility(t)
 	_test_revisitable_observations(t)
 	_test_observable_forensic_surfaces(t)
+	_test_plate_physical_surface_and_non_spoiling_guidance(t)
 	t.truthy(ResourceLoader.exists(MECHANICS_PATH), "multi-step evidence inspection mechanics must exist")
 	if not ResourceLoader.exists(MECHANICS_PATH):
 		return
@@ -174,6 +175,26 @@ func run(t) -> void:
 	t.truthy(mechanics.toggle_fuse_latch(0).ok, "left fuse retaining clip releases")
 	t.truthy(not mechanics.can_take_fuse(), "one retaining clip cannot release the fuse")
 	t.truthy(mechanics.toggle_fuse_latch(1).ok and mechanics.can_take_fuse(), "both retaining clips release the correctly rated fuse")
+
+func _test_plate_physical_surface_and_non_spoiling_guidance(t) -> void:
+	var state = preload("res://scripts/core/GameState.gd").new()
+	var view = preload("res://scenes/ui/EvidenceInspection.tscn").instantiate()
+	for node_name in ["PlateClosedBackdrop", "PlateOpenBackdrop"]:
+		var surface = view.get_node_or_null("Workbench/PlatePanel/" + node_name)
+		t.truthy(surface is TextureRect and surface.texture != null, "Rev.3 inspector is missing physical state art: %s" % node_name)
+		if surface is TextureRect and surface.texture != null:
+			t.truthy(surface.texture.resource_path.contains("rev3-plate-inspector-"), "Rev.3 state art must resolve to the reviewed original machine")
+			t.equal(surface.mouse_filter, Control.MOUSE_FILTER_IGNORE, "Rev.3 state art cannot intercept latch or probe input")
+	view.setup(state, FORENSIC_CONFIG)
+	view.open_inspection("CLUE-004")
+	for detail in 3:
+		view._on_observation_detail(detail)
+	view._on_hypothesis(0)
+	var guide: String = view.get_node("Workbench/Instructions").text
+	t.truthy(not guide.contains("按左") and not guide.contains("顺序"), "ordinary Rev.3 guidance must expose interlock evidence without printing the latch solution")
+	view._on_plate_latch(1)
+	t.truthy(not view.get_node("Workbench/Readout").text.contains("先释放"), "a rejected latch describes residual pressure without naming the next action")
+	view.free()
 
 func _test_revisitable_observations(t) -> void:
 	# Previously read facts must remain available when comparing explanations,

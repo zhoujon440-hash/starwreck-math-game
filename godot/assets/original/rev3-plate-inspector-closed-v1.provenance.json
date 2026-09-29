@@ -1,0 +1,14 @@
+{
+  "asset": "godot/assets/original/rev3-plate-inspector-closed-v1.png",
+  "sha256": "774a1ae869edc28cdaafa62695c61c1e0ce25502900870f057802df0eb2bc89f",
+  "created_on": "2026-09-29",
+  "origin": "Generated with OpenAI built-in image_gen tool for this project; no reference images supplied.",
+  "source_filename": "exec-eeaa5bd7-5012-47c5-8dd9-29a43d4dfaea.png",
+  "dimensions": {
+    "width": 1672,
+    "height": 941
+  },
+  "prompt": "Use case: stylized-concept. Asset type: original 2D game environment background for a Godot Windows HOS/HOPA forensic close-up. Create an original mature science-fiction service-revision plate inspection machine installed in a damaged research vessel, viewed perfectly straight-on. Full 16:9 image, but keep every essential interactive part inside the central wide band from roughly 18% to 72% of image height so the game can crop it into a panoramic 3:1 instrument window. Heavy worn gunmetal chassis with oxidized brass trim, navy enamel, bolts, gasket seams, soot and restrained cyan/amber maintenance light. Center: one very wide hinged opaque metal revision cover, closed and flush, with a substantial horizontal lift handle centered along its lower edge and a blank brass header plaque above it. Far left: a clearly separate guarded pressure-relief latch. Far right: a clearly separate guarded secondary release latch. Show mechanical linkage and pressure tubing proving the two latches act on the same cover. Leave the cover face blank for game-rendered markings; no route is visible while closed. Premium tactile hand-painted cinematic adventure-game art, readable physical mechanisms, serious original HOPA quality. No people, characters, text, letters, numbers, symbols, arrows, logos, watermark, UI buttons, floating panels, touchscreen, classroom quiz styling, recognizable brand, recognizable trade dress, or imitation of G5 artwork/interface. All imagery original; no reference images.",
+  "usage": "Closed physical state of the Rev.3 service-plate inspector. Native Godot latch hit areas, labels, feedback and unlock logic remain authoritative.",
+  "limitations": "Component art is not playthrough evidence. Final acceptance requires current-HEAD continuous Windows footage and matching target-resolution screenshots."
+}

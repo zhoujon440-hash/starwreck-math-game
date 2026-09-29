@@ -241,9 +241,9 @@ func _show_feedback(code: String) -> void:
 		"TAPE_ORDER_MISMATCH": "走带在时标接缝处停住；卷面保留，先修正左右顺序。",
 		"TRACE_BREAKS_AT_SEAM": "触针或波形在旧接缝处中断；已确认路径保持。",
 		"TRACE_DEAD_END": "机械触针进入无批准戳的盲槽并被顶回；连续节点保持。",
-		"PRESSURE_LATCH_FIRST": "右锁仍受余压顶住；先释放左侧泄压锁。",
+		"PRESSURE_LATCH_FIRST": "右锁被残余压力顶回；另一侧压力联杆尚未卸载。",
 		"PLATE_LATCH_RELEASED": "铭牌锁已释放；检查另一侧机械锁。",
-		"COVER_STILL_LATCHED": "Rev.3 盖板仍遮住触针槽；先释放双锁并抬起盖板。",
+		"COVER_STILL_LATCHED": "Rev.3 盖板仍被双侧机械锁咬合；触针槽不可见。",
 		"REVISION_TRACE_EXPOSED": "盖板抬起；批准刻槽与旧 B→C 断槽同时显露。",
 		"TRACE_NODE_CONFIRMED": "触针沿批准刻槽前进；继续寻找连续节点。",
 	}
@@ -289,7 +289,7 @@ func _refresh_controls() -> void:
 		$Workbench/Instructions.text = {
 			"CLUE-002": "沿外壳到 B 母线的箭头逐点点亮扫描头；再次确认同一点即可锁住该方向。" if bool(state.investigation_state.get("burn_baseline_locked", false)) else "旋转四段基线轮，让热层进入同一青色参考带，再锁定基线；已调好的段位会保留。",
 			"CLUE-003": "先交换相邻纸卷使机械时标连续，再逐卷转面；拉下走带杆复核两道接缝。",
-			"CLUE-004": "按左泄压锁、右锁、抬盖的顺序打开铭牌，再让机械触针沿连续批准槽前进。",
+			"CLUE-004": "双锁共用一条压力联杆；根据每次回弹与残余压力判断释放条件，盖板解锁后让触针沿连续批准槽前进。",
 		}.get(current_clue, "")
 	for index in 3:
 		var hypothesis: Button = get_node("Workbench/HypothesisRail/Hypothesis%d" % index)
@@ -347,9 +347,12 @@ func _refresh_controls() -> void:
 	var latches_released := hypothesis_confirmed and bool(plate[0]) and bool(plate[1])
 	var cover_lifted := bool(state.investigation_state.get("plate_cover_lifted", false))
 	var plate_open := latches_released and cover_lifted
+	$Workbench/PlatePanel/PlateClosedBackdrop.visible = not cover_lifted
+	$Workbench/PlatePanel/PlateOpenBackdrop.visible = cover_lifted
 	for surface in ["ApprovedGroove", "OldGrooveStart", "OldGrooveEnd", "BlindGroove", "BreakScar"]:
 		get_node("Workbench/PlatePanel/" + surface).visible = plate_open
 	$Workbench/PlatePanel/TraceLine.visible = plate_open
+	$Workbench/PlatePanel/LiftCover.visible = not cover_lifted
 	$Workbench/PlatePanel/LiftCover.disabled = not latches_released or cover_lifted
 	$Workbench/PlatePanel/LiftCover.text = "盖板已抬起 · 触针已接入" if cover_lifted else "抬起 Rev.3 盖板"
 	$Workbench/PlatePanel/Plate.modulate.a = 0.32 if cover_lifted else 1.0

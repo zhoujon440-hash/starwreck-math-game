@@ -1,0 +1,15 @@
+{
+  "asset": "godot/assets/original/rev3-plate-inspector-open-v1.png",
+  "sha256": "b68d9880c8120836440557fcdf272d76e8a4d731b67bcdc5b9d6041a9e0e75c2",
+  "created_on": "2026-09-29",
+  "origin": "Generated with OpenAI built-in image_gen tool as an edit of this project's closed inspector art; no external reference images supplied.",
+  "source_filename": "exec-080c6fed-5a3f-4020-8017-a7f74f5079ed.png",
+  "reference_asset": "godot/assets/original/rev3-plate-inspector-closed-v1.png",
+  "dimensions": {
+    "width": 1672,
+    "height": 941
+  },
+  "prompt": "Edit this exact original machine into its open inspection state while preserving the same camera, crop, chassis, lighting, left red pressure-relief latch, right silver release latch, blank brass header plate, pipes, bolts, colors, damage and proportions. The wide central revision cover has been lifted upward on its top hinges; show its underside only along the upper edge so it does not block the panoramic trace bed. In the revealed central bed, add six unlabeled physical ceramic socket collars arranged as a right-to-left zig-zag: far-right upper socket, right-lower socket, upper-mid-right socket, lower-center socket, upper-left socket, far-left lower socket. Machine-milled shallow channels connect them: one continuous approved brass/olive channel runs from far-right upper through upper-mid-right, lower-center and far-left lower; one older oxidized brown channel leaves far-right upper toward the right-lower area but is visibly broken before reaching lower-center; one dull blind branch leaves lower-center toward upper-left and ends there. Keep the channels and sockets purely physical with no labels, letters, numbers, arrows, glowing answer highlight or UI. Premium tactile hand-painted cinematic HOS/HOPA environment art, all imagery original. Do not alter the outer machine or turn it into a screen.",
+  "usage": "Open physical state of the Rev.3 service-plate inspector. Native Godot trace sockets, probe progress, labels and accepted/rejected path logic remain authoritative overlays.",
+  "limitations": "Component art is not playthrough evidence. Final acceptance requires current-HEAD continuous Windows footage and matching target-resolution screenshots."
+}
