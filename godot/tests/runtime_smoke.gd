@@ -541,6 +541,7 @@ func _run() -> void:
 	_require(absf(console.get_node("SweepLamp").rotation) > 1.0, "diagnostic success visibly sweeps the complete ring before tray retraction")
 	await create_timer(0.35).timeout
 	_require(not console.visible, "successful full-ring sweep retracts the diagnostic tray to reveal the repair chain")
+	_require(scene.inventory_hud.visible and scene.inventory_hud.slots.has("ITM-G01-002"), "diagnostic retraction reveals the real draggable fuse on the tool rail")
 	_require(scene.save_service.save_state(scene.state) == OK, "locked staged diagnostic writes through the strict save contract")
 	var locked_snapshot = preload("res://scripts/core/SaveService.gd").new(SMOKE_SAVE).load_state()
 	var locked_math: Dictionary = locked_snapshot.get("math_state", {})
@@ -556,11 +557,24 @@ func _run() -> void:
 	_require(locked_resumed.state.current_view == "POWER_PANEL" and not locked_console.visible and locked_resumed.power_panel.visible, "locked diagnostic resumes in the physical panel with the completed measurement tray retracted")
 	_require(locked_resumed.state.math_state["sample_windows"] == [1, 5, 9] and locked_resumed.state.math_state["window_locked"], "locked diagnostic resumes all three shutters")
 	_require(not locked_console.get_node("Window0").input_pickable and not locked_console.get_node("LockLever").input_pickable, "locked diagnostic resume is read-only and cannot double-advance")
+	_require(locked_resumed.inventory_hud.visible and locked_resumed.inventory_hud.slots.has("ITM-G01-002"), "locked diagnostic resume restores the visible fuse drag source")
 	_require(not locked_resumed.get_node("World/FaultRecordHotspot").input_pickable and not locked_resumed.get_node("World/PowerPanelHotspot").input_pickable, "locked diagnostic resume retains exclusive viewport ownership")
 	var repair_scene = locked_resumed
 	repair_scene.save_service = preload("res://scripts/core/SaveService.gd").new(SMOKE_SAVE)
-	repair_scene.power_panel.get_node("StandbyFuseSlot/DropTarget").item_dropped.emit("ITM-G01-002")
+	var fuse_slot_click = InputEventMouseButton.new()
+	fuse_slot_click.button_index = MOUSE_BUTTON_LEFT
+	fuse_slot_click.pressed = true
+	repair_scene.inventory_service.select_item("ITM-G01-002")
+	repair_scene.power_panel.get_node("StandbyFuseSlot").input_event.emit(null, fuse_slot_click, 0)
+	_require(not repair_scene.state.device_state["fuse_installed"] and "ITM-G01-002" in repair_scene.state.inventory_item_ids, "arming then clicking the physical slot cannot bypass the required drag gesture")
+	var fuse_drop_target = repair_scene.power_panel.get_node("StandbyFuseSlot/DropTarget")
+	var visible_fuse_slot = repair_scene.inventory_hud.slots["ITM-G01-002"]
+	var visible_fuse_payload = visible_fuse_slot.drag_payload()
+	_require(fuse_drop_target._can_drop_data(Vector2.ZERO, visible_fuse_payload), "the real visible inventory slot payload is accepted by the physical slot")
+	_require(not fuse_drop_target._can_drop_data(Vector2.ZERO, {"kind": "inventory_item", "item_id": "ITM-G01-003"}), "physical slot rejects the visible wrench payload")
+	fuse_drop_target._drop_data(Vector2.ZERO, visible_fuse_payload)
 	_require(repair_scene.state.device_state["fuse_installed"] and "ITM-G01-002" not in repair_scene.state.inventory_item_ids, "physical fuse drop seats and consumes the fuse after diagnostic completion")
+	_require(not repair_scene.inventory_hud.visible, "successful fuse seating retracts the tool rail before coupler work")
 	var coupler_press = InputEventMouseButton.new()
 	coupler_press.button_index = MOUSE_BUTTON_LEFT
 	coupler_press.pressed = true

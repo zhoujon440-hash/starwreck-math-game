@@ -84,7 +84,6 @@ func _ready() -> void:
 	panel_anchor = position
 	if has_node("BIsolationLever"):
 		$BIsolationLever.input_event.connect(_on_b_input)
-		$StandbyFuseSlot.input_event.connect(_on_fuse_slot_input)
 		$CouplerKnob.input_event.connect(_on_coupler_input)
 		$ProtectorLever.input_event.connect(_on_protector_input)
 		$StandbyFuseSlot/DropTarget.item_dropped.connect(_on_fuse_item_dropped)
@@ -111,15 +110,6 @@ func _on_b_input(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseMotion and dragging_b:
 		$BIsolationLever/Handle.position.y = clampf($BIsolationLever/Handle.position.y + event.relative.y, -72.0, 82.0)
 
-func _on_fuse_slot_input(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and state != null:
-		var selected = str(inventory_service.selected_item_id) if inventory_service != null else ""
-		var result = install_fuse(selected)
-		if result.ok:
-			$StandbyFuseSlot/FuseInserted.visible = true
-		else:
-			_feedback_invalid("FUSE INTERLOCK OPEN · ITEM RETURNED" if result.feedback == "DIAGNOSTIC_REQUIRED" else "SLOT REJECT · ITEM RETURNED")
-
 func _on_fuse_item_dropped(item_id: String) -> void:
 	var result = install_fuse(item_id)
 	if result.ok:
@@ -136,6 +126,7 @@ func _on_diagnostic_completed() -> void:
 		var retract = create_tween()
 		retract.tween_interval(0.9)
 		retract.tween_callback(_set_console_active.bind(false))
+		retract.tween_callback(func(): milestone_reached.emit("fuse_drag_ready"))
 
 func _on_console_device_feedback(code: String) -> void:
 	device_feedback.emit(code)

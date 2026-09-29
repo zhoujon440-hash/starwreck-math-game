@@ -37,6 +37,16 @@ func run(t) -> void:
 	t.truthy(packed != null)
 	if packed != null:
 		var panel = packed.instantiate()
+		var drop_target = panel.get_node("StandbyFuseSlot/DropTarget")
+		t.truthy(drop_target._can_drop_data(Vector2.ZERO, {"kind": "inventory_item", "item_id": "ITM-G01-002"}), "the physical slot accepts the authored standby fuse")
+		var dropped_ids: Array[String] = []
+		drop_target.item_dropped.connect(func(item_id: String): dropped_ids.append(item_id))
+		for rejected_id in ["ITM-G01-001", "ITM-G01-003", "ITM-G01-004", "WRONG"]:
+			t.truthy(not drop_target._can_drop_data(Vector2.ZERO, {"kind": "inventory_item", "item_id": rejected_id}), "the fuse slot rejects non-fuse inventory payloads: %s" % rejected_id)
+		t.truthy(not drop_target._can_drop_data(Vector2.ZERO, {"kind": "other", "item_id": "ITM-G01-002"}), "the fuse slot rejects payloads outside the inventory drag contract")
+		for malformed_payload in [null, "bad", {}, {"kind": "inventory_item"}, {"kind": "inventory_item", "item_id": "WRONG"}]:
+			drop_target._drop_data(Vector2.ZERO, malformed_payload)
+		t.equal(dropped_ids, [], "malformed and wrong-item drops are inert and emit no installation signal")
 		for path in ["PhysicalBackdrop", "PanelShadow", "PanelFrame", "PanelFrame/BoltTL", "MetalWear", "ModuleBackplates", "BranchBus", "BIsolationLever", "BIsolationLever/LabelPlate", "StandbyFuseSlot", "StandbyFuseSlot/LabelPlate", "StandbyFuseSlot/ContactTop", "StandbyFuseSlot/DropTarget", "CouplerKnob", "CouplerKnob/LabelPlate", "CouplerKnob/DetentTicks", "ProtectorLever", "ProtectorLever/LabelPlate", "ProtectorLever/GuardRail", "WarningLamp", "StatusLamp", "FeedbackArc", "Close"]:
 			t.truthy(panel.has_node(path), "power panel is missing required physical layer: %s" % path)
 		t.truthy(ResourceLoader.exists("res://assets/original/power-distribution-panel-v1.png"), "final four-action repair needs an original authored physical panel surface")
@@ -55,7 +65,7 @@ func run(t) -> void:
 					var deduction_copy := str(deduction.get("text", ""))
 					for leaked_order in ["装入公用保险丝，耦合", "再分段闭合", "然后", "操作顺序"]:
 						t.truthy(leaked_order not in deduction_copy, "final deduction states circuit constraints without spelling out the click order: %s" % leaked_order)
-		t.equal(panel.get_node("StandbyFuseSlot/DropTarget").mouse_filter, Control.MOUSE_FILTER_PASS, "drag target must pass click-to-arm input through to the physical slot")
+		t.equal(panel.get_node("StandbyFuseSlot/DropTarget").mouse_filter, Control.MOUSE_FILTER_PASS, "physical fuse slot must receive the real inventory drag payload")
 		var aligned_state = preload("res://scripts/core/GameState.gd").new()
 		aligned_state.unlocked_deduction_ids.append("DED-004")
 		aligned_state.device_state["b_isolated"] = true

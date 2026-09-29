@@ -314,7 +314,10 @@ func _refresh_cabinet_interactions() -> void:
 	fuse_pickup.input_pickable = holder_exposed and bool(latches[0]) and bool(latches[1]) and fuse_pickup.visible
 
 func _on_inventory_item_armed(item_id: String) -> void:
-	status_label.text = "%s已拿在手中。拖向现场设备，或单击真实插槽。" % _entry_title(item_id)
+	if item_id == "ITM-G01-002":
+		status_label.text = "%s已拿在手中。按住并拖向匹配的现场机构。" % _entry_title(item_id)
+	else:
+		status_label.text = "%s已收纳在设备袋；当前机构不接收这件工具。" % _entry_title(item_id)
 
 func _open_board() -> void:
 	if state.observed_clue_ids.is_empty():
@@ -366,8 +369,8 @@ func _on_power_panel_input(_viewport: Node, event: InputEvent, _shape_idx: int) 
 		if deduction_board.visible:
 			deduction_board.close_board()
 		_set_exploration_hud_visible(false)
-		inventory_hud.visible = false
 		power_panel.visible = true
+		_sync_power_panel_inventory()
 		status_label.text = "配电箱近景 · 机构会通过回弹、卡位和状态灯反馈操作。"
 		_update_objective()
 		_save()
@@ -387,6 +390,7 @@ func _close_power_panel() -> void:
 func _on_panel_milestone(_name: String) -> void:
 	_mark_progress()
 	inventory_hud.refresh()
+	_sync_power_panel_inventory()
 	_update_objective()
 	_save()
 
@@ -552,8 +556,8 @@ func _restore_from_state() -> void:
 		_set_cockpit_hotspots_pickable(false)
 		_set_exploration_hud_visible(false)
 		deduction_board.visible = false
-		inventory_hud.visible = false
 		power_panel.visible = true
+		_sync_power_panel_inventory()
 	elif state.current_view == "EVIDENCE" and state.world_state != "POWER_RESTORED":
 		var active_clue := str(state.investigation_state.get("active_inspection_clue", ""))
 		if active_clue in ["CLUE-002", "CLUE-003", "CLUE-004"]:
@@ -729,6 +733,18 @@ func _set_exploration_hud_visible(value: bool) -> void:
 			toast_tween.kill()
 		discovery_toast.visible = false
 		discovery_toast.modulate.a = 0.0
+
+func _sync_power_panel_inventory() -> void:
+	var console_visible: bool = power_panel.has_node("SignalWindowConsole") and bool(power_panel.get_node("SignalWindowConsole").visible)
+	var fuse_ready: bool = (
+		state.current_view == "POWER_PANEL"
+		and state.world_state != "POWER_RESTORED"
+		and bool(state.math_state.get("window_locked", false))
+		and not bool(state.device_state.get("fuse_installed", false))
+		and "ITM-G01-002" in state.inventory_item_ids
+		and not console_visible
+	)
+	inventory_hud.visible = fuse_ready
 
 func _shows_modal_guidance() -> bool:
 	return state != null and state.scene_phase != "SLICE_COMPLETE" and state.current_view in ["EVIDENCE", "CABINET", "POWER_PANEL", "SIGNAL_VERIFY"]

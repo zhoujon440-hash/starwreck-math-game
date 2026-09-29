@@ -24,3 +24,14 @@ func run(t) -> void:
 		t.truthy("ITM-G01-002" in drag_state.inventory_item_ids, "wrong drop must return fuse safely")
 		t.truthy("ITM-G01-001" in drag_state.inventory_item_ids, "wrong drop must preserve flashlight")
 
+	var fuse_slot = preload("res://scripts/inventory/InventoryItemSlot.gd").new()
+	fuse_slot.configure("ITM-G01-002", "临时保险丝", null)
+	t.truthy(fuse_slot.has_method("drag_payload"), "inventory slots expose their authored drag contract for integration checks")
+	if fuse_slot.has_method("drag_payload"):
+		t.equal(fuse_slot.drag_payload(), {"kind": "inventory_item", "item_id": "ITM-G01-002"})
+	t.truthy(fuse_slot.tooltip_text.contains("按住并拖向"), "the authored fuse advertises its required physical drag gesture")
+	var wrench_slot = preload("res://scripts/inventory/InventoryItemSlot.gd").new()
+	wrench_slot.configure("ITM-G01-003", "棘轮扳手", null)
+	t.truthy(not wrench_slot.tooltip_text.contains("拖向"), "non-fuse tools must not promise an unsupported inventory drop target")
+	fuse_slot.free()
+	wrench_slot.free()
