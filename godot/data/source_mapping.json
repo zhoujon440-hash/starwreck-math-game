@@ -1,0 +1,7 @@
+{
+  "scene": "src/content/g01.ts",
+  "experience": "src/data/trial/sceneExperiences.ts",
+  "item_archive": "src/data/trial/items.ts",
+  "baseline_commit": "561dfc8b380b70fddf25410b51fa053c6a70a867"
+}
+

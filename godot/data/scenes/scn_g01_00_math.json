@@ -1,0 +1,15 @@
+{
+  "task_id": "SCN-G01-00-MATH-01",
+  "cycle_size": 12,
+  "maintenance_pulses": [2, 6, 10],
+  "weak_echo_offset": -1,
+  "origin_tick": 0,
+  "echo_caliper_pulse": 6,
+  "blockade_slots": [0, 3, 7, 8],
+  "required_observation_cycles": 3,
+  "window_count": 3,
+  "window_spacing": 4,
+  "support_tiers": ["guided", "standard", "expert"],
+  "units": "phase ticks",
+  "ending_sender": "UNKNOWN"
+}

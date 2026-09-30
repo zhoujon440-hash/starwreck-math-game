@@ -1,0 +1,333 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/clue/DeductionBoard.gd" id="1_board"]
+[ext_resource type="PackedScene" path="res://scenes/ui/RepairSynthesisWorkbench.tscn" id="2_synthesis"]
+
+[sub_resource type="StyleBoxFlat" id="Style_frame"]
+bg_color = Color(0.018, 0.029, 0.043, 0.985)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.2, 0.52, 0.6, 0.9)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 20
+
+[sub_resource type="StyleBoxFlat" id="Style_readout"]
+bg_color = Color(0.02, 0.075, 0.09, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.64, 0.68, 0.65)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="Style_button"]
+bg_color = Color(0.06, 0.16, 0.19, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.7, 0.76, 0.7)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[node name="DeductionBoard" type="Control"]
+visible = false
+z_index = 100
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+process_mode = 3
+script = ExtResource("1_board")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.002, 0.007, 0.015, 0.88)
+mouse_filter = 2
+
+[node name="WorkbenchFrame" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 34.0
+offset_top = 26.0
+offset_right = -34.0
+offset_bottom = -26.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("Style_frame")
+mouse_filter = 2
+
+[node name="WorkbenchSurface" type="ColorRect" parent="."]
+offset_left = 52.0
+offset_top = 42.0
+offset_right = 1868.0
+offset_bottom = 1036.0
+color = Color(0.027, 0.048, 0.058, 0.97)
+mouse_filter = 2
+
+[node name="BenchWear" type="Node2D" parent="."]
+
+[node name="LongScratch" type="Line2D" parent="BenchWear"]
+points = PackedVector2Array(438, 754, 782, 739, 1010, 748)
+width = 2.0
+default_color = Color(0.28, 0.38, 0.39, 0.18)
+
+[node name="EdgeScuff" type="Line2D" parent="BenchWear"]
+points = PackedVector2Array(86, 962, 404, 972, 612, 964)
+width = 3.0
+default_color = Color(0.36, 0.29, 0.18, 0.17)
+
+[node name="ClampLeft" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(312, 86, 372, 86, 382, 110, 374, 142, 310, 142, 302, 110)
+color = Color(0.18, 0.215, 0.22, 1)
+
+[node name="ClampLeftSlot" type="Line2D" parent="ClampLeft"]
+points = PackedVector2Array(322, 112, 362, 112)
+width = 5.0
+default_color = Color(0.035, 0.05, 0.052, 1)
+
+[node name="ClampRight" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(1768, 86, 1828, 86, 1838, 110, 1830, 142, 1766, 142, 1758, 110)
+color = Color(0.18, 0.215, 0.22, 1)
+
+[node name="ClampRightSlot" type="Line2D" parent="ClampRight"]
+points = PackedVector2Array(1778, 112, 1818, 112)
+width = 5.0
+default_color = Color(0.035, 0.05, 0.052, 1)
+
+[node name="EvidenceTray" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(60, 116, 324, 116, 324, 876, 60, 876, 48, 850, 48, 142)
+color = Color(0.015, 0.027, 0.034, 0.94)
+
+[node name="EvidenceTrayLip" type="Line2D" parent="EvidenceTray"]
+points = PackedVector2Array(60, 120, 322, 120, 322, 872)
+width = 4.0
+default_color = Color(0.17, 0.32, 0.34, 0.64)
+
+[node name="Header" type="Label" parent="."]
+offset_left = 72.0
+offset_top = 48.0
+offset_right = 1120.0
+offset_bottom = 94.0
+theme_override_colors/font_color = Color(0.5, 0.9, 0.96, 1)
+theme_override_font_sizes/font_size = 30
+text = "现场推理台  /  MAINTENANCE FORENSICS"
+
+[node name="HeaderRule" type="ColorRect" parent="."]
+offset_left = 72.0
+offset_top = 103.0
+offset_right = 1848.0
+offset_bottom = 105.0
+color = Color(0.19, 0.56, 0.64, 0.6)
+mouse_filter = 2
+
+[node name="ObservedHeading" type="Label" parent="."]
+offset_left = 72.0
+offset_top = 128.0
+offset_right = 300.0
+offset_bottom = 160.0
+theme_override_colors/font_color = Color(0.83, 0.65, 0.35, 1)
+theme_override_font_sizes/font_size = 19
+text = "已记录 / EVIDENCE"
+
+[node name="ObservedClues" type="VBoxContainer" parent="."]
+offset_left = 72.0
+offset_top = 174.0
+offset_right = 314.0
+offset_bottom = 856.0
+theme_override_constants/separation = 12
+
+[node name="RailRule" type="ColorRect" parent="."]
+offset_left = 330.0
+offset_top = 126.0
+offset_right = 332.0
+offset_bottom = 868.0
+color = Color(0.18, 0.4, 0.46, 0.55)
+mouse_filter = 2
+
+[node name="BoardCanvas" type="Control" parent="."]
+layout_mode = 0
+offset_left = 350.0
+offset_top = 126.0
+offset_right = 1816.0
+offset_bottom = 864.0
+clip_contents = true
+mouse_filter = 1
+
+[node name="Grid" type="Node2D" parent="BoardCanvas"]
+z_index = 0
+
+[node name="V1" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(170, 64, 170, 704)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="V2" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(334, 64, 334, 704)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="V3" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(498, 64, 498, 704)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="V4" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(662, 64, 662, 704)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="V5" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(826, 64, 826, 704)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="V6" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(990, 64, 990, 704)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="V7" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(1154, 64, 1154, 704)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="V8" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(1318, 64, 1318, 704)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="H1" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(22, 166, 1438, 166)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="H2" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(22, 334, 1438, 334)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="H3" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(22, 502, 1438, 502)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="H4" type="Line2D" parent="BoardCanvas/Grid"]
+points = PackedVector2Array(22, 670, 1438, 670)
+width = 1.0
+default_color = Color(0.16, 0.31, 0.34, 0.16)
+
+[node name="Connections" type="Node2D" parent="BoardCanvas"]
+z_index = 1
+
+[node name="CanvasGridHint" type="Label" parent="BoardCanvas"]
+offset_left = 30.0
+offset_top = 22.0
+offset_right = 760.0
+offset_bottom = 54.0
+theme_override_colors/font_color = Color(0.28, 0.4, 0.45, 1)
+theme_override_font_sizes/font_size = 17
+text = "拖动卡片整理思路 · 单击两张卡后选择关系 · 错误尝试不消耗线索"
+mouse_filter = 2
+
+[node name="LogicReadout" type="PanelContainer" parent="."]
+offset_left = 350.0
+offset_top = 886.0
+offset_right = 1420.0
+offset_bottom = 1018.0
+theme_override_styles/panel = SubResource("Style_readout")
+
+[node name="ReadoutLamp" type="Polygon2D" parent="LogicReadout"]
+z_index = 3
+position = Vector2(26, 66)
+polygon = PackedVector2Array(-8, -8, 8, -8, 12, 0, 8, 8, -8, 8, -12, 0)
+color = Color(0.25, 0.84, 0.78, 0.84)
+
+[node name="Text" type="Label" parent="LogicReadout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.86, 0.88, 1)
+theme_override_font_sizes/font_size = 19
+text = "逻辑回读：选择证据，建立支持、冲突或取代关系。系统只确认推理是否稳定。"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Analyze" type="Button" parent="."]
+visible = false
+offset_left = 1450.0
+offset_top = 886.0
+offset_right = 1680.0
+offset_bottom = 944.0
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("Style_button")
+text = "研判当前证据"
+
+[node name="SynthesisOpen" type="Button" parent="."]
+visible = false
+offset_left = 1450.0
+offset_top = 958.0
+offset_right = 1680.0
+offset_bottom = 1018.0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("Style_button")
+text = "打开维修记录压合台"
+
+[node name="RelationSelector" type="HBoxContainer" parent="."]
+visible = false
+offset_left = 1210.0
+offset_top = 790.0
+offset_right = 1774.0
+offset_bottom = 850.0
+theme_override_constants/separation = 8
+
+[node name="Supports" type="Button" parent="RelationSelector"]
+custom_minimum_size = Vector2(176, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("Style_button")
+text = "支持 / SUPPORTS"
+
+[node name="Contradicts" type="Button" parent="RelationSelector"]
+custom_minimum_size = Vector2(176, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("Style_button")
+text = "冲突 / CONTRADICTS"
+
+[node name="Supersedes" type="Button" parent="RelationSelector"]
+custom_minimum_size = Vector2(176, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("Style_button")
+text = "取代 / SUPERSEDES"
+
+[node name="Close" type="Button" parent="."]
+offset_left = 1690.0
+offset_top = 48.0
+offset_right = 1848.0
+offset_bottom = 92.0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("Style_button")
+text = "返回现场  B"
+
+[node name="RepairSynthesisWorkbench" parent="." instance=ExtResource("2_synthesis")]
