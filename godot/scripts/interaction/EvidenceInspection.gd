@@ -19,7 +19,8 @@ func _ready() -> void:
 		get_node("Workbench/HypothesisRail/Hypothesis%d" % index).pressed.connect(_on_hypothesis.bind(index))
 	for index in 4:
 		get_node("Workbench/BurnPanel/Baseline%d" % index).pressed.connect(_on_baseline_adjust.bind(index))
-		get_node("Workbench/BurnPanel/Scan%d" % index).pressed.connect(_on_burn_scan_pressed.bind(index))
+		get_node("Workbench/BurnPanel/Scan%d" % index).button_down.connect(_on_burn_hold_started.bind(index))
+		get_node("Workbench/BurnPanel/Scan%d" % index).button_up.connect(_on_burn_hold_released.bind(index))
 	$Workbench/BurnPanel/BaselineLock.pressed.connect(_on_baseline_lock)
 	for index in 3:
 		get_node("Workbench/TapePanel/Reel%d" % index).pressed.connect(_on_tape_reel.bind(index))
@@ -33,6 +34,7 @@ func _ready() -> void:
 		get_node("Workbench/PlatePanel/TraceNode%d" % index).pressed.connect(_on_trace_node.bind(index))
 	$Workbench/RecordEvidence.pressed.connect(_on_record_pressed)
 	$Workbench/Close.pressed.connect(close_inspection)
+	get_window().focus_exited.connect(_on_window_focus_exited)
 
 func setup(game_state: RefCounted, config: Dictionary) -> void:
 	state = game_state
@@ -50,6 +52,10 @@ func open_inspection(clue_id: String) -> void:
 		return
 	current_clue = clue_id
 	active_burn_point = -1
+	if clue_id == "CLUE-002":
+		var cancelled_hold: Dictionary = mechanics.cancel_burn_hold()
+		if cancelled_hold.changed:
+			state_changed.emit()
 	last_feedback_code = ""
 	ready_to_record = mechanics.evidence_operation_complete(clue_id) and clue_id not in state.observed_clue_ids
 	visible = true
@@ -135,28 +141,54 @@ func _on_baseline_lock() -> void:
 	_refresh_controls()
 
 func _on_burn_hold_started(index: int) -> void:
-	active_burn_point = index
-
-func _on_burn_hold_released(index: int) -> void:
-	if active_burn_point == index:
-		active_burn_point = -1
-
-func _on_burn_scan_pressed(index: int) -> void:
 	if mechanics == null:
 		return
 	var result: Dictionary = mechanics.toggle_burn_scan_point(index)
+	if not result.ok:
+		active_burn_point = -1
+		_show_feedback(result.feedback)
+		_refresh_controls()
+		return
+	active_burn_point = index
+	$Workbench/Readout.text = "保持按住扫描头，让稳定度连续升至满格。"
+	_refresh_controls()
+
+func _on_burn_hold_released(index: int) -> void:
+	if mechanics == null or active_burn_point != index:
+		return
+	_cancel_active_burn_hold(true, index)
+
+func _on_window_focus_exited() -> void:
+	if active_burn_point >= 0:
+		_cancel_active_burn_hold(true)
+
+func _cancel_active_burn_hold(show_interrupted_feedback: bool, index: int = -1) -> void:
+	if mechanics == null:
+		active_burn_point = -1
+		return
+	var result: Dictionary = mechanics.cancel_burn_hold(index)
 	if result.changed:
 		state_changed.emit()
+	active_burn_point = -1
+	if show_interrupted_feedback and visible and current_clue == "CLUE-002":
+		$Workbench/Readout.text = "扫描稳定度在输入中断后归零；请持续按住同一方向至满格。"
+	_refresh_controls()
+
+func _process(delta: float) -> void:
+	if not visible or current_clue != "CLUE-002" or active_burn_point < 0 or mechanics == null:
+		return
+	var result: Dictionary = mechanics.advance_burn_hold(active_burn_point, delta)
 	if not result.ok:
+		_cancel_active_burn_hold(false)
 		_show_feedback(result.feedback)
-	elif result.completed:
-		_set_ready("四点稳定扫描闭合：冲击从船外沿 B 支路灌入。请记录证据。")
-	else:
-		if result.feedback == "scan_point_armed":
-			$Workbench/Readout.text = "扫描头已落位；再次确认同一点即可锁住该方向。"
+		return
+	if result.feedback == "scan_point_confirmed" or result.completed:
+		active_burn_point = -1
+		state_changed.emit()
+		if result.completed:
+			_set_ready("四点稳定扫描闭合：冲击从船外沿 B 支路灌入。请记录证据。")
 		else:
 			_show_feedback(result.feedback)
-	active_burn_point = int(state.investigation_state.get("burn_active_point", -1))
 	_refresh_controls()
 
 func _on_tape_swap(left_index: int) -> void:
@@ -208,7 +240,7 @@ func _on_trace_node(index: int) -> void:
 	_refresh_controls()
 
 func close_inspection() -> void:
-	active_burn_point = -1
+	_cancel_active_burn_hold(false)
 	visible = false
 	close_requested.emit()
 
@@ -231,8 +263,9 @@ func _show_feedback(code: String) -> void:
 		"BASELINE_UNSTABLE": "四段热层还没有同时落入参考带；已调好的段位保持。",
 		"BASELINE_SEGMENT_ADJUSTED": "基线段位已转动；比较四段热层颜色。",
 		"BASELINE_READY": "四段热层进入同一参考带，可以锁定基线。",
-		"BASELINE_LOCKED": "基线已机械锁定；先点亮下一枚扫描头，再确认稳定。",
-		"SCAN_POINT_ARMED": "扫描头已落位；再次确认同一点即可锁住该方向。",
+		"BASELINE_LOCKED": "基线已机械锁定；沿箭头持续按住下一枚扫描头至满格。",
+		"SCAN_POINT_ARMED": "扫描头已落位；持续按住同一点，让稳定度升至满格。",
+		"SCAN_HOLD_REQUIRED": "扫描头需要连续稳定输入；保持按住，不能用重复点击替代。",
 		"SCAN_DIRECTION_REJECTED": "扫描头被方向槽顶回；已确认点和当前稳定度保持。",
 		"SCAN_POINT_CONFIRMED": "该方向已稳定锁住；沿烧蚀箭头继续向舱内。",
 		"TRACE_REEL_ADVANCED": "纸卷转过一档；检查波峰是否跨过两道接缝。",
@@ -287,7 +320,7 @@ func _refresh_controls() -> void:
 		$Workbench/Instructions.text = "实体检视已完成。记录证据后返回现场；表面细节仍可复查。" if current_clue not in state.observed_clue_ids else "证据已归档，可回看表面细节后返回现场。"
 	else:
 		$Workbench/Instructions.text = {
-			"CLUE-002": "沿外壳到 B 母线的箭头逐点点亮扫描头；再次确认同一点即可锁住该方向。" if bool(state.investigation_state.get("burn_baseline_locked", false)) else "旋转四段基线轮，让热层进入同一青色参考带，再锁定基线；已调好的段位会保留。",
+			"CLUE-002": "沿外壳到 B 母线的箭头依次持续按住扫描头；稳定度满格后才会锁住该方向。" if bool(state.investigation_state.get("burn_baseline_locked", false)) else "旋转四段基线轮，让热层进入同一青色参考带，再锁定基线；已调好的段位会保留。",
 			"CLUE-003": "让三段物理时标与双压线在两道接缝连续，再用走带杆检验整段记录。",
 			"CLUE-004": "双锁共用一条压力联杆；根据每次回弹与残余压力判断释放条件，盖板解锁后让触针沿连续批准槽前进。",
 		}.get(current_clue, "")
@@ -312,12 +345,12 @@ func _refresh_controls() -> void:
 	$Workbench/BurnPanel/BaselineLock.text = "基线已锁" if baseline_locked else "锁定四段基线"
 	var burn_progress := float(state.investigation_state.get("burn_hold_progress", 0.0))
 	var armed_point := int(state.investigation_state.get("burn_active_point", -1))
-	$Workbench/BurnPanel/HoldMeter.value = 50.0 if armed_point >= 0 and is_zero_approx(burn_progress) else burn_progress * 100.0
+	$Workbench/BurnPanel/HoldMeter.value = burn_progress * 100.0
 	var scanned: Array = state.investigation_state.get("burn_scan_points", [])
 	for index in 4:
 		var scan: Button = get_node("Workbench/BurnPanel/Scan%d" % index)
 		scan.disabled = not hypothesis_confirmed or not baseline_locked or index in scanned
-		scan.text = "✓ 稳定" if index in scanned else ("确认 %d" % (index + 1) if index == armed_point else "点亮 %d" % (index + 1))
+		scan.text = "✓ 稳定" if index in scanned else ("稳定中 %d" % (index + 1) if index == armed_point else "按住 %d" % (index + 1))
 
 	var tape: Array = state.investigation_state.get("tape_positions", [0, 0, 0])
 	var order: Array = state.investigation_state.get("tape_order", [0, 1, 2])

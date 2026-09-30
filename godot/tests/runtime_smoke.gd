@@ -117,23 +117,31 @@ func _run() -> void:
 				_require(live_style is StyleBoxFlat and not live_style.draw_center, "live scan theme must expose the material evidence in every interaction state")
 		var scan0_center: Vector2 = burn_trace.to_global(burn_trace.points[0])
 		await _viewport_click(scan0_center, MOUSE_BUTTON_LEFT)
-		_require(scene.state.investigation_state["burn_scan_points"].size() == burn_before, "one physical burn click only arms the next direction point")
-		_require(int(scene.state.investigation_state.get("burn_active_point", -1)) == 0, "the first physical burn click stores the armed scan head")
-		_require(inspection.visible and scene.state.current_view == "EVIDENCE", "burn arming cannot activate the overlapping tape hotspot")
+		_require(scene.state.investigation_state["burn_scan_points"].size() == burn_before, "one physical burn click cannot replace the required continuous hold")
+		_require(int(scene.state.investigation_state.get("burn_active_point", -1)) == -1 and is_zero_approx(float(scene.state.investigation_state.get("burn_hold_progress", 0.0))), "releasing a quick click clears transient burn stability")
+		_require(inspection.visible and scene.state.current_view == "EVIDENCE", "a rejected quick scan cannot activate the overlapping tape hotspot")
+		await _viewport_hold(scan0_center, 0.30)
+		_require(scene.state.investigation_state["burn_scan_points"].size() == burn_before, "an interrupted sub-threshold hold cannot confirm the first direction")
+		_require(int(scene.state.investigation_state.get("burn_active_point", -1)) == -1 and is_zero_approx(float(scene.state.investigation_state.get("burn_hold_progress", 0.0))), "interrupted hold progress resets instead of accumulating repeated taps")
+		_require(not inspection.get_node("Workbench/RecordEvidence").visible, "an interrupted hold cannot expose evidence recording")
+		await _viewport_press(scan0_center)
+		await create_timer(0.30).timeout
+		_require(float(scene.state.investigation_state.get("burn_hold_progress", 0.0)) > 0.0, "an active physical press builds burn stability before focus interruption")
+		root.focus_exited.emit()
 		await create_timer(0.72).timeout
-		_require(scene.state.investigation_state["burn_scan_points"].size() == burn_before, "waiting longer than the old burn hold threshold still must not auto-confirm an armed point")
-		_require(int(scene.state.investigation_state.get("burn_active_point", -1)) == 0, "armed burn scan remains pending after the legacy hold duration passes")
-		_require(not inspection.get_node("Workbench/RecordEvidence").visible, "armed burn scan cannot expose evidence recording before the second click")
-		_require(scene.save_service.save_state(scene.state) == OK, "armed burn scan writes to the smoke save")
+		_require(scene.state.investigation_state["burn_scan_points"].size() == burn_before, "losing window focus cannot leave a scan press running to completion")
+		_require(int(scene.state.investigation_state.get("burn_active_point", -1)) == -1 and is_zero_approx(float(scene.state.investigation_state.get("burn_hold_progress", 0.0))), "focus interruption clears transient burn stability")
+		await _viewport_release(scan0_center)
+		_require(scene.save_service.save_state(scene.state) == OK, "cancelled burn stability writes a clean smoke save")
 		var burn_resumed = await _resume_scene(packed, preload("res://scripts/core/SaveService.gd").new(SMOKE_SAVE).load_state())
 		var burn_resumed_inspection = burn_resumed.get_node("UI/EvidenceInspection")
 		_require(burn_resumed.state.current_view == "EVIDENCE" and burn_resumed_inspection.visible, "disk resume restores the active burn close-up")
 		_require(burn_resumed.status_label.text == burn_resumed.current_objective_text(), "resumed burn status describes the current investigation instead of requesting an owned lamp")
 		_require(not burn_resumed.get_node("World/FaultRecordHotspot").input_pickable, "resumed burn close-up keeps exclusive cockpit input")
 		await _require_modal_guidance(burn_resumed, "沿四个方向稳定复扫烧蚀切口，确认冲击由外向内", "BURN_SCAN", "resumed burn close-up")
-		await _viewport_click(burn_resumed_inspection.get_node("Workbench/BurnPanel/Scan0").get_global_rect().get_center(), MOUSE_BUTTON_LEFT)
-		_require(burn_resumed.state.investigation_state["burn_scan_points"].size() == burn_before + 1, "second physical burn click confirms exactly one armed direction point")
-		_require(int(burn_resumed.state.investigation_state.get("burn_active_point", -1)) == -1, "confirmed burn scan clears the armed scan head")
+		await _viewport_hold(burn_resumed_inspection.get_node("Workbench/BurnPanel/Scan0").get_global_rect().get_center(), 0.72)
+		_require(burn_resumed.state.investigation_state["burn_scan_points"].size() == burn_before + 1, "one threshold-length physical hold confirms exactly one direction point")
+		_require(int(burn_resumed.state.investigation_state.get("burn_active_point", -1)) == -1, "completed continuous scan clears the active head")
 		scene.queue_free()
 		scene = burn_resumed
 		inspection = burn_resumed_inspection
@@ -142,8 +150,7 @@ func _run() -> void:
 		for point in 4:
 			if point > 0:
 				var scan_center: Vector2 = inspection.get_node("Workbench/BurnPanel/Scan%d" % point).get_global_rect().get_center()
-				await _viewport_click(scan_center, MOUSE_BUTTON_LEFT)
-				await _viewport_click(scan_center, MOUSE_BUTTON_LEFT)
+				await _viewport_hold(scan_center, 0.72)
 		inspection._refresh_controls()
 		_require(inspection.get_node("Workbench/RecordEvidence").visible, "completed burn scan requires an explicit record action")
 		_require("CLUE-002" not in scene.state.observed_clue_ids, "burn completion does not award its clue before RecordEvidence")
@@ -690,6 +697,11 @@ func _viewport_click(position: Vector2, button_index: MouseButton) -> void:
 	await physics_frame
 
 func _viewport_hold(position: Vector2, duration: float) -> void:
+	await _viewport_press(position)
+	await create_timer(duration).timeout
+	await _viewport_release(position)
+
+func _viewport_press(position: Vector2) -> void:
 	var press := InputEventMouseButton.new()
 	press.position = position
 	press.global_position = position
@@ -697,7 +709,9 @@ func _viewport_hold(position: Vector2, duration: float) -> void:
 	press.button_mask = MOUSE_BUTTON_MASK_LEFT
 	press.pressed = true
 	root.push_input(press, true)
-	await create_timer(duration).timeout
+	await physics_frame
+
+func _viewport_release(position: Vector2) -> void:
 	var release := InputEventMouseButton.new()
 	release.position = position
 	release.global_position = position

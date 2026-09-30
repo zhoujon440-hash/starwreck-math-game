@@ -114,15 +114,20 @@ func toggle_burn_scan_point(index: int) -> Dictionary:
 	if active_point not in [-1, index]:
 		return _result(false, false, "SCAN_DIRECTION_REJECTED", false)
 	if active_point == index:
-		scanned.append(index)
-		state.investigation_state["burn_scan_points"] = scanned
-		state.investigation_state["burn_active_point"] = -1
-		state.investigation_state["burn_hold_progress"] = 0.0
-		var completed := scanned.size() == 4
-		return _result(true, completed, "impact_trace_locked" if completed else "scan_point_confirmed", true)
+		return _result(true, false, "scan_hold_required", false)
 	state.investigation_state["burn_active_point"] = index
 	state.investigation_state["burn_hold_progress"] = 0.0
 	return _result(true, false, "scan_point_armed", true)
+
+func cancel_burn_hold(index: int = -1) -> Dictionary:
+	var active_point := int(state.investigation_state.get("burn_active_point", -1))
+	if index >= 0 and active_point not in [-1, index]:
+		return _result(false, false, "SCAN_DIRECTION_REJECTED", false)
+	var progress := float(state.investigation_state.get("burn_hold_progress", 0.0))
+	var changed := active_point != -1 or not is_zero_approx(progress)
+	state.investigation_state["burn_active_point"] = -1
+	state.investigation_state["burn_hold_progress"] = 0.0
+	return _result(true, false, "scan_hold_cancelled", changed)
 
 func cycle_tape_reel(index: int) -> Dictionary:
 	if not evidence_hypothesis_confirmed("CLUE-003"):
