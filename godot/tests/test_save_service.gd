@@ -383,6 +383,8 @@ func _math_state_for_stage(stage: String, count: int) -> Dictionary:
 	math_state["measurement_stage"] = stage
 	math_state["observed_cycles"] = count
 	math_state["probe_prepared"] = stage != "origin"
+	if stage != "origin":
+		math_state["origin_tick"] = 0
 	if stage in ["blockade", "windows", "complete"]:
 		math_state["echo_measurement"] = {"pulse": 6, "echo": 5, "confirmed": true}
 	if stage in ["windows", "complete"]:

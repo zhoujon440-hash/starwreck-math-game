@@ -442,12 +442,12 @@ func _run() -> void:
 	var power_panel_hotspot: Area2D = scene.get_node("World/PowerPanelHotspot")
 	_require(not fault_record_hotspot.input_pickable and not power_panel_hotspot.input_pickable, "power-panel close-up owns input instead of leaving cockpit hotspots pickable")
 	scene.flashlight.global_position = fault_record_hotspot.global_position
-	await _viewport_click(origin_marker.global_position, MOUSE_BUTTON_LEFT)
-	_require(scene.state.math_state["origin_tick"] == 1 and scene.state.math_state["observed_cycles"] == 0, "one real wheel event advances one datum stop without confirming it")
+	_require(scene.state.math_state["origin_tick"] == 7 and console.get_node("OriginWheel/TickReadout").text.contains("DATUM 07"), "fresh diagnostic exposes the displaced damaged datum at stop seven")
 	await _viewport_click(console.get_node("OriginWheel/LockPin").global_position, MOUSE_BUTTON_LEFT)
-	_require(console.last_feedback_code == "ORIGIN_MISMATCH" and scene.state.math_state["measurement_stage"] == "origin", "misaligned physical lock pin recoils locally")
-	await _viewport_click(origin_marker.global_position, MOUSE_BUTTON_RIGHT)
-	_require(scene.state.math_state["origin_tick"] == 0, "secondary wheel input returns the datum to zero exactly once")
+	_require(console.last_feedback_code == "ORIGIN_MISMATCH" and scene.state.math_state["measurement_stage"] == "origin" and scene.state.math_state["observed_cycles"] == 0, "untouched displaced lock pin recoils without recording a cycle")
+	for expected_tick in [8, 9, 10, 11, 0]:
+		await _viewport_click(origin_marker.global_position, MOUSE_BUTTON_LEFT)
+		_require(scene.state.math_state["origin_tick"] == expected_tick and scene.state.math_state["observed_cycles"] == 0, "each real wheel event advances one modular datum detent before confirmation")
 	await _viewport_click(console.get_node("OriginWheel/LockPin").global_position, MOUSE_BUTTON_LEFT)
 	_require(scene.state.math_state["measurement_stage"] == "echo" and scene.state.math_state["observed_cycles"] == 1, "physical lock pin confirms origin exactly once")
 	_require(scene.current_objective_text() == "用双卡尺量出维护脉冲与弱回波的提前一格关系", "diagnostic objective advances to the caliper after the datum is confirmed")

@@ -8,6 +8,7 @@ const TAPE_ORDER_TARGET := [1, 0, 2]
 const TAPE_FACE_TARGET := [2, 1, 2]
 const PLATE_TRACE_TARGET := [0, 2, 3, 5]
 const ORIGIN_TICK_TARGET := 0
+const ORIGIN_TICK_INITIAL := 7
 const ECHO_PULSE_TARGET := 6
 const ECHO_TICK_TARGET := 5
 const BLOCKADE_MARK_TARGET := [0, 3, 7, 8]
@@ -595,7 +596,7 @@ func _default_math_state() -> Dictionary:
 		"attempt_codes": [],
 		"hint_stage": 0,
 		"measurement_stage": "origin",
-		"origin_tick": 0,
+		"origin_tick": ORIGIN_TICK_INITIAL,
 		"echo_measurement": {"pulse": 0, "echo": 0, "confirmed": false},
 		"blockade_marks": [],
 		"signal_verification": {

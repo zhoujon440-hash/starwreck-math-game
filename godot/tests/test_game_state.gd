@@ -9,6 +9,7 @@ func run(t) -> void:
 	t.equal(state.investigation_state["plate_cover_lifted"], false, "Rev.3 cover starts latched over the trace plate")
 	t.equal(state.investigation_state["repair_synthesis_steps"], [], "repair synthesis starts without placed plates")
 	t.equal(state.math_state["measurement_stage"], "origin", "signal measurement starts at origin")
+	t.equal(state.math_state["origin_tick"], 7, "fresh damaged datum starts visibly displaced from the authored zero")
 	t.equal(state.math_state["echo_measurement"], {"pulse": 0, "echo": 0, "confirmed": false}, "echo caliper starts unconfirmed")
 	t.equal(state.math_state["blockade_marks"], [], "blockade overlay starts empty")
 	t.equal(state.math_state["signal_verification"]["retained_channels"], [], "no ending signal is retained by default")
@@ -155,6 +156,7 @@ func _post_protector_state(t):
 	var config = JSON.parse_string(FileAccess.get_file_as_string("res://data/scenes/scn_g01_00_math.json"))
 	var diagnostic = preload("res://scripts/puzzle/SignalWindowPuzzle.gd").new(state, config)
 	t.truthy(diagnostic.prepare_probe(true, true).ok)
+	t.truthy(diagnostic.set_origin_tick(0).ok)
 	t.truthy(diagnostic.confirm_origin().ok)
 	t.truthy(diagnostic.set_echo_caliper(6, 5).ok)
 	t.truthy(diagnostic.confirm_echo_measurement().ok)
@@ -419,6 +421,8 @@ func _math_state_for_stage(stage: String, count: int) -> Dictionary:
 	math_state["measurement_stage"] = stage
 	math_state["observed_cycles"] = count
 	math_state["probe_prepared"] = stage != "origin"
+	if stage != "origin":
+		math_state["origin_tick"] = 0
 	if stage in ["blockade", "windows", "complete"]:
 		math_state["echo_measurement"] = {"pulse": 6, "echo": 5, "confirmed": true}
 	if stage in ["windows", "complete"]:
